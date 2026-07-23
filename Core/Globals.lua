@@ -1,53 +1,53 @@
-local _, UUF = ...
-local oUF = UUF.oUF
-UUFG = UUFG or {}
-UUF.AURA_TEST_MODE = false
-UUF.CASTBAR_TEST_MODE = false
-UUF.BOSS_TEST_MODE = false
-UUF.PARTY_TEST_MODE = false
-UUF.RAID_TEST_MODE = false
-UUF.BOSS_FRAMES = {}
-UUF.MAX_BOSS_FRAMES = 5
-UUF.PARTY_FRAMES = {}
-UUF.MAX_PARTY_FRAMES = 4
-UUF.RAID_FRAMES = {}
-UUF.AUGMENTATION_RAID_FRAMES = {}
-UUF.RAID_TEST_FRAMES = {}
-UUF.RAID_HEADERS = {}
-UUF.AUGMENTATION_RAID_FRAME_COUNT = 0
-UUF.MAX_RAID_FRAMES = 40
-UUF.MAX_RAID_GROUPS = 8
-UUF.MAX_RAID_FRAMES_PER_GROUP = 5
+local _, RUF = ...
+local oUF = RUF.oUF
+RUFG = RUFG or {}
+RUF.AURA_TEST_MODE = false
+RUF.CASTBAR_TEST_MODE = false
+RUF.BOSS_TEST_MODE = false
+RUF.PARTY_TEST_MODE = false
+RUF.RAID_TEST_MODE = false
+RUF.BOSS_FRAMES = {}
+RUF.MAX_BOSS_FRAMES = 5
+RUF.PARTY_FRAMES = {}
+RUF.MAX_PARTY_FRAMES = 4
+RUF.RAID_FRAMES = {}
+RUF.AUGMENTATION_RAID_FRAMES = {}
+RUF.RAID_TEST_FRAMES = {}
+RUF.RAID_HEADERS = {}
+RUF.AUGMENTATION_RAID_FRAME_COUNT = 0
+RUF.MAX_RAID_FRAMES = 40
+RUF.MAX_RAID_GROUPS = 8
+RUF.MAX_RAID_FRAMES_PER_GROUP = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
-UUF.LSM = LibStub("LibSharedMedia-3.0")
-UUF.LDS = LibStub("LibDualSpec-1.0")
-UUF.AG = LibStub("AceGUI-3.0")
-UUF.LD = LibStub("LibDispel-1.0")
-UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
-UUF.INFOBUTTON = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
-UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Title")
-UUF.ADDON_VERSION = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Version")
-UUF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Author")
-UUF.ADDON_LOGO = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Logo:11:12|t"
-UUF.PRETTY_ADDON_NAME = UUF.ADDON_LOGO .. " " .. UUF.ADDON_NAME
+RUF.LSM = LibStub("LibSharedMedia-3.0")
+RUF.LDS = LibStub("LibDualSpec-1.0")
+RUF.AG = LibStub("AceGUI-3.0")
+RUF.LD = LibStub("LibDispel-1.0")
+RUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
+RUF.INFOBUTTON = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
+RUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Title")
+RUF.ADDON_VERSION = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Version")
+RUF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Author")
+RUF.ADDON_LOGO = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Logo:11:12|t"
+RUF.PRETTY_ADDON_NAME = RUF.ADDON_LOGO .. " " .. RUF.ADDON_NAME
 
-UUF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
-UUF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Dragonflight.tga")
-UUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Skyline.tga")
-UUF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Stripes.png")
-UUF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png")
+RUF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
+RUF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Dragonflight.tga")
+RUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Skyline.tga")
+RUF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Stripes.png")
+RUF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png")
 
-UUF.LSM:Register("background", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
+RUF.LSM:Register("background", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
 
-UUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
-UUF.LSM:Register("font", "Avante", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
-UUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
-UUF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
-UUF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
-UUF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
+RUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
+RUF.LSM:Register("font", "Avante", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
+RUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
+RUF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
+RUF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
+RUF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
 
-UUF.StatusTextures = {
+RUF.StatusTextures = {
     Combat = {
         ["COMBAT0"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
         ["COMBAT1"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
@@ -72,7 +72,7 @@ UUF.StatusTextures = {
     },
 }
 
-UUF.ClassificationTextures = {
+RUF.ClassificationTextures = {
     ["CLASSIFICATION0"] = {
         ["elite"] = "nameplates-icon-elite-gold",
         ["rare"] = "nameplates-icon-elite-silver",
@@ -99,13 +99,13 @@ UUF.ClassificationTextures = {
     },
 }
 
-UUF.QuestTextures = {
+RUF.QuestTextures = {
     ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
     ["QUEST0"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
     ["QUEST1"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
 }
 
-UUF.RoleTextures = {
+RUF.RoleTextures = {
     ["Blizzard"] = {
         ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
         ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
@@ -133,7 +133,7 @@ UUF.RoleTextures = {
 	},
 }
 
-UUF.ReadyCheckTextures = {
+RUF.ReadyCheckTextures = {
 	["White"] = {
 		["READY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
 		["NOTREADY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
@@ -146,7 +146,7 @@ UUF.ReadyCheckTextures = {
 	},
 }
 
-UUF.InterruptSpellIDs = {
+RUF.InterruptSpellIDs = {
 	["DEATHKNIGHT"] = {47528},
 	["DEMONHUNTER"] = {183752},
 	["DRUID"] = {106839, 78675, 38675},
@@ -162,10 +162,10 @@ UUF.InterruptSpellIDs = {
 	["WARRIOR"] = {6552},
 }
 
-function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
+function RUF:PrettyPrint(MSG) print(RUF.ADDON_NAME .. ":|r " .. MSG) end
 
-function UUF:GetInterruptSpellID()
-	local playerInterrupt = UUF.InterruptSpellIDs[UnitClassBase("player")]
+function RUF:GetInterruptSpellID()
+	local playerInterrupt = RUF.InterruptSpellIDs[UnitClassBase("player")]
 	if not playerInterrupt then return end
 	for i = 1, #playerInterrupt do
 		local spellID = playerInterrupt[i]
@@ -177,8 +177,8 @@ function UUF:GetInterruptSpellID()
 	end
 end
 
-function UUF:IsInterruptOnCooldown()
-	local spellID = UUF:GetInterruptSpellID()
+function RUF:IsInterruptOnCooldown()
+	local spellID = RUF:GetInterruptSpellID()
 	if not spellID then return false end
 	if C_Spell.GetSpellCooldown then
 		local cooldownInfo = C_Spell.GetSpellCooldown(spellID)
@@ -187,36 +187,36 @@ function UUF:IsInterruptOnCooldown()
 	return false
 end
 
-function UUF:FetchFrameName(unit)
+function RUF:FetchFrameName(unit)
     local UnitToFrame = {
-        ["player"] = "UUF_Player",
-        ["target"] = "UUF_Target",
-        ["targettarget"] = "UUF_TargetTarget",
-        ["focus"] = "UUF_Focus",
-        ["focustarget"] = "UUF_FocusTarget",
-        ["pet"] = "UUF_Pet",
-        ["boss"] = "UUF_Boss",
-        ["party"] = "UUF_Party",
-        ["partyplayer"] = "UUF_PartyPlayer",
-        ["raid"] = "UUF_Raid",
+        ["player"] = "RUF_Player",
+        ["target"] = "RUF_Target",
+        ["targettarget"] = "RUF_TargetTarget",
+        ["focus"] = "RUF_Focus",
+        ["focustarget"] = "RUF_FocusTarget",
+        ["pet"] = "RUF_Pet",
+        ["boss"] = "RUF_Boss",
+        ["party"] = "RUF_Party",
+        ["partyplayer"] = "RUF_PartyPlayer",
+        ["raid"] = "RUF_Raid",
     }
     if not unit then return end
-    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
-    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
-    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
+    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "RUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "RUF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "RUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
-function UUF:ResolveLSM()
-    local LSM = UUF.LSM
-    local General = UUF.db.profile.General
-    UUF.Media = UUF.Media or {}
-    UUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
-    UUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
-    UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
+function RUF:ResolveLSM()
+    local LSM = RUF.LSM
+    local General = RUF.db.profile.General
+    RUF.Media = RUF.Media or {}
+    RUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
+    RUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
+    RUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
-function UUF:GetCooldownDurationComponents(displayStyle, minValue)
+function RUF:GetCooldownDurationComponents(displayStyle, minValue)
     if displayStyle == "clock" then
         if minValue >= 86400 then
             return {{div = 86400}, {div = 3600, mod = 24}}
@@ -233,9 +233,9 @@ function UUF:GetCooldownDurationComponents(displayStyle, minValue)
     end
 end
 
-function UUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
+function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     if not icon then return end
-    local CooldownTextDB = UUF.db.profile.General.CooldownText
+    local CooldownTextDB = RUF.db.profile.General.CooldownText
     for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
         if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
     end
@@ -243,12 +243,12 @@ function UUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
         CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
         icon:SetCountdownFormatter(CooldownDurationFormatter)
     end
-	if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
+	if CooldownTextDB.Advanced and unit then CooldownTextDB = RUF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
     if not textRegion then
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
-					UUF:ApplyCooldownText(icon, region, unit, unitFrame)
+					RUF:ApplyCooldownText(icon, region, unit, unitFrame)
                     return
                 end
             end
@@ -256,15 +256,15 @@ function UUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
         return
     end
 
-    local FontsDB = UUF.db.profile.General.Fonts
+    local FontsDB = RUF.db.profile.General.Fonts
     if CooldownTextDB.ScaleByIconSize then
         local iconWidth = icon:GetWidth()
         local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
         local fontSize = CooldownTextDB.FontSize * scaleFactor
         if fontSize < 1 then fontSize = 12 end
-        textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
+        textRegion:SetFont(RUF.Media.Font, fontSize, FontsDB.FontFlag)
     else
-        textRegion:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
+        textRegion:SetFont(RUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
     end
     textRegion:ClearAllPoints()
     textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
@@ -277,30 +277,30 @@ function UUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     end
 end
 
-function UUF:Capitalize(STR)
+function RUF:Capitalize(STR)
     return "|cFF8080FF" .. (STR:gsub("^%l", string.upper)) .. "|r"
 end
 
-function UUF:GetPixelPerfectScale()
+function RUF:GetPixelPerfectScale()
     local _, screenHeight = GetPhysicalScreenSize()
     local pixelSize = 768 / screenHeight
     return pixelSize
 end
 
 local function SetupSlashCommands()
-    SLASH_UUF1 = "/uuf"
-    SLASH_UUF2 = "/RehaltedUnitFrames"
-    SLASH_UUF3 = "/uf"
-    SlashCmdList["UUF"] = function() UUF:CreateGUI() end
-    if UUF.db.global.DisplayLoginMessage then UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.") end
+    SLASH_RUF1 = "/uuf"
+    SLASH_RUF2 = "/RehaltedUnitFrames"
+    SLASH_RUF3 = "/uf"
+    SlashCmdList["RUF"] = function() RUF:CreateGUI() end
+    if RUF.db.global.DisplayLoginMessage then RUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.") end
 
     -- RL command
-    SLASH_UUFRELOAD1 = "/rl"
-    SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
+    SLASH_RUFRELOAD1 = "/rl"
+    SlashCmdList["RUFRELOAD"] = function() C_UI.Reload() end
 end
 
-function UUF:SetUIScale()
-    local GeneralDB = UUF.db.profile.General
+function RUF:SetUIScale()
+    local GeneralDB = RUF.db.profile.General
     if GeneralDB.UIScale.Enabled then
         UIParent:SetScale(GeneralDB.UIScale.Scale or 0.5333333333333)
     else
@@ -308,8 +308,8 @@ function UUF:SetUIScale()
     end
 end
 
-function UUF:LoadCustomColours()
-    local General = UUF.db.profile.General
+function RUF:LoadCustomColours()
+    local General = RUF.db.profile.General
 
     -- Map power type enums to their string names
     local PowerTypesToString = {
@@ -353,7 +353,7 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
-    local DefaultStatusColours = UUF:GetDefaultDB().profile.General.Colours.Status
+    local DefaultStatusColours = RUF:GetDefaultDB().profile.General.Colours.Status
     local StatusColours = General.Colours.Status or DefaultStatusColours
     local tappedColor = StatusColours.Tapped or DefaultStatusColours.Tapped
     local disconnectedColor = StatusColours.Disconnected or DefaultStatusColours.Disconnected
@@ -362,7 +362,7 @@ function UUF:LoadCustomColours()
     oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
     oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
 
-    local DefaultThreatColours = UUF:GetDefaultDB().profile.General.Colours.Threat
+    local DefaultThreatColours = RUF:GetDefaultDB().profile.General.Colours.Threat
     local ThreatColours = General.Colours.Threat or DefaultThreatColours
     for threatStatus, defaultColor in pairs(DefaultThreatColours) do
         local color = ThreatColours[threatStatus] or defaultColor
@@ -383,7 +383,7 @@ function UUF:LoadCustomColours()
                 oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
             end
         end
-        UUF.dispelColorGeneration = (UUF.dispelColorGeneration or 0) + 1
+        RUF.dispelColorGeneration = (RUF.dispelColorGeneration or 0) + 1
     end
 
     for _, obj in next, oUF.objects do
@@ -396,37 +396,37 @@ end
 local function AddAnchorsToBCDM()
     if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
     if select(4, GetBuildInfo()) >= 121000 then return end
-    local UUF_Anchors = {
-        ["UUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
-        ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
-        ["UUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
+    local RUF_Anchors = {
+        ["RUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
+        ["RUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
+        ["RUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
     }
     if BCDMG then
-        BCDMG:AddAnchors("RehaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
+        BCDMG:AddAnchors("RehaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, RUF_Anchors)
     end
 end
 
-function UUF:Init()
+function RUF:Init()
     SetupSlashCommands()
-    UUF:SetUIScale()
-    UUF:ResolveLSM()
-    UUF:LoadCustomColours()
-    UUF:SetTagUpdateInterval()
+    RUF:SetUIScale()
+    RUF:ResolveLSM()
+    RUF:LoadCustomColours()
+    RUF:SetTagUpdateInterval()
     AddAnchorsToBCDM()
 end
 
-function UUF:CopyTable(originalTable, destinationTable)
+function RUF:CopyTable(originalTable, destinationTable)
     for key, value in pairs(originalTable) do
         if type(value) == "table" then
             destinationTable[key] = destinationTable[key] or {}
-            UUF:CopyTable(value, destinationTable[key])
+            RUF:CopyTable(value, destinationTable[key])
         else
             destinationTable[key] = value
         end
     end
 end
 
-function UUF:SetJustification(anchorFrom)
+function RUF:SetJustification(anchorFrom)
     if anchorFrom == "TOPLEFT" or anchorFrom == "LEFT" or anchorFrom == "BOTTOMLEFT" then
         return "LEFT"
     elseif anchorFrom == "TOPRIGHT" or anchorFrom == "RIGHT" or anchorFrom == "BOTTOMRIGHT" then
@@ -436,21 +436,21 @@ function UUF:SetJustification(anchorFrom)
     end
 end
 
-function UUF:GetUnitColour(unit)
+function RUF:GetUnitColour(unit)
     if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
         local _, class = UnitClass(unit)
         local classColour = class and RAID_CLASS_COLORS[class]
         if classColour then return classColour.r, classColour.g, classColour.b end
     end
     local reaction = UnitReaction(unit, "player")
-    if reaction and UUF.db.profile.General.Colours.Reaction[reaction] then
-        local r, g, b = unpack(UUF.db.profile.General.Colours.Reaction[reaction])
+    if reaction and RUF.db.profile.General.Colours.Reaction[reaction] then
+        local r, g, b = unpack(RUF.db.profile.General.Colours.Reaction[reaction])
         return r, g, b
     end
     return 1, 1, 1
 end
 
-function UUF:GetClassColour(unitFrame)
+function RUF:GetClassColour(unitFrame)
     local _, class = UnitClass(unitFrame.unit)
     local classColour = RAID_CLASS_COLORS[class]
     if classColour then
@@ -458,36 +458,36 @@ function UUF:GetClassColour(unitFrame)
     end
 end
 
-function UUF:GetReactionColour(reaction)
+function RUF:GetReactionColour(reaction)
     local reactionColour = oUF.colors.reaction[reaction]
     if reactionColour then
         return {reactionColour.r, reactionColour.g, reactionColour.b, 1}
     end
 end
 
-function UUF:GetNormalizedUnit(unit)
+function RUF:GetNormalizedUnit(unit)
     local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit
 end
 
-function UUF:GetUnitDB(unitFrame, unit, units)
-	units = units or UUF.db.profile.Units
-	local normalizedUnit = unitFrame and unitFrame.isAugmentationRaidFrame and "augmentation" or UUF:GetNormalizedUnit(unit)
+function RUF:GetUnitDB(unitFrame, unit, units)
+	units = units or RUF.db.profile.Units
+	local normalizedUnit = unitFrame and unitFrame.isAugmentationRaidFrame and "augmentation" or RUF:GetNormalizedUnit(unit)
 	return normalizedUnit == "augmentation" and units.raid.augmentation or units[normalizedUnit]
 end
 
-function UUF:ForEachUnitDB(callback)
-	for unit, unitDB in pairs(UUF.db.profile.Units) do callback(unitDB, unit) end
-	callback(UUF.db.profile.Units.raid.augmentation, "augmentation")
+function RUF:ForEachUnitDB(callback)
+	for unit, unitDB in pairs(RUF.db.profile.Units) do callback(unitDB, unit) end
+	callback(RUF.db.profile.Units.raid.augmentation, "augmentation")
 end
 
-function UUF:IsAugmentationEvoker()
+function RUF:IsAugmentationEvoker()
 	if UnitClassBase("player") ~= "EVOKER" then return false end
 	local specializationIndex = C_SpecializationInfo.GetSpecialization()
 	return specializationIndex and C_SpecializationInfo.GetSpecializationInfo(specializationIndex) == 1473 or false
 end
 
-function UUF:RequiresAlternativePowerBar()
+function RUF:RequiresAlternativePowerBar()
     local SpecsNeedingAltPower = {
         PRIEST = { 258 },           -- Shadow
         MAGE   = { 62, 63, 64 },        -- Fire, Frost
@@ -506,7 +506,7 @@ function UUF:RequiresAlternativePowerBar()
     return false
 end
 
-UUF.LayoutConfig = {
+RUF.LayoutConfig = {
     TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
     TOP         = { anchor="TOP",       offsetMultiplier=0   },
     TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
@@ -518,12 +518,12 @@ UUF.LayoutConfig = {
     RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
 
-function UUF:SetTagUpdateInterval()
-    oUF.Tags:SetEventUpdateTimer(UUF.TAG_UPDATE_INTERVAL)
+function RUF:SetTagUpdateInterval()
+    oUF.Tags:SetEventUpdateTimer(RUF.TAG_UPDATE_INTERVAL)
 end
 
-function UUF:OpenURL(title, urlText)
-    StaticPopupDialogs["UUF_URL_POPUP"] = {
+function RUF:OpenURL(title, urlText)
+    StaticPopupDialogs["RUF_URL_POPUP"] = {
         text = title or "",
         button1 = CLOSE,
         hasEditBox = true,
@@ -540,15 +540,15 @@ function UUF:OpenURL(title, urlText)
         hideOnEscape = true,
         preferredIndex = 3,
     }
-    local urlDialog = StaticPopup_Show("UUF_URL_POPUP")
+    local urlDialog = StaticPopup_Show("RUF_URL_POPUP")
     if urlDialog then
         urlDialog:SetFrameStrata("TOOLTIP")
     end
     return urlDialog
 end
 
-function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
-    StaticPopupDialogs["UUF_PROMPT_DIALOG"] = {
+function RUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
+    StaticPopupDialogs["RUF_PROMPT_DIALOG"] = {
         text = text or "",
         button1 = acceptText or ACCEPT,
         button2 = cancelText or CANCEL,
@@ -568,7 +568,7 @@ function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
         preferredIndex = 3,
         showAlert = true,
     }
-    local promptDialog = StaticPopup_Show("UUF_PROMPT_DIALOG", title, text)
+    local promptDialog = StaticPopup_Show("RUF_PROMPT_DIALOG", title, text)
     if promptDialog then
         promptDialog.data = { onAccept = onAccept, onCancel = onCancel }
         promptDialog:SetFrameStrata("TOOLTIP")
@@ -576,7 +576,7 @@ function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
     return promptDialog
 end
 
-function UUFG:UpdateAllTags()
+function RUFG:UpdateAllTags()
     for _, obj in next, oUF.objects do
         if obj.UpdateTags then
             obj:UpdateTags()
@@ -585,7 +585,7 @@ function UUFG:UpdateAllTags()
 end
 
 -- Thanks Details / Plater for this.
-function UUF:CleanTruncateUTF8String(text)
+function RUF:CleanTruncateUTF8String(text)
     local DetailsFramework = _G.DF
     if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
         return DetailsFramework:CleanTruncateUTF8String(text)
@@ -593,11 +593,11 @@ function UUF:CleanTruncateUTF8String(text)
     return text
 end
 
-function UUF:IsSecretValue(value)
+function RUF:IsSecretValue(value)
     return issecretvalue and issecretvalue(value)
 end
 
-function UUF:GetSecondaryPowerType()
+function RUF:GetSecondaryPowerType()
     local class = select(2, UnitClass("player"))
     local spec = C_SpecializationInfo.GetSpecialization()
 
@@ -621,8 +621,8 @@ function UUF:GetSecondaryPowerType()
     return nil
 end
 
-function UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
-	local SecondaryPowerBarDB = UUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
+function RUF:HasActiveSecondaryPowerBar(unitFrame, unit)
+	local SecondaryPowerBarDB = RUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
     return SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and (unitFrame.Runes or unitFrame.ClassPower)
 end
 
@@ -633,8 +633,8 @@ local function NormalizeBarPosition(value, fallback)
     return fallback
 end
 
-function UUF:GetConfiguredPowerBarPosition(unit, unitFrame)
-	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
+function RUF:GetConfiguredPowerBarPosition(unit, unitFrame)
+	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
     if not PowerBarDB then return "BOTTOM" end
     if PowerBarDB.Position then
         return NormalizeBarPosition(PowerBarDB.Position, "BOTTOM")
@@ -645,8 +645,8 @@ function UUF:GetConfiguredPowerBarPosition(unit, unitFrame)
     return "BOTTOM"
 end
 
-function UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
-	local UnitDB = UUF:GetUnitDB(unitFrame, unit)
+function RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
+	local UnitDB = RUF:GetUnitDB(unitFrame, unit)
     local SecondaryPowerBarDB = UnitDB.SecondaryPowerBar
     if not SecondaryPowerBarDB then return "TOP" end
     if SecondaryPowerBarDB.Position then
@@ -658,33 +658,33 @@ function UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
     return "TOP"
 end
 
-function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
-    if not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
+function RUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+    if not RUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
 
-	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
+	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
     if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power) then
         return 0
     end
 
-	if UUF:GetConfiguredPowerBarPosition(unit, unitFrame) ~= UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) then
+	if RUF:GetConfiguredPowerBarPosition(unit, unitFrame) ~= RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) then
         return 0
     end
 
     return PowerBarDB.Height + 1
 end
 
-function UUF:UpdateHealthBarLayout(unitFrame, unit)
-	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
-	local SecondaryPowerBarDB = UUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
+function RUF:UpdateHealthBarLayout(unitFrame, unit)
+	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+	local SecondaryPowerBarDB = RUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
 
     local topDepth = 0
     local bottomDepth = 0
 
     local hasPrimaryPower = PowerBarDB and PowerBarDB.Enabled and unitFrame.Power
-    local hasSecondaryPower = UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
+    local hasSecondaryPower = RUF:HasActiveSecondaryPowerBar(unitFrame, unit)
 
     if hasPrimaryPower then
-		if UUF:GetConfiguredPowerBarPosition(unit, unitFrame) == "TOP" then
+		if RUF:GetConfiguredPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + PowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + PowerBarDB.Height + 1
@@ -692,7 +692,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 
     if hasSecondaryPower then
-		if UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) == "TOP" then
+		if RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + SecondaryPowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + SecondaryPowerBarDB.Height + 1
@@ -712,7 +712,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
 end
 
 
-UUF.AURA_FILTERS = {
+RUF.AURA_FILTERS = {
     Buffs = {
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the |cFF8080FFplayer|r."},
         {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the |cFF8080FFplayer|r or their vehicle."},
@@ -752,7 +752,7 @@ UUF.AURA_FILTERS = {
     }
 }
 
-UUF.AURA_BLACKLIST = {
+RUF.AURA_BLACKLIST = {
     -- Rogue Poisons
     [2823] = true,      -- Deadly Poison
     [315584] = true,    -- Instant Poison
@@ -793,18 +793,18 @@ UUF.AURA_BLACKLIST = {
     [95809] = true,     -- Hunter Pet Insanity
 }
 
-UUF.SCMAnchors = {
-    ["Player"] = "UUF_Player",
-    ["Target"] = "UUF_Target",
-    ["Pet"] = "UUF_Pet",
-    ["Focus"] = "UUF_Focus",
-    ["Focus Target"] = "UUF_FocusTarget",
-    ["Target of Target"] = "UUF_TargetTarget",
+RUF.SCMAnchors = {
+    ["Player"] = "RUF_Player",
+    ["Target"] = "RUF_Target",
+    ["Pet"] = "RUF_Pet",
+    ["Focus"] = "RUF_Focus",
+    ["Focus Target"] = "RUF_FocusTarget",
+    ["Target of Target"] = "RUF_TargetTarget",
 }
 
-function UUF:RefreshProfiles()
-	UUF:ResolveLSM()
-	UUF:LoadCustomColours()
-	UUF:UpdateAllUnitFrames()
-	UUF:ForEachUnitDB(function(_, unit) UUF:UpdateUnitTags(unit) end)
+function RUF:RefreshProfiles()
+	RUF:ResolveLSM()
+	RUF:LoadCustomColours()
+	RUF:UpdateAllUnitFrames()
+	RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
 end

@@ -1,5 +1,5 @@
-local _, UUF = ...
-local oUF = UUF.oUF
+local _, RUF = ...
+local oUF = RUF.oUF
 
 local TypedDebuffTypes = {
 	Magic = oUF.Enum.DispelType.Magic,
@@ -19,7 +19,7 @@ end
 local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 	if not button or not unit or not auraType then return end
 	local unitFrame = button:GetParent() and button:GetParent():GetParent()
-	local AurasDB = UUF:GetUnitDB(unitFrame, unit).Auras
+	local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
 	if not AurasDB then return end
 	local AuraDB = auraDB and AurasDB[auraDB] or auraType == "HELPFUL" and AurasDB.Buffs or AurasDB.Debuffs
 	if not AuraDB then return end
@@ -35,15 +35,15 @@ local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 	if button.Cooldown then
 		button.Cooldown:SetDrawEdge(false)
 		button.Cooldown:SetReverse(true)
-		UUF:ApplyCooldownText(button.Cooldown, nil, unit, unitFrame)
+		RUF:ApplyCooldownText(button.Cooldown, nil, unit, unitFrame)
 	end
 	if button.Count then
 		if AuraDB.Count.HideStacks then
 			button.Count:Hide()
 		else
-			local FontsDB = UUF.db.profile.General.Fonts
+			local FontsDB = RUF.db.profile.General.Fonts
 			button.Count:ClearAllPoints()
-			button.Count:SetFont(UUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
+			button.Count:SetFont(RUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
 			button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
 			if FontsDB.Shadow.Enabled then
 				button.Count:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
@@ -67,9 +67,9 @@ end
 
 local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	if AuraDB.Blacklist then
-		local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
-		local name = not UUF:IsSecretValue(aura.name) and aura.name
-		if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
+		local spellId = not RUF:IsSecretValue(aura.spellId) and aura.spellId
+		local name = not RUF:IsSecretValue(aura.name) and aura.name
+		if (spellId and RUF.AURA_BLACKLIST[spellId]) or (name and RUF.AURA_BLACKLIST[name]) then return false end
 	end
 	if AuraDB.OnlyShowPlayer then return aura.isPlayerAura end
 	local setFilters = AuraDB.Filters
@@ -83,7 +83,7 @@ local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	if setFilters.Player and isPlayer then return true end
 	if auraType == "HARMFUL" and setFilters.Typed then
 		if C_UnitAuras.GetAuraDispelTypeColor(filterUnit, auraInstanceID, TypedDebuffColorCurve) then return true end
-		local dispelName = not UUF:IsSecretValue(aura.dispelName) and aura.dispelName
+		local dispelName = not RUF:IsSecretValue(aura.dispelName) and aura.dispelName
 		if dispelName and TypedDebuffTypes[dispelName] then return true end
 	end
 	if setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, auraType .. "|RAID_PLAYER_DISPELLABLE") then return true end
@@ -109,9 +109,9 @@ local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	end
 end
 
-function UUF:UpdateUnitAuras(unitFrame, unit)
+function RUF:UpdateUnitAuras(unitFrame, unit)
     if not unit or not unitFrame then return end
-    local AurasDB = UUF:GetUnitDB(unitFrame, unit).Auras
+    local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
     if not AurasDB then return end
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
@@ -174,7 +174,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer:ClearAllPoints()
         unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
         unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BuffAnchorParent, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-        unitFrame.BuffContainer:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+        unitFrame.BuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
         unitFrame.BuffContainer.size = BuffsDB.Size
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
@@ -183,7 +183,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
-        UUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
+        RUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
@@ -204,7 +204,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
         unitFrame.DebuffContainer:ClearAllPoints()
         unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
-        unitFrame.DebuffContainer:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+        unitFrame.DebuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
         unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], DebuffAnchorParent, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
         unitFrame.DebuffContainer.size = DebuffsDB.Size
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
@@ -214,7 +214,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
-        UUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
+        RUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
@@ -246,9 +246,9 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
             unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
             unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
             unitFrame.CustomAuraContainer.filter = CustomAuraFilter
-            UUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
+            RUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
             unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
-				return FilterAura(UUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
+				return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
             end
             unitFrame.CustomAuraContainer.createdButtons = unitFrame.CustomAuras.createdButtons or 0
             unitFrame.CustomAuraContainer.anchoredButtons = unitFrame.CustomAuras.anchoredButtons or 0
@@ -294,11 +294,11 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
             end
         end
     end
-    if UUF.AURA_TEST_MODE == true then UUF:CreateTestAuras(unitFrame, unit) end
+    if RUF.AURA_TEST_MODE == true then RUF:CreateTestAuras(unitFrame, unit) end
 end
 
-function UUF:CreateUnitAuras(unitFrame, unit)
-	local AurasDB = UUF:GetUnitDB(unitFrame, unit).Auras
+function RUF:CreateUnitAuras(unitFrame, unit)
+	local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
 	local BuffsDB = AurasDB.Buffs
 	local DebuffsDB = AurasDB.Debuffs
 	local CustomDB = AurasDB.Custom
@@ -314,7 +314,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 	end
 
 	if not unitFrame.BuffContainer then
-		unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
+		unitFrame.BuffContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
 		unitFrame.BuffContainer:SetFrameStrata(AurasDB.FrameStrata)
 		local buffPerRow = BuffsDB.Wrap or 4
 		local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
@@ -330,9 +330,9 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
 		unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
 		unitFrame.BuffContainer.filter = "HELPFUL"
-		UUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
+		RUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
 		unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
-			return FilterAura(UUF:GetUnitDB(unitFrame, unit).Auras.Buffs, filterUnit, aura, "HELPFUL")
+			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Buffs, filterUnit, aura, "HELPFUL")
 		end
 		unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
 		unitFrame.BuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL", true) end
@@ -358,7 +358,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 	end
 
 	if not unitFrame.DebuffContainer then
-		unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
+		unitFrame.DebuffContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
 		unitFrame.DebuffContainer:SetFrameStrata(AurasDB.FrameStrata)
 		local debuffPerRow = DebuffsDB.Wrap or 3
 		local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
@@ -374,9 +374,9 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
 		unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
 		unitFrame.DebuffContainer.filter = "HARMFUL"
-		UUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
+		RUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
 		unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
-			return FilterAura(UUF:GetUnitDB(unitFrame, unit).Auras.Debuffs, filterUnit, aura, "HARMFUL")
+			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Debuffs, filterUnit, aura, "HARMFUL")
 		end
 
 		unitFrame.DebuffContainer.anchoredButtons = 0
@@ -405,7 +405,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 	end
 
 	if CustomDB and not unitFrame.CustomAuraContainer then
-		unitFrame.CustomAuraContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CustomAurasContainer", unitFrame)
+		unitFrame.CustomAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_CustomAurasContainer", unitFrame)
 		unitFrame.CustomAuraContainer:SetFrameStrata(AurasDB.FrameStrata)
 		local customPerRow = CustomDB.Wrap or 3
 		local customRows = math.ceil(CustomDB.Num / customPerRow)
@@ -421,9 +421,9 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
 		unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
 		unitFrame.CustomAuraContainer.filter = CustomAuraFilter
-		UUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
+		RUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
 		unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
-			return FilterAura(UUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
+			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
 		end
 		unitFrame.CustomAuraContainer.anchoredButtons = 0
 		unitFrame.CustomAuraContainer.createdButtons = 0
@@ -456,7 +456,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 		local PrivateAuraAnchorParent = PrivateAurasDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
 
-        unitFrame.PrivateAuraContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
+        unitFrame.PrivateAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
         unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], PrivateAuraAnchorParent, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
         unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
         unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
@@ -483,22 +483,22 @@ function UUF:CreateUnitAuras(unitFrame, unit)
     end
 end
 
-function UUF:UpdateUnitAurasStrata(unit)
+function RUF:UpdateUnitAurasStrata(unit)
     if not unit then return end
-    local normalizedUnit = UUF:GetNormalizedUnit(unit)
-    local unitFrame = UUF[unit:upper()]
-    local unitDB = UUF.db.profile.Units[normalizedUnit]
+    local normalizedUnit = RUF:GetNormalizedUnit(unit)
+    local unitFrame = RUF[unit:upper()]
+    local unitDB = RUF.db.profile.Units[normalizedUnit]
     if unit == "party" then
         if not unitDB or not unitDB.Auras then return end
-        for i = 1, UUF.MAX_PARTY_FRAMES do
-            UUF:UpdateUnitAurasStrata("party" .. i)
+        for i = 1, RUF.MAX_PARTY_FRAMES do
+            RUF:UpdateUnitAurasStrata("party" .. i)
         end
-        if UUF.PARTYPLAYER and unitDB.Auras.PrivateAuras and UUF.PARTYPLAYER.PrivateAuraContainer then UUF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+        if RUF.PARTYPLAYER and unitDB.Auras.PrivateAuras and RUF.PARTYPLAYER.PrivateAuraContainer then RUF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
         return
 	end
 	if unit == "augmentation" then
-		UUF:ForEachAugmentationRaidFrame(function(raidFrame, frameUnit)
-			local augmentationDB = UUF:GetUnitDB(raidFrame, frameUnit)
+		RUF:ForEachAugmentationRaidFrame(function(raidFrame, frameUnit)
+			local augmentationDB = RUF:GetUnitDB(raidFrame, frameUnit)
 			if raidFrame.BuffContainer then raidFrame.BuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
 			if raidFrame.DebuffContainer then raidFrame.DebuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
 			if raidFrame.CustomAuraContainer then raidFrame.CustomAuraContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
@@ -513,18 +513,18 @@ function UUF:UpdateUnitAurasStrata(unit)
     if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
-function UUF:CreateTestAuras(unitFrame, unit)
+function RUF:CreateTestAuras(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local General = UUF.db.profile.General
-    local AurasDB = UUF:GetUnitDB(unitFrame, unit).Auras
+    local General = RUF.db.profile.General
+    local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
     local CustomDB = AurasDB.Custom
 	local BuffAnchorParent = BuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
 	local DebuffAnchorParent = DebuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
 	local CustomAnchorParent = CustomDB and CustomDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-    if UUF.AURA_TEST_MODE then
+    if RUF.AURA_TEST_MODE then
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 
@@ -537,7 +537,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
 					local button = unitFrame.PrivateAuraContainer["fake" .. j]
 					if not button then
 						button = CreateFrame("Frame", nil, unitFrame.PrivateAuraContainer, "BackdropTemplate")
-						button:SetBackdrop(UUF.BACKDROP)
+						button:SetBackdrop(RUF.BACKDROP)
 						button:SetBackdropColor(0, 0, 0, 0)
 						button:SetBackdropBorderColor(0, 0, 0, 1)
 
@@ -590,7 +590,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
             if BuffsDB.Enabled then
                 unitFrame.BuffContainer:ClearAllPoints()
                 unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BuffAnchorParent, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-                unitFrame.BuffContainer:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+                unitFrame.BuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
                 unitFrame.BuffContainer:Show()
                 for _, button in ipairs(unitFrame.BuffContainer) do
                     if button then button:Hide() end
@@ -600,10 +600,10 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     local button = unitFrame.BuffContainer["fake" .. j]
                     if not button then
                         button = CreateFrame("Button", nil, unitFrame.BuffContainer, "BackdropTemplate")
-                        button:SetBackdrop(UUF.BACKDROP)
+                        button:SetBackdrop(RUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
                         button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+                        button:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
 
                         button.Icon = button:CreateTexture(nil, "BORDER")
                         button.Icon:SetAllPoints()
@@ -615,7 +615,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button:SetSize(BuffsDB.Size, BuffsDB.Size)
                     button.Count:ClearAllPoints()
                     button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
-                    button.Count:SetFont(UUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                    button.Count:SetFont(RUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
                         button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
@@ -642,7 +642,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetText(j)
                     if BuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-					UUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
+					RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
@@ -662,7 +662,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
             if DebuffsDB.Enabled then
                 unitFrame.DebuffContainer:ClearAllPoints()
                 unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], DebuffAnchorParent, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-                unitFrame.DebuffContainer:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+                unitFrame.DebuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
                 unitFrame.DebuffContainer:Show()
                 for _, button in ipairs(unitFrame.DebuffContainer) do
                     if button then button:Hide() end
@@ -672,10 +672,10 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     local button = unitFrame.DebuffContainer["fake" .. j]
                     if not button then
                         button = CreateFrame("Button", nil, unitFrame.DebuffContainer, "BackdropTemplate")
-                        button:SetBackdrop(UUF.BACKDROP)
+                        button:SetBackdrop(RUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
                         button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata(UUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+                        button:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
                         button.Icon = button:CreateTexture(nil, "BORDER")
                         button.Icon:SetAllPoints()
 
@@ -686,7 +686,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
                     button.Count:ClearAllPoints()
                     button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
-                    button.Count:SetFont(UUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                    button.Count:SetFont(RUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
                         button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
@@ -712,7 +712,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetText(j)
                     if DebuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-						UUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
+						RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
@@ -742,7 +742,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     local button = unitFrame.CustomAuraContainer["fake" .. j]
                     if not button then
                         button = CreateFrame("Button", nil, unitFrame.CustomAuraContainer, "BackdropTemplate")
-                        button:SetBackdrop(UUF.BACKDROP)
+                        button:SetBackdrop(RUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
                         button:SetBackdropBorderColor(0, 0, 0, 1)
                         button:SetFrameStrata(AurasDB.FrameStrata)
@@ -756,7 +756,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button:SetSize(CustomDB.Size, CustomDB.Size)
                     button.Count:ClearAllPoints()
                     button.Count:SetPoint(CustomDB.Count.Layout[1], button, CustomDB.Count.Layout[2], CustomDB.Count.Layout[3], CustomDB.Count.Layout[4])
-                    button.Count:SetFont(UUF.Media.Font, CustomDB.Count.FontSize, General.Fonts.FontFlag)
+                    button.Count:SetFont(RUF.Media.Font, CustomDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
                         button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
@@ -782,7 +782,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetText(j)
                     if CustomDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-						UUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
+						RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
                     button.Duration:SetText("10m")
                     button:Show()
                 end

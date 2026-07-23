@@ -1,16 +1,16 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local totemPriorities = STANDARD_TOTEM_PRIORITIES
 if UnitClassBase("player") == "SHAMAN" then totemPriorities = SHAMAN_TOTEM_PRIORITIES end
 
-function UUF:CreateUnitTotems(unitFrame, unit)
+function RUF:CreateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
-    local TotemsDB = UUF.db.profile.Units.player.Indicators.Totems
+    local TotemsDB = RUF.db.profile.Units.player.Indicators.Totems
     if not TotemsDB.Enabled then return end
 
     local Totems = {}
     for index = 1, #totemPriorities do
-        local Totem = CreateFrame("Button", UUF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
+        local Totem = CreateFrame("Button", RUF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
         local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
         if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
         Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
@@ -37,7 +37,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Cooldown:SetDrawSwipe(true)
         Totem.Cooldown:SetHideCountdownNumbers(false)
         Totem.Cooldown:SetReverse(true)
-        UUF:ApplyCooldownText(Totem.Cooldown)
+        RUF:ApplyCooldownText(Totem.Cooldown)
 
         Totems[index] = Totem
     end
@@ -48,19 +48,19 @@ function UUF:CreateUnitTotems(unitFrame, unit)
     end
 
     Totems.PostUpdate = function(self, slot)
-        UUF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
+        RUF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
     end
 
     unitFrame.Totems = Totems
     return Totems
 end
 
-function UUF:UpdateUnitTotems(unitFrame, unit)
+function RUF:UpdateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
-    local TotemsDB = UUF.db.profile.Units.player.Indicators.Totems
+    local TotemsDB = RUF.db.profile.Units.player.Indicators.Totems
 
     if TotemsDB.Enabled then
-        unitFrame.Totems = unitFrame.Totems or UUF:CreateUnitTotems(unitFrame, unit)
+        unitFrame.Totems = unitFrame.Totems or RUF:CreateUnitTotems(unitFrame, unit)
         if not unitFrame.Totems then return end
 
         for index = 1, #unitFrame.Totems do
@@ -70,7 +70,7 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
             Totem:ClearAllPoints()
             Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
             Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
-            UUF:ApplyCooldownText(Totem.Cooldown)
+            RUF:ApplyCooldownText(Totem.Cooldown)
             Totem:Show()
         end
 

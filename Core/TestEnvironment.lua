@@ -1,6 +1,6 @@
-local _, UUF = ...
+local _, RUF = ...
 local TestData = {}
-local oUF = UUF.oUF
+local oUF = RUF.oUF
 
 local TestClasses = {
 	"WARRIOR",
@@ -20,7 +20,7 @@ local TestClasses = {
 
 local TestPowerTypes = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
-for i = 1, UUF.MAX_RAID_FRAMES do
+for i = 1, RUF.MAX_RAID_FRAMES do
 	TestData[i] = {
 		class     = TestClasses[((i - 1) % #TestClasses) + 1],
 		health    = 8000000 - (((i - 1) % 10 + 1) * 600000),
@@ -86,10 +86,10 @@ local function ApplyTestTag(fontString, frame, tagDB, text)
 	if not fontString or not tagDB then return end
 	if tagDB.Tag == "" then fontString:Hide() return end
 
-	local General = UUF.db.profile.General
+	local General = RUF.db.profile.General
 	fontString:ClearAllPoints()
 	fontString:SetPoint(tagDB.Layout[1], frame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
-	fontString:SetFont(UUF.Media.Font, tagDB.FontSize, General.Fonts.FontFlag)
+	fontString:SetFont(RUF.Media.Font, tagDB.FontSize, General.Fonts.FontFlag)
 	if General.Fonts.Shadow.Enabled then
 		fontString:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
 		fontString:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
@@ -114,7 +114,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	if not unitFrame or not unit then return end
 	if InCombatLockdown() then return end
 	local updateAll = not element or element == "all"
-	local UnitDB = UUF:GetUnitDB(unitFrame, unit)
+	local UnitDB = RUF:GetUnitDB(unitFrame, unit)
 	local FrameDB = UnitDB.Frame
 	local HealthBarDB = UnitDB.HealthBar
 	local HealPredictionDB = UnitDB.HealPrediction
@@ -125,16 +125,16 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	local role = TestRoles[((index - 1) % #TestRoles) + 1]
 	unitFrame.testRole = role
 	if element == "Indicators" then
-		UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-		UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
-		UUF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
-		UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
-		UUF:UpdateUnitSummonIndicator(unitFrame, unit)
-		UUF:UpdateUnitRoleIndicator(unitFrame, unit)
-		UUF:UpdateUnitPhaseIndicator(unitFrame, unit)
-		UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-		UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
-		UUF:UpdateUnitThreatIndicator(unitFrame, unit)
+		RUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
+		RUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
+		RUF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
+		RUF:UpdateUnitResurrectIndicator(unitFrame, unit)
+		RUF:UpdateUnitSummonIndicator(unitFrame, unit)
+		RUF:UpdateUnitRoleIndicator(unitFrame, unit)
+		RUF:UpdateUnitPhaseIndicator(unitFrame, unit)
+		RUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
+		RUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
+		RUF:UpdateUnitThreatIndicator(unitFrame, unit)
 	end
 
 	if updateAll then
@@ -150,7 +150,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	end
 
 	if (updateAll or element == "Frame" or element == "HealthBar") and unitFrame.Health then
-		if not updateAll then UUF:UpdateUnitHealthBar(unitFrame, unit) end
+		if not updateAll then RUF:UpdateUnitHealthBar(unitFrame, unit) end
 		unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
 		unitFrame.Health:SetValue(testData.health)
 		unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
@@ -162,7 +162,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	end
 
 	if (updateAll or element == "Frame" or element == "HealPrediction") and unitFrame.HealthPrediction then
-		UUF:UpdateUnitHealPrediction(unitFrame, unit)
+		RUF:UpdateUnitHealPrediction(unitFrame, unit)
 		SetTestPredictionBar(unitFrame.HealthPrediction.damageAbsorb, testData.absorb, testData.maxHealth, HealPredictionDB.Absorbs.Enabled)
 		SetTestPredictionBar(unitFrame.HealthPrediction.healAbsorb, testData.healAbsorb, testData.maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
 		SetTestPredictionBar(unitFrame.HealthPrediction.healingPlayer, testData.incomingHeal, testData.maxHealth, HealPredictionDB.IncomingHeal.Enabled)
@@ -176,7 +176,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	end
 
 	if updateAll or element == "Frame" or element == "PowerBar" then
-		if not updateAll then UUF:UpdateUnitPowerBar(unitFrame, unit) end
+		if not updateAll then RUF:UpdateUnitPowerBar(unitFrame, unit) end
 		if unitFrame.Power then
 			if PowerBarDB.OnlyShowHealers and role ~= "HEALER" then
 				unitFrame.Power:Hide()
@@ -197,7 +197,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	end
 
 	if (updateAll or element == "Indicators") and unitFrame.GroupRoleIndicator and IndicatorDB.Role then
-		local roleTexture = UUF.RoleTextures[IndicatorDB.Role.Texture] and UUF.RoleTextures[IndicatorDB.Role.Texture][role]
+		local roleTexture = RUF.RoleTextures[IndicatorDB.Role.Texture] and RUF.RoleTextures[IndicatorDB.Role.Texture][role]
 		local showRole = (role == "TANK" and IndicatorDB.Role.ShowTank ~= false) or (role == "HEALER" and IndicatorDB.Role.ShowHealer ~= false) or (role == "DAMAGER" and IndicatorDB.Role.ShowDamager ~= false)
 		if IndicatorDB.Role.Enabled and showRole and IndicatorDB.Role.Texture == "Default" and TestRoleAtlas[role] then
 			unitFrame.GroupRoleIndicator:SetAtlas(TestRoleAtlas[role])
@@ -230,7 +230,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	if (updateAll or element == "Indicators") and unitFrame.ReadyCheckIndicator and IndicatorDB.ReadyCheckIndicator then
 		if IndicatorDB.ReadyCheckIndicator.Enabled and index % 2 == 1 then
 			local readyCheckStatus = index % 3 == 0 and "NOTREADY" or index % 3 == 1 and "READY" or "WAITING"
-			local readyCheckTexture = UUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture] and UUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture][readyCheckStatus]
+			local readyCheckTexture = RUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture] and RUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture][readyCheckStatus]
 			if readyCheckTexture then
 				unitFrame.ReadyCheckIndicator:SetTexture(readyCheckTexture)
 			else
@@ -270,7 +270,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 			unitFrame.Container:SetBackdropBorderColor(IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[1] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[2] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[3] or 0, IndicatorDB.Target.Enabled and index == 1 and (IndicatorDB.Target.Colour[4] or 1) or 1)
 		else
 			if not unitFrame.TargetIndicatorFrame then
-				unitFrame.TargetIndicatorFrame = CreateFrame("Frame", UUF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
+				unitFrame.TargetIndicatorFrame = CreateFrame("Frame", RUF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
 				unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
 			end
 			unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
@@ -285,7 +285,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 		end
 	end
 	if (updateAll or element == "Indicators") and unitFrame.ThreatIndicator and IndicatorDB.Threat then
-		local threatColour = UUF.db.profile.General.Colours.Threat[((index - 1) % 3) + 1]
+		local threatColour = RUF.db.profile.General.Colours.Threat[((index - 1) % 3) + 1]
 		if IndicatorDB.Threat.Enabled and index % 5 == 0 then
 			unitFrame.ThreatIndicator:SetBackdropBorderColor(threatColour[1], threatColour[2], threatColour[3], threatColour[4] or 1)
 			unitFrame.ThreatIndicator:SetAlpha(1)
@@ -297,13 +297,13 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 	end
 
 	if updateAll or element == "Auras" then
-		local auraTestMode = UUF.AURA_TEST_MODE
+		local auraTestMode = RUF.AURA_TEST_MODE
 		if not updateAll then
-			UUF.AURA_TEST_MODE = false
-			UUF:UpdateUnitAuras(unitFrame, unit)
+			RUF.AURA_TEST_MODE = false
+			RUF:UpdateUnitAuras(unitFrame, unit)
 		end
-		UUF.AURA_TEST_MODE = auraTestMode
-		UUF:CreateTestAuras(unitFrame, unit)
+		RUF.AURA_TEST_MODE = auraTestMode
+		RUF:CreateTestAuras(unitFrame, unit)
 	end
 	if updateAll or element == "Tags" then
 		for tagIndex, tagName in ipairs(TestTagOrder) do ApplyTestTag(unitFrame.Tags and unitFrame.Tags[tagName], unitFrame, TagsDB[tagName], tagIndex == 1 and displayName or "Tag " .. tagIndex) end
@@ -315,53 +315,53 @@ local function RestoreGroupFrame(unitFrame, unit)
 	if InCombatLockdown() then return end
 	unitFrame:SetAttribute("unit", unit == "partyplayer" and "player" or unit)
 	RegisterUnitWatch(unitFrame)
-	local auraTestMode = UUF.AURA_TEST_MODE
-	UUF.AURA_TEST_MODE = false
-	UUF:CreateTestAuras(unitFrame, unit)
-	UUF.AURA_TEST_MODE = auraTestMode
-	UUF:UpdateUnitFrame(unitFrame, unit)
+	local auraTestMode = RUF.AURA_TEST_MODE
+	RUF.AURA_TEST_MODE = false
+	RUF:CreateTestAuras(unitFrame, unit)
+	RUF.AURA_TEST_MODE = auraTestMode
+	RUF:UpdateUnitFrame(unitFrame, unit)
 end
 
-function UUF:CreateRaidTestFrames()
-	if #UUF.RAID_TEST_FRAMES == UUF.MAX_RAID_FRAMES then return end
+function RUF:CreateRaidTestFrames()
+	if #RUF.RAID_TEST_FRAMES == RUF.MAX_RAID_FRAMES then return end
 	local activeStyle = oUF:GetActiveStyle()
-	oUF:SetActiveStyle(UUF:FetchFrameName("raid"))
-	for i = 1, UUF.MAX_RAID_FRAMES do
-		if not UUF.RAID_TEST_FRAMES[i] then
-			local raidFrame = oUF:Spawn("raid" .. i, "UUF_RaidTest" .. i)
+	oUF:SetActiveStyle(RUF:FetchFrameName("raid"))
+	for i = 1, RUF.MAX_RAID_FRAMES do
+		if not RUF.RAID_TEST_FRAMES[i] then
+			local raidFrame = oUF:Spawn("raid" .. i, "RUF_RaidTest" .. i)
 			raidFrame.isTestFrame = true
 			raidFrame.testIndex = i
-			raidFrame:SetParent(UUF.RAID_CONTAINER)
-			UUF.RAID_TEST_FRAMES[i] = raidFrame
+			raidFrame:SetParent(RUF.RAID_CONTAINER)
+			RUF.RAID_TEST_FRAMES[i] = raidFrame
 		end
 	end
 	if activeStyle then oUF:SetActiveStyle(activeStyle) end
 end
 
-function UUF:LayoutRaidTestFrames()
-	local Frame = UUF.db.profile.Units.raid.Frame
-	if not UUF.RAID_CONTAINER then return end
-	UUF.RAID_CONTAINER:ClearAllPoints()
-	UUF.RAID_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
-	UUF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
+function RUF:LayoutRaidTestFrames()
+	local Frame = RUF.db.profile.Units.raid.Frame
+	if not RUF.RAID_CONTAINER then return end
+	RUF.RAID_CONTAINER:ClearAllPoints()
+	RUF.RAID_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
+	RUF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 
 	local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
 	unitGrowth = unitGrowth or "RIGHT"
 	groupGrowth = groupGrowth or "DOWN"
 	local spacing = Frame.Layout[5] or 0
-	local headerWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing
-	local headerHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing or Frame.Height
+	local headerWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * RUF.MAX_RAID_FRAMES_PER_GROUP - spacing
+	local headerHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * RUF.MAX_RAID_FRAMES_PER_GROUP - spacing or Frame.Height
 	local shownGroups = 0
-	for groupIndex = 1, UUF.MAX_RAID_GROUPS do if not Frame.Groups or Frame.Groups[groupIndex] then shownGroups = shownGroups + 1 end end
+	for groupIndex = 1, RUF.MAX_RAID_GROUPS do if not Frame.Groups or Frame.Groups[groupIndex] then shownGroups = shownGroups + 1 end end
 	local containerWidth = (groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth
 	local containerHeight = (groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight
-	UUF.RAID_CONTAINER:SetSize(math.max(containerWidth, Frame.Width), math.max(containerHeight, Frame.Height))
+	RUF.RAID_CONTAINER:SetSize(math.max(containerWidth, Frame.Width), math.max(containerHeight, Frame.Height))
 	local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
 	local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"
 	local anchor = verticalAnchor .. horizontalAnchor
 
 	local shownGroupIndex = 0
-	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+	for groupIndex = 1, RUF.MAX_RAID_GROUPS do
 		local showGroup = not Frame.Groups or Frame.Groups[groupIndex]
 		if showGroup then shownGroupIndex = shownGroupIndex + 1 end
 		local horizontalOffset = (shownGroupIndex - 1) * (headerWidth + spacing)
@@ -369,9 +369,9 @@ function UUF:LayoutRaidTestFrames()
 		local headerXOffset = groupGrowth == "RIGHT" and horizontalOffset or groupGrowth == "LEFT" and -horizontalOffset or 0
 		local headerYOffset = groupGrowth == "UP" and verticalOffset or groupGrowth == "DOWN" and -verticalOffset or 0
 
-		for unitIndex = 1, UUF.MAX_RAID_FRAMES_PER_GROUP do
-			local raidIndex = ((groupIndex - 1) * UUF.MAX_RAID_FRAMES_PER_GROUP) + unitIndex
-			local raidFrame = UUF.RAID_TEST_FRAMES[raidIndex]
+		for unitIndex = 1, RUF.MAX_RAID_FRAMES_PER_GROUP do
+			local raidIndex = ((groupIndex - 1) * RUF.MAX_RAID_FRAMES_PER_GROUP) + unitIndex
+			local raidFrame = RUF.RAID_TEST_FRAMES[raidIndex]
 			if raidFrame then
 				raidFrame:ClearAllPoints()
 				raidFrame:SetSize(Frame.Width, Frame.Height)
@@ -379,7 +379,7 @@ function UUF:LayoutRaidTestFrames()
 					local unitOffset = (unitIndex - 1) * (Frame[(unitGrowth == "UP" or unitGrowth == "DOWN") and "Height" or "Width"] + spacing)
 					local xOffset = headerXOffset + (unitGrowth == "RIGHT" and -unitOffset or unitGrowth == "LEFT" and unitOffset or 0)
 					local yOffset = headerYOffset + (unitGrowth == "UP" and -unitOffset or unitGrowth == "DOWN" and unitOffset or 0)
-					raidFrame:SetPoint(anchor, UUF.RAID_CONTAINER, anchor, xOffset, yOffset)
+					raidFrame:SetPoint(anchor, RUF.RAID_CONTAINER, anchor, xOffset, yOffset)
 					raidFrame:Show()
 				else
 					raidFrame:Hide()
@@ -389,85 +389,85 @@ function UUF:LayoutRaidTestFrames()
 	end
 end
 
-function UUF:EnableTestGroupFrames(unit)
+function RUF:EnableTestGroupFrames(unit)
 	if InCombatLockdown() then return end
 	if unit == "party" then
-		local UnitDB = UUF.db.profile.Units.party
-		if not UnitDB or not UnitDB.Enabled then if UUF.PARTY_CONTAINER then UUF.PARTY_CONTAINER:Hide() end return end
-		if not UUF.PARTY_CONTAINER then UUF:SpawnGroupFrame("party") end
-		UnregisterStateDriver(UUF.PARTY_CONTAINER, "visibility")
-		UUF.PARTY_CONTAINER:Show()
-		UUF:UpdateTestEnvironment("party", "all")
+		local UnitDB = RUF.db.profile.Units.party
+		if not UnitDB or not UnitDB.Enabled then if RUF.PARTY_CONTAINER then RUF.PARTY_CONTAINER:Hide() end return end
+		if not RUF.PARTY_CONTAINER then RUF:SpawnGroupFrame("party") end
+		UnregisterStateDriver(RUF.PARTY_CONTAINER, "visibility")
+		RUF.PARTY_CONTAINER:Show()
+		RUF:UpdateTestEnvironment("party", "all")
 	elseif unit == "raid" then
-		local UnitDB = UUF.db.profile.Units.raid
-		if not UnitDB or not UnitDB.Enabled then if UUF.RAID_CONTAINER then UUF.RAID_CONTAINER:Hide() end return end
-		if not UUF.RAID_CONTAINER then UUF:SpawnGroupFrame("raid") end
-		UUF:CreateRaidTestFrames()
-		for _, header in ipairs(UUF.RAID_HEADERS) do header:Hide() end
-		if UUF.AUGMENTATION_RAID_CONTAINER then UUF.AUGMENTATION_RAID_CONTAINER:Hide() end
-		UUF:UpdateTestEnvironment("raid", "all")
-		UUF.RAID_CONTAINER:Show()
+		local UnitDB = RUF.db.profile.Units.raid
+		if not UnitDB or not UnitDB.Enabled then if RUF.RAID_CONTAINER then RUF.RAID_CONTAINER:Hide() end return end
+		if not RUF.RAID_CONTAINER then RUF:SpawnGroupFrame("raid") end
+		RUF:CreateRaidTestFrames()
+		for _, header in ipairs(RUF.RAID_HEADERS) do header:Hide() end
+		if RUF.AUGMENTATION_RAID_CONTAINER then RUF.AUGMENTATION_RAID_CONTAINER:Hide() end
+		RUF:UpdateTestEnvironment("raid", "all")
+		RUF.RAID_CONTAINER:Show()
 	end
 end
 
 local function UpdatePartyTestEnvironment(element)
 	if InCombatLockdown() then return end
-	if not UUF.PARTY_TEST_MODE then
+	if not RUF.PARTY_TEST_MODE then
 		if element ~= "all" then return end
-		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then RestoreGroupFrame(UUF["PARTY" .. i], "party" .. i) end end
-		if UUF.PARTYPLAYER then RestoreGroupFrame(UUF.PARTYPLAYER, "partyplayer") end
-		UUF:UpdateGroupFrame("party")
-		UUF:UpdateUnitTags("party")
+		for i = 1, RUF.MAX_PARTY_FRAMES do if RUF["PARTY" .. i] then RestoreGroupFrame(RUF["PARTY" .. i], "party" .. i) end end
+		if RUF.PARTYPLAYER then RestoreGroupFrame(RUF.PARTYPLAYER, "partyplayer") end
+		RUF:UpdateGroupFrame("party")
+		RUF:UpdateUnitTags("party")
 		return
 	end
-	local UnitDB = UUF.db.profile.Units.party
-	for i = 1, UUF.MAX_PARTY_FRAMES do
-		if UUF["PARTY" .. i] then ApplyTestGroupFrame(UUF["PARTY" .. i], "party" .. i, i + (UnitDB.Frame.ShowPlayer and 1 or 0), "Party" .. (i + (UnitDB.Frame.ShowPlayer and 1 or 0)), element) end
+	local UnitDB = RUF.db.profile.Units.party
+	for i = 1, RUF.MAX_PARTY_FRAMES do
+		if RUF["PARTY" .. i] then ApplyTestGroupFrame(RUF["PARTY" .. i], "party" .. i, i + (UnitDB.Frame.ShowPlayer and 1 or 0), "Party" .. (i + (UnitDB.Frame.ShowPlayer and 1 or 0)), element) end
 	end
-	if UUF.PARTYPLAYER then ApplyTestGroupFrame(UUF.PARTYPLAYER, "partyplayer", 1, "Party1", element) end
-	if element == "all" or element == "Frame" or element == "HealthBar" then UUF:LayoutGroupFrames("party") end
+	if RUF.PARTYPLAYER then ApplyTestGroupFrame(RUF.PARTYPLAYER, "partyplayer", 1, "Party1", element) end
+	if element == "all" or element == "Frame" or element == "HealthBar" then RUF:LayoutGroupFrames("party") end
 end
 
 local function UpdateRaidTestEnvironment(element)
 	if InCombatLockdown() then return end
-	if not UUF.RAID_TEST_MODE then
+	if not RUF.RAID_TEST_MODE then
 		if element ~= "all" then return end
-		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do
+		for i, raidFrame in ipairs(RUF.RAID_TEST_FRAMES) do
 			raidFrame:SetAttribute("unit", "raid" .. i)
 			UnregisterUnitWatch(raidFrame)
-			local auraTestMode = UUF.AURA_TEST_MODE
-			UUF.AURA_TEST_MODE = false
-			UUF:CreateTestAuras(raidFrame, "raid" .. i)
-			UUF.AURA_TEST_MODE = auraTestMode
+			local auraTestMode = RUF.AURA_TEST_MODE
+			RUF.AURA_TEST_MODE = false
+			RUF:CreateTestAuras(raidFrame, "raid" .. i)
+			RUF.AURA_TEST_MODE = auraTestMode
 			raidFrame:Hide()
 		end
-		for _, header in ipairs(UUF.RAID_HEADERS) do header:Show() end
-		UUF:UpdateGroupFrame("raid")
-		UUF:UpdateAugmentationRaidFrames()
-		UUF:UpdateUnitTags("raid")
+		for _, header in ipairs(RUF.RAID_HEADERS) do header:Show() end
+		RUF:UpdateGroupFrame("raid")
+		RUF:UpdateAugmentationRaidFrames()
+		RUF:UpdateUnitTags("raid")
 		return
 	end
-	for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do ApplyTestGroupFrame(raidFrame, "raid" .. i, i, "Raid " .. i, element) end
-	if element == "all" or element == "Frame" or element == "HealthBar" then UUF:LayoutRaidTestFrames() end
+	for i, raidFrame in ipairs(RUF.RAID_TEST_FRAMES) do ApplyTestGroupFrame(raidFrame, "raid" .. i, i, "Raid " .. i, element) end
+	if element == "all" or element == "Frame" or element == "HealthBar" then RUF:LayoutRaidTestFrames() end
 end
 
 local function UpdateBossTestEnvironment(element)
 	if InCombatLockdown() then return end
 	local updateAll = not element or element == "all"
-	local BossDB = UUF.db.profile.Units.boss
+	local BossDB = RUF.db.profile.Units.boss
 	local BuffsDB = BossDB.Auras.Buffs
 	local DebuffsDB = BossDB.Auras.Debuffs
 	local CustomDB = BossDB.Auras.Custom
 	local TagsDB = BossDB.Tags
 	local HealPredictionDB = BossDB.HealPrediction
-	if UUF.BOSS_TEST_MODE then
-		for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
-			if element == "Portrait" then UUF:UpdateUnitPortrait(BossFrame, "boss" .. i) end
-			if element == "Frame" or element == "CastBar" then UUF:UpdateUnitCastBar(BossFrame, "boss" .. i) end
+	if RUF.BOSS_TEST_MODE then
+		for i, BossFrame in ipairs(RUF.BOSS_FRAMES) do
+			if element == "Portrait" then RUF:UpdateUnitPortrait(BossFrame, "boss" .. i) end
+			if element == "Frame" or element == "CastBar" then RUF:UpdateUnitCastBar(BossFrame, "boss" .. i) end
 			if element == "Indicators" then
-				UUF:UpdateUnitRaidTargetMarker(BossFrame, "boss" .. i)
-				UUF:UpdateUnitMouseoverIndicator(BossFrame, "boss" .. i)
-				UUF:UpdateUnitTargetGlowIndicator(BossFrame, "boss" .. i)
+				RUF:UpdateUnitRaidTargetMarker(BossFrame, "boss" .. i)
+				RUF:UpdateUnitMouseoverIndicator(BossFrame, "boss" .. i)
+				RUF:UpdateUnitTargetGlowIndicator(BossFrame, "boss" .. i)
 			end
 			if updateAll then
 				BossFrame:SetAttribute("unit", nil)
@@ -479,7 +479,7 @@ local function UpdateBossTestEnvironment(element)
 			if updateAll or element == "Frame" then BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata) end
 
 			if (updateAll or element == "Frame" or element == "HealthBar") and BossFrame.Health then
-				if not updateAll then UUF:UpdateUnitHealthBar(BossFrame, "boss" .. i) end
+				if not updateAll then RUF:UpdateUnitHealthBar(BossFrame, "boss" .. i) end
 				local HealthBarDB = BossDB.HealthBar
 				BossFrame.Health:SetMinMaxValues(0, TestData[i].maxHealth)
 				BossFrame.Health:SetValue(TestData[i].health)
@@ -490,7 +490,7 @@ local function UpdateBossTestEnvironment(element)
 			end
 
 			if (updateAll or element == "Frame" or element == "HealPrediction") and BossFrame.HealthPrediction then
-				UUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
+				RUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
 				local maxHealth = TestData[i].maxHealth
 				SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, TestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
 				SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, TestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
@@ -514,7 +514,7 @@ local function UpdateBossTestEnvironment(element)
 			end
 
 			if updateAll or element == "Frame" or element == "PowerBar" then
-				if not updateAll then UUF:UpdateUnitPowerBar(BossFrame, "boss" .. i) end
+				if not updateAll then RUF:UpdateUnitPowerBar(BossFrame, "boss" .. i) end
 				if BossFrame.Power then
 					BossFrame.Power:SetMinMaxValues(0, TestData[i].maxPower)
 					BossFrame.Power:SetValue(TestData[i].power)
@@ -540,7 +540,7 @@ local function UpdateBossTestEnvironment(element)
 					BossFrame.Castbar.Time:SetText("2.5")
 					BossFrame.Castbar:SetMinMaxValues(0, 1000)
 					BossFrame.Castbar:SetValue(500)
-					local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
+					local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and RUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
 					BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
 					if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
 				else
@@ -550,13 +550,13 @@ local function UpdateBossTestEnvironment(element)
 			end
 
 			if updateAll or element == "Auras" then
-				local auraTestMode = UUF.AURA_TEST_MODE
+				local auraTestMode = RUF.AURA_TEST_MODE
 				if not updateAll then
-					UUF.AURA_TEST_MODE = false
-					UUF:UpdateUnitAuras(BossFrame, "boss" .. i)
+					RUF.AURA_TEST_MODE = false
+					RUF:UpdateUnitAuras(BossFrame, "boss" .. i)
 				end
-				UUF.AURA_TEST_MODE = auraTestMode
-				UUF:CreateTestAuras(BossFrame, "boss" .. i)
+				RUF.AURA_TEST_MODE = auraTestMode
+				RUF:CreateTestAuras(BossFrame, "boss" .. i)
 			end
 
 			if (updateAll or element == "Indicators") and BossFrame.TargetIndicator then
@@ -567,7 +567,7 @@ local function UpdateBossTestEnvironment(element)
 					BossFrame.Container:SetBackdropBorderColor(TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[1] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[2] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[3] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and (TargetIndicatorDB.Colour[4] or 1) or 1)
 				else
 					if not BossFrame.TargetIndicatorFrame then
-						BossFrame.TargetIndicatorFrame = CreateFrame("Frame", UUF:FetchFrameName("boss" .. i).."_TargetIndicator", BossFrame.Container, "BackdropTemplate")
+						BossFrame.TargetIndicatorFrame = CreateFrame("Frame", RUF:FetchFrameName("boss" .. i).."_TargetIndicator", BossFrame.Container, "BackdropTemplate")
 						BossFrame.TargetIndicatorFrame:SetFrameLevel(BossFrame.Container:GetFrameLevel() + 3)
 					end
 					BossFrame.TargetIndicator = BossFrame.TargetIndicatorFrame
@@ -592,9 +592,9 @@ local function UpdateBossTestEnvironment(element)
 				for tagIndex, tagName in ipairs(TestTagOrder) do ApplyTestTag(BossFrame.Tags[tagName], BossFrame, TagsDB[tagName], tagIndex == 1 and "Boss" .. i or "Tag " .. tagIndex) end
 			end
 		end
-		if updateAll or element == "Frame" or element == "HealthBar" then UUF:LayoutBossFrames() end
+		if updateAll or element == "Frame" or element == "HealthBar" then RUF:LayoutBossFrames() end
 	else
-		for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+		for i, BossFrame in ipairs(RUF.BOSS_FRAMES) do
 			BossFrame:SetAttribute("unit", "boss" .. i)
 			RegisterUnitWatch(BossFrame)
 			if BossFrame.Castbar then
@@ -632,7 +632,7 @@ local function UpdateBossTestEnvironment(element)
 	end
 end
 
-function UUF:UpdateTestEnvironment(unit, element)
+function RUF:UpdateTestEnvironment(unit, element)
 	if unit == "party" then
 		UpdatePartyTestEnvironment(element)
 	elseif unit == "raid" then

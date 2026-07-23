@@ -1,7 +1,7 @@
-local _, UUF = ...
+local _, RUF = ...
 local Serialize = LibStub:GetLibrary("AceSerializer-3.0")
 local Compress = LibStub:GetLibrary("LibDeflate")
-local UUF_IMPORT_PREFIX = "!UUF_"
+local RUF_IMPORT_PREFIX = "!RUF_"
 
 local function MergeInto(target, source)
     for key, value in pairs(source) do
@@ -78,15 +78,15 @@ local function BuildEncodedProfile(profileData)
     local serializedInfo = Serialize:Serialize(profileData)
     local compressedInfo = Compress:CompressDeflate(serializedInfo)
     local encodedInfo = Compress:EncodeForPrint(compressedInfo)
-    return UUF_IMPORT_PREFIX .. encodedInfo
+    return RUF_IMPORT_PREFIX .. encodedInfo
 end
 
 local function ParseEncodedProfile(encodedInfo)
-    if type(encodedInfo) ~= "string" or encodedInfo:sub(1, #UUF_IMPORT_PREFIX) ~= UUF_IMPORT_PREFIX then
+    if type(encodedInfo) ~= "string" or encodedInfo:sub(1, #RUF_IMPORT_PREFIX) ~= RUF_IMPORT_PREFIX then
         return nil
     end
 
-    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#UUF_IMPORT_PREFIX + 1))
+    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#RUF_IMPORT_PREFIX + 1))
     if not decodedInfo then
         return nil
     end
@@ -109,40 +109,40 @@ local function ApplyImportedProfileToCurrent(profile)
         return
     end
 
-    MergeInto(UUF.db.profile, profile)
+    MergeInto(RUF.db.profile, profile)
 
-    UUFG.RefreshProfiles()
-    local general = UUF.db.profile and UUF.db.profile.General
+    RUFG.RefreshProfiles()
+    local general = RUF.db.profile and RUF.db.profile.General
     local uiScale = general and general.UIScale
     UIParent:SetScale((uiScale and uiScale.Scale) or 1)
-    UUF:UpdateAllUnitFrames()
+    RUF:UpdateAllUnitFrames()
 end
 
-function UUF:ExportSavedVariables()
-    local profileData = { profile = UUF.db.profile, }
+function RUF:ExportSavedVariables()
+    local profileData = { profile = RUF.db.profile, }
     return BuildEncodedProfile(profileData)
 end
 
-function UUF:ExportDefaultsTable()
+function RUF:ExportDefaultsTable()
     return "local Defaults = " .. SerializeLuaValue({
-        global = UUF.db.global,
-        profile = UUF.db.profile,
+        global = RUF.db.global,
+        profile = RUF.db.profile,
     }, 0, {})
 end
 
-function UUF:ImportSavedVariables(encodedInfo, profileName)
+function RUF:ImportSavedVariables(encodedInfo, profileName)
     local data = ParseEncodedProfile(encodedInfo)
     if not data then
-        UUF:PrettyPrint("Invalid Import String.")
+        RUF:PrettyPrint("Invalid Import String.")
         return
     end
 
     if profileName then
-        UUF.db:SetProfile(profileName)
+        RUF.db:SetProfile(profileName)
         ApplyImportedProfileToCurrent(data.profile)
     else
-        StaticPopupDialogs["UUF_IMPORT_NEW_PROFILE"] = {
-            text = UUF.ADDON_NAME.." - ".."Profile Name?",
+        StaticPopupDialogs["RUF_IMPORT_NEW_PROFILE"] = {
+            text = RUF.ADDON_NAME.." - ".."Profile Name?",
             button1 = "Import",
             button2 = "Cancel",
             hasEditBox = true,
@@ -154,36 +154,36 @@ function UUF:ImportSavedVariables(encodedInfo, profileName)
                 local editBox = self.EditBox
                 local newProfileName = editBox:GetText() or string.format("Imported_%s-%s-%s", date("%d"), date("%m"), date("%Y"))
                 if not newProfileName or newProfileName == "" then
-                    UUF:PrettyPrint("Please enter a valid profile name.")
+                    RUF:PrettyPrint("Please enter a valid profile name.")
                     return
                 end
 
-                UUF.db:SetProfile(newProfileName)
+                RUF.db:SetProfile(newProfileName)
                 ApplyImportedProfileToCurrent(data.profile)
             end,
         }
-        StaticPopup_Show("UUF_IMPORT_NEW_PROFILE")
+        StaticPopup_Show("RUF_IMPORT_NEW_PROFILE")
     end
 
 end
 
-function UUFG:ExportUUF(profileKey)
-    local profile = UUF.db.profiles[profileKey]
+function RUFG:ExportRUF(profileKey)
+    local profile = RUF.db.profiles[profileKey]
     if not profile then return nil end
 
     local profileData = { profile = profile, }
     return BuildEncodedProfile(profileData)
 end
 
-function UUFG:ImportUUF(importString, profileKey)
+function RUFG:ImportRUF(importString, profileKey)
     local profileData = ParseEncodedProfile(importString)
     if not profileData then
-        UUF:PrettyPrint("Invalid Import String.")
+        RUF:PrettyPrint("Invalid Import String.")
         return
     end
 
     if type(profileData.profile) == "table" then
-        UUF.db.profiles[profileKey] = profileData.profile
-        UUF.db:SetProfile(profileKey)
+        RUF.db.profiles[profileKey] = profileData.profile
+        RUF.db:SetProfile(profileKey)
     end
 end

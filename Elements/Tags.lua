@@ -1,12 +1,12 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local function CreateUnitTag(unitFrame, unit, tagDB)
-	local GeneralDB = UUF.db.profile.General
-	local TagDB = UUF:GetUnitDB(unitFrame, unit).Tags[tagDB]
+	local GeneralDB = RUF.db.profile.General
+	local TagDB = RUF:GetUnitDB(unitFrame, unit).Tags[tagDB]
 
 	if not unitFrame.Tags[tagDB] then
-		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(UUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
-		unitFrame.Tags[tagDB]:SetFont(UUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
+		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(RUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
+		unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
 		unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
 		if GeneralDB.Fonts.Shadow.Enabled then
 			unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
@@ -16,7 +16,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 			unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
 		end
 		unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-		unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+		unitFrame.Tags[tagDB]:SetJustifyH(RUF:SetJustification(TagDB.Layout[1]))
 		if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
 			unitFrame.Tags[tagDB]:SetJustifyV("TOP")
 		elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
@@ -29,19 +29,19 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 		else
 			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
 		end
-		unitFrame.Tags[tagDB].UUFTagString = TagDB.Tag
-		unitFrame.Tags[tagDB].UUFTagUnit = unit
+		unitFrame.Tags[tagDB].RUFTagString = TagDB.Tag
+		unitFrame.Tags[tagDB].RUFTagUnit = unit
 	end
 end
 
-function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
-	local GeneralDB = UUF.db.profile.General
-	local TagDB = UUF:GetUnitDB(unitFrame, unit).Tags[tagDB]
+function RUF:UpdateUnitTag(unitFrame, unit, tagDB)
+	local GeneralDB = RUF.db.profile.General
+	local TagDB = RUF:GetUnitDB(unitFrame, unit).Tags[tagDB]
 
 	if not unitFrame.Tags[tagDB] then CreateUnitTag(unitFrame, unit, tagDB) end
 	if not unitFrame.Tags[tagDB] then return end
 
-	unitFrame.Tags[tagDB]:SetFont(UUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
+	unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
 	unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
 	if GeneralDB.Fonts.Shadow.Enabled then
 		unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
@@ -52,7 +52,7 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
 	end
 	unitFrame.Tags[tagDB]:ClearAllPoints()
 	unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-	unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+	unitFrame.Tags[tagDB]:SetJustifyH(RUF:SetJustification(TagDB.Layout[1]))
 	if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
 		unitFrame.Tags[tagDB]:SetJustifyV("TOP")
 	elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
@@ -60,52 +60,52 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
 	else
 		unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
 	end
-	if unitFrame.Tags[tagDB].UUFTagString ~= TagDB.Tag or unitFrame.Tags[tagDB].UUFTagUnit ~= unit then
+	if unitFrame.Tags[tagDB].RUFTagString ~= TagDB.Tag or unitFrame.Tags[tagDB].RUFTagUnit ~= unit then
 		unitFrame.Tags[tagDB].extraUnits = nil
 		if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
 			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
 		else
 			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
 		end
-		unitFrame.Tags[tagDB].UUFTagString = TagDB.Tag
-		unitFrame.Tags[tagDB].UUFTagUnit = unit
+		unitFrame.Tags[tagDB].RUFTagString = TagDB.Tag
+		unitFrame.Tags[tagDB].RUFTagUnit = unit
 	end
 	unitFrame.Tags[tagDB]:UpdateTag()
 end
 
-function UUF:CreateUnitTags(unitFrame, unit)
+function RUF:CreateUnitTags(unitFrame, unit)
     unitFrame.Tags = unitFrame.Tags or {}
-    for tagName, _ in pairs(UUF:GetUnitDB(unitFrame, unit).Tags) do
+    for tagName, _ in pairs(RUF:GetUnitDB(unitFrame, unit).Tags) do
         CreateUnitTag(unitFrame, unit, tagName)
     end
 end
 
-function UUF:UpdateUnitTags(unit, tagName)
+function RUF:UpdateUnitTags(unit, tagName)
 	if not unit then return end
-	local UnitDB = UUF:GetUnitDB(nil, unit)
+	local UnitDB = RUF:GetUnitDB(nil, unit)
 	if not UnitDB or not UnitDB.Tags then return end
-	UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
-	UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
+	RUF.SEPARATOR = RUF.db.profile.General.Separator or "||"
+	RUF.TOT_SEPARATOR = RUF.db.profile.General.ToTSeparator or "»"
 
 	local function UpdateFrameTags(unitFrame, frameUnit)
 		if not unitFrame then return end
 		if tagName then
-			UUF:UpdateUnitTag(unitFrame, frameUnit, tagName)
+			RUF:UpdateUnitTag(unitFrame, frameUnit, tagName)
 		else
-			for configuredTag in pairs(UnitDB.Tags) do UUF:UpdateUnitTag(unitFrame, frameUnit, configuredTag) end
+			for configuredTag in pairs(UnitDB.Tags) do RUF:UpdateUnitTag(unitFrame, frameUnit, configuredTag) end
 		end
 	end
 
 	if unit == "boss" then
-		for i = 1, UUF.MAX_BOSS_FRAMES do UpdateFrameTags(UUF["BOSS" .. i], "boss" .. i) end
+		for i = 1, RUF.MAX_BOSS_FRAMES do UpdateFrameTags(RUF["BOSS" .. i], "boss" .. i) end
 	elseif unit == "party" then
-		for i = 1, UUF.MAX_PARTY_FRAMES do UpdateFrameTags(UUF["PARTY" .. i], "party" .. i) end
-		UpdateFrameTags(UUF.PARTYPLAYER, "partyplayer")
+		for i = 1, RUF.MAX_PARTY_FRAMES do UpdateFrameTags(RUF["PARTY" .. i], "party" .. i) end
+		UpdateFrameTags(RUF.PARTYPLAYER, "partyplayer")
 	elseif unit == "raid" then
-		UUF:ForEachRaidFrame(UpdateFrameTags, true, UUF.RAID_TEST_MODE)
+		RUF:ForEachRaidFrame(UpdateFrameTags, true, RUF.RAID_TEST_MODE)
 	elseif unit == "augmentation" then
-		UUF:ForEachAugmentationRaidFrame(UpdateFrameTags, false)
+		RUF:ForEachAugmentationRaidFrame(UpdateFrameTags, false)
 	else
-		UpdateFrameTags(UUF[unit:upper()], unit)
+		UpdateFrameTags(RUF[unit:upper()], unit)
 	end
 end

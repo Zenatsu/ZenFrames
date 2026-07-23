@@ -1,4 +1,4 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local ALTERNATIVE_POWER_BAR_EVENTS = {
     "UNIT_POWER_UPDATE",
@@ -16,27 +16,27 @@ local function UpdateUnitPowerBarValues(unitFrame, event, unit)
 end
 
 
-function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
-    local UUFDB = UUF.db.profile
-    local AlternativePowerBarDB = UUFDB.Units["player"].AlternativePowerBar
+function RUF:CreateUnitAlternativePowerBar(unitFrame, unit)
+    local RUFDB = RUF.db.profile
+    local AlternativePowerBarDB = RUFDB.Units["player"].AlternativePowerBar
     local unitContainer = unitFrame.Container
 
-    local AlternativePowerBar = CreateFrame("Frame", UUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
+    local AlternativePowerBar = CreateFrame("Frame", RUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
     AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar:SetBackdrop(UUF.BACKDROP)
+    AlternativePowerBar:SetBackdrop(RUF.BACKDROP)
     AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
     AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
     AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
 
-    AlternativePowerBar.Status = CreateFrame("StatusBar", UUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
+    AlternativePowerBar.Status = CreateFrame("StatusBar", RUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
     AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
     AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar.Status:SetStatusBarTexture(UUF.Media.Foreground)
+    AlternativePowerBar.Status:SetStatusBarTexture(RUF.Media.Foreground)
     AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
     if AlternativePowerBarDB.ColourByType then
-        local powerColour = UUFDB.General.Colours.Power[0]
+        local powerColour = RUFDB.General.Colours.Power[0]
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
@@ -49,7 +49,7 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
         AlternativePowerBar.Status:SetReverseFill(false)
     end
 
-    if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
+    if AlternativePowerBarDB.Enabled and RUF:RequiresAlternativePowerBar() then
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
         for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
@@ -66,9 +66,9 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     return AlternativePowerBar
 end
 
-function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
-    local UUFDB = UUF.db.profile
-    local AlternativePowerBarDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].AlternativePowerBar
+function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
+    local RUFDB = RUF.db.profile
+    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
     local AlternativePowerBar = unitFrame.AlternativePowerBar
     if not AlternativePowerBar then return end
 
@@ -82,7 +82,7 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     if AlternativePowerBarDB.ColourByType then
-        local powerColour = UUFDB.General.Colours.Power[0]
+        local powerColour = RUFDB.General.Colours.Power[0]
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
@@ -94,7 +94,7 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         AlternativePowerBar.Status:SetReverseFill(false)
     end
 
-    if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
+    if AlternativePowerBarDB.Enabled and RUF:RequiresAlternativePowerBar() then
         AlternativePowerBar:Show()
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")

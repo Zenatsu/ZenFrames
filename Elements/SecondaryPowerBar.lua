@@ -1,4 +1,4 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local playerClass = UnitClassBase("player")
 local isDeathKnight = playerClass == "DEATHKNIGHT"
@@ -12,8 +12,8 @@ secondaryPowerEvents:SetScript("OnEvent", function(_, event, unit)
     if event == "PLAYER_SPECIALIZATION_CHANGED" and unit ~= "player" then return end
 
     C_Timer.After(0.1, function()
-        if UUF.PLAYER then
-            UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, "player")
+        if RUF.PLAYER then
+            RUF:UpdateUnitSecondaryPowerBar(RUF.PLAYER, "player")
         end
     end)
 end)
@@ -37,12 +37,12 @@ local function DisableSecondaryPowerElement(unitFrame, elementName, secondaryPow
     unitFrame[elementName] = nil
 end
 
-function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
-    local unitDB = UUF:GetUnitDB(unitFrame, unit)
+function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+    local unitDB = RUF:GetUnitDB(unitFrame, unit)
     local secondaryPowerDB = unitDB.SecondaryPowerBar
     if not secondaryPowerDB.Enabled then return end
 
-    local powerType = UUF:GetSecondaryPowerType()
+    local powerType = RUF:GetSecondaryPowerType()
     if not isDeathKnight and not powerType then return end
 
     local maxPower = isDeathKnight and 6 or UnitPowerMax("player", powerType)
@@ -51,17 +51,17 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     local secondaryPower = {Ticks = {}}
 
     secondaryPower.ContainerBackground = unitFrame.Container:CreateTexture(nil, "BACKGROUND")
-    secondaryPower.ContainerBackground:SetTexture(UUF.Media.Background)
+    secondaryPower.ContainerBackground:SetTexture(RUF.Media.Background)
 
     for index = 1, maxPower do
         local bar = CreateFrame("StatusBar", nil, unitFrame.Container)
-        bar:SetStatusBarTexture(UUF.Media.Foreground)
+        bar:SetStatusBarTexture(RUF.Media.Foreground)
         bar:SetMinMaxValues(0, 1)
         bar:Hide()
 
         bar.Background = bar:CreateTexture(nil, "BACKGROUND")
         bar.Background:SetAllPoints(bar)
-        bar.Background:SetTexture(UUF.Media.Background)
+        bar.Background:SetTexture(RUF.Media.Background)
 
         secondaryPower[index] = bar
     end
@@ -108,13 +108,13 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     return secondaryPower
 end
 
-function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
+function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     if not unitFrame then return end
 
-    local unitDB = UUF:GetUnitDB(unitFrame, unit)
+    local unitDB = RUF:GetUnitDB(unitFrame, unit)
     local frameDB = unitDB.Frame
     local secondaryPowerDB = unitDB.SecondaryPowerBar
-    local powerType = UUF:GetSecondaryPowerType()
+    local powerType = RUF:GetSecondaryPowerType()
     local elementName = isDeathKnight and "Runes" or "ClassPower"
 
     if not secondaryPowerDB.Enabled or (not isDeathKnight and not powerType) then
@@ -124,9 +124,9 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         end
 
         if unitFrame.Power then
-            UUF:UpdateUnitPowerBar(unitFrame, unit)
+            RUF:UpdateUnitPowerBar(unitFrame, unit)
         else
-            UUF:UpdateHealthBarLayout(unitFrame, unit)
+            RUF:UpdateHealthBarLayout(unitFrame, unit)
         end
         return
     end
@@ -141,7 +141,7 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     if not secondaryPower then
-        secondaryPower = UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+        secondaryPower = RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         if not secondaryPower then return end
 
         if not unitFrame:IsElementEnabled(elementName) then
@@ -151,15 +151,15 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
 
     local totalWidth = frameDB.Width - 2
     local segmentWidth = totalWidth / maxPower
-	local position = UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
-    local stackOffset = UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+	local position = RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
+    local stackOffset = RUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
     local anchorPoint = position == "TOP" and "TOPLEFT" or "BOTTOMLEFT"
     local anchorY = position == "TOP" and (-1 - stackOffset) or (1 + stackOffset)
 
     secondaryPower.ContainerBackground:ClearAllPoints()
     secondaryPower.ContainerBackground:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
     secondaryPower.ContainerBackground:SetSize(totalWidth, secondaryPowerDB.Height)
-    secondaryPower.ContainerBackground:SetTexture(UUF.Media.Background)
+    secondaryPower.ContainerBackground:SetTexture(RUF.Media.Background)
     secondaryPower.ContainerBackground:SetVertexColor(
         secondaryPowerDB.Background[1],
         secondaryPowerDB.Background[2],
@@ -187,8 +187,8 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         bar:ClearAllPoints()
         bar:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + ((index - 1) * segmentWidth), anchorY)
         bar:SetSize(segmentWidth, secondaryPowerDB.Height)
-        bar:SetStatusBarTexture(UUF.Media.Foreground)
-        bar.Background:SetTexture(UUF.Media.Background)
+        bar:SetStatusBarTexture(RUF.Media.Foreground)
+        bar.Background:SetTexture(RUF.Media.Background)
         bar.Background:SetVertexColor(
             secondaryPowerDB.Background[1],
             secondaryPowerDB.Background[2],
@@ -216,8 +216,8 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     if unitFrame.Power then
-        UUF:UpdateUnitPowerBar(unitFrame, unit)
+        RUF:UpdateUnitPowerBar(unitFrame, unit)
     else
-        UUF:UpdateHealthBarLayout(unitFrame, unit)
+        RUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 end

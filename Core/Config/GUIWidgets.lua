@@ -1,6 +1,6 @@
-local _, UUF = ...
-local AG = UUF.AG
-UUF.GUIWidgets = {}
+local _, RUF = ...
+local AG = RUF.AG
+RUF.GUIWidgets = {}
 
 local function DeepDisable(widget, disabled, skipWidget)
     if widget == skipWidget then return end
@@ -12,11 +12,11 @@ local function DeepDisable(widget, disabled, skipWidget)
     end
 end
 
-UUF.GUIWidgets.DeepDisable = DeepDisable
+RUF.GUIWidgets.DeepDisable = DeepDisable
 
 local function CreateInformationTag(containerParent, labelDescription, textJustification)
     local informationLabel = AG:Create("Label")
-    informationLabel:SetText(UUF.INFOBUTTON .. labelDescription)
+    informationLabel:SetText(RUF.INFOBUTTON .. labelDescription)
     informationLabel:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
     informationLabel:SetFullWidth(true)
     informationLabel:SetJustifyH(textJustification or "CENTER")
@@ -26,7 +26,7 @@ local function CreateInformationTag(containerParent, labelDescription, textJusti
     return informationLabel
 end
 
-UUF.GUIWidgets.CreateInformationTag = CreateInformationTag
+RUF.GUIWidgets.CreateInformationTag = CreateInformationTag
 
 local SCROLL_GUTTER = 3
 
@@ -52,7 +52,7 @@ local function SetScrollFrameWidth(widget, width)
 end
 
 local function StyleScrollFrame(widget)
-	if widget.UUFMinimalScrollBar then return end
+	if widget.RUFMinimalScrollBar then return end
 	local scrollBar = widget.scrollbar
 	scrollBar.ScrollUpButton:Hide()
 	scrollBar.ScrollDownButton:Hide()
@@ -69,7 +69,7 @@ local function StyleScrollFrame(widget)
 	local scrollTrack = scrollBar:CreateTexture(nil, "BACKGROUND")
 	scrollTrack:SetAllPoints()
 	scrollTrack:SetColorTexture(1, 1, 1, 0.12)
-	widget.UUFMinimalScrollBar = true
+	widget.RUFMinimalScrollBar = true
 end
 
 local function CreateScrollFrame(containerParent)
@@ -83,7 +83,7 @@ local function CreateScrollFrame(containerParent)
     return scrollFrame
 end
 
-UUF.GUIWidgets.CreateScrollFrame = CreateScrollFrame
+RUF.GUIWidgets.CreateScrollFrame = CreateScrollFrame
 
 local function CreateInlineGroup(containerParent, containerTitle)
     local inlineGroup = AG:Create("InlineGroup")
@@ -94,7 +94,7 @@ local function CreateInlineGroup(containerParent, containerTitle)
     return inlineGroup
 end
 
-UUF.GUIWidgets.CreateInlineGroup = CreateInlineGroup
+RUF.GUIWidgets.CreateInlineGroup = CreateInlineGroup
 
 local function CreateHeader(containerParent, headerTitle)
     local headingText = AG:Create("Heading")
@@ -104,10 +104,10 @@ local function CreateHeader(containerParent, headerTitle)
     return headingText
 end
 
-UUF.GUIWidgets.CreateHeader = CreateHeader
+RUF.GUIWidgets.CreateHeader = CreateHeader
 
 do
-	local Type, Version = "UUFAnchorButtons", 1
+	local Type, Version = "RUFAnchorButtons", 1
 	if not AG:GetWidgetVersion(Type) or AG:GetWidgetVersion(Type) < Version then
 		local buttonSize, frameWidth, frameHeight, titleHeight = 12, 130, 68, 16
 		local methods = {
@@ -117,7 +117,7 @@ do
 				self:SetDisabled(false)
 			end,
 			SetValue = function(self, value)
-				if not UUF.HEALER_HELPER_SLOT_NAMES[value] then return end
+				if not RUF.HEALER_HELPER_SLOT_NAMES[value] then return end
 				for point, button in pairs(self.buttons) do button.texture:SetVertexColor(point == value and 0.9 or 0.25, point == value and 0.9 or 0.25, point == value and 0.1 or 0.25, 1) end
 				self.value = value
 			end,
@@ -150,12 +150,12 @@ do
 			local background = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 			background:SetPoint("TOP", frame, "TOP", 0, -(titleHeight + 4))
 			background:SetSize(frameWidth, frameHeight)
-			background:SetBackdrop(UUF.BACKDROP)
+			background:SetBackdrop(RUF.BACKDROP)
 			background:SetBackdropColor(0.1, 0.1, 0.1, 0.55)
 			background:SetBackdropBorderColor(1, 1, 1, 0.45)
 
 			local buttons = {}
-			for _, slot in ipairs(UUF.HEALER_HELPER_SLOTS) do
+			for _, slot in ipairs(RUF.HEALER_HELPER_SLOTS) do
 				local button = CreateFrame("Button", nil, frame)
 				button:SetSize(buttonSize, buttonSize)
 				button:SetPoint("CENTER", background, slot.Key)

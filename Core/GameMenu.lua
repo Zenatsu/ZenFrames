@@ -1,9 +1,9 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local function PositionGameMenuButton()
-	if not GameMenuFrame or not GameMenuFrame.UUF then return end
+	if not GameMenuFrame or not GameMenuFrame.RUF then return end
 	local height = GameMenuFrame:GetHeight()
-	if GameMenuFrame.UUFAdjustedHeight == height then height = height - (GameMenuFrame.UUFAddedHeight or 0) end
+	if GameMenuFrame.RUFAdjustedHeight == height then height = height - (GameMenuFrame.RUFAddedHeight or 0) end
 
 	local anchorButton
 	for button in GameMenuFrame.buttonPool:EnumerateActive() do
@@ -23,43 +23,43 @@ local function PositionGameMenuButton()
 		end
 	end
 	if anchorButton then
-		GameMenuFrame.UUF:ClearAllPoints()
-		GameMenuFrame.UUF:SetPoint("TOPLEFT", anchorButton, "BOTTOMLEFT", 0, 0)
-		GameMenuFrame.UUF:SetText(UUF.ADDON_NAME)
-		GameMenuFrame.UUF:Show()
-		GameMenuFrame.UUFAddedHeight = GameMenuFrame.UUF:GetHeight() + 10
-		GameMenuFrame.UUFAdjustedHeight = height + GameMenuFrame.UUFAddedHeight
-		GameMenuFrame:SetHeight(GameMenuFrame.UUFAdjustedHeight)
+		GameMenuFrame.RUF:ClearAllPoints()
+		GameMenuFrame.RUF:SetPoint("TOPLEFT", anchorButton, "BOTTOMLEFT", 0, 0)
+		GameMenuFrame.RUF:SetText(RUF.ADDON_NAME)
+		GameMenuFrame.RUF:Show()
+		GameMenuFrame.RUFAddedHeight = GameMenuFrame.RUF:GetHeight() + 10
+		GameMenuFrame.RUFAdjustedHeight = height + GameMenuFrame.RUFAddedHeight
+		GameMenuFrame:SetHeight(GameMenuFrame.RUFAdjustedHeight)
 	else
-		GameMenuFrame.UUFAddedHeight = 0
-		GameMenuFrame.UUFAdjustedHeight = nil
-		GameMenuFrame.UUF:Hide()
+		GameMenuFrame.RUFAddedHeight = 0
+		GameMenuFrame.RUFAdjustedHeight = nil
+		GameMenuFrame.RUF:Hide()
 	end
 end
 
-local function OpenUUFConfig()
+local function OpenRUFConfig()
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
 	if not InCombatLockdown() then HideUIPanel(GameMenuFrame) end
-	UUF:CreateGUI()
+	RUF:CreateGUI()
 end
 
 local function SetupGameMenu()
-	if not GameMenuFrame or GameMenuFrame.UUF then return end
-	local button = CreateFrame("Button", "UUF_GameMenuButton", GameMenuFrame, "MainMenuFrameButtonTemplate")
+	if not GameMenuFrame or GameMenuFrame.RUF then return end
+	local button = CreateFrame("Button", "RUF_GameMenuButton", GameMenuFrame, "MainMenuFrameButtonTemplate")
 	button:SetSize(200, 35)
-	button:SetScript("OnClick", OpenUUFConfig)
-	GameMenuFrame.UUF = button
+	button:SetScript("OnClick", OpenRUFConfig)
+	GameMenuFrame.RUF = button
 	hooksecurefunc(GameMenuFrame, "Layout", PositionGameMenuButton)
 end
 
 SetupGameMenu()
 
-if not GameMenuFrame or not GameMenuFrame.UUF then
+if not GameMenuFrame or not GameMenuFrame.RUF then
 	local eventFrame = CreateFrame("Frame")
 	eventFrame:RegisterEvent("ADDON_LOADED")
 	eventFrame:SetScript("OnEvent", function(self, _, addonName)
 		if addonName ~= "Blizzard_GameMenu" then return end
 		SetupGameMenu()
-		if GameMenuFrame and GameMenuFrame.UUF then self:UnregisterAllEvents() end
+		if GameMenuFrame and GameMenuFrame.RUF then self:UnregisterAllEvents() end
 	end)
 end

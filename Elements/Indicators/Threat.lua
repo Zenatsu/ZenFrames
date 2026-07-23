@@ -1,7 +1,7 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreateThreatIndicatorOverlay(unitFrame, unit)
-	local ThreatIndicator = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
+function RUF:CreateThreatIndicatorOverlay(unitFrame, unit)
+	local ThreatIndicator = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
 	ThreatIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 4)
 	ThreatIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
 	ThreatIndicator:SetBackdropColor(0, 0, 0, 0)
@@ -22,11 +22,11 @@ function UUF:CreateThreatIndicatorOverlay(unitFrame, unit)
 	return ThreatIndicator
 end
 
-function UUF:CreateUnitThreatIndicator(unitFrame, unit)
-	local ThreatDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Threat
+function RUF:CreateUnitThreatIndicator(unitFrame, unit)
+	local ThreatDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Threat
 	if not ThreatDB then return end
 
-	local ThreatIndicator = UUF:CreateThreatIndicatorOverlay(unitFrame, unit)
+	local ThreatIndicator = RUF:CreateThreatIndicatorOverlay(unitFrame, unit)
 	if ThreatDB.Enabled then
 		unitFrame.ThreatIndicator = ThreatIndicator
 	else
@@ -36,12 +36,12 @@ function UUF:CreateUnitThreatIndicator(unitFrame, unit)
 	return ThreatIndicator
 end
 
-function UUF:UpdateUnitThreatIndicator(unitFrame, unit)
-	local ThreatDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Threat
+function RUF:UpdateUnitThreatIndicator(unitFrame, unit)
+	local ThreatDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Threat
 	if not ThreatDB then return end
 
 	if ThreatDB.Enabled then
-		unitFrame.ThreatIndicator = unitFrame.ThreatIndicator or UUF:CreateUnitThreatIndicator(unitFrame, unit)
+		unitFrame.ThreatIndicator = unitFrame.ThreatIndicator or RUF:CreateUnitThreatIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ThreatIndicator") then unitFrame:EnableElement("ThreatIndicator") end
 		if unitFrame.ThreatIndicator then unitFrame.ThreatIndicator:ForceUpdate() end
 	elseif unitFrame.ThreatIndicator then

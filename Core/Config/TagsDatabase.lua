@@ -1,22 +1,22 @@
-local _, UUF = ...
-local oUF = UUF.oUF
+local _, RUF = ...
+local oUF = RUF.oUF
 oUF.Tags = oUF.Tags or {}
 
-function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
+function RUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
     -- tagString: The string used to call the tag, e.g., "curhp:abbr"
     -- tagEvents: A space-separated string of events that will trigger an update of the tag
     -- tagMethod: A function that takes a unit as an argument and returns the tag's value
     -- tagType: "Health", "Power", "Name", "Misc"
     -- tagDescription: A short description of what the tag does.
     -- tagType, tagDescription are used for the configuration UI. Please provide them. Prefix of your AddOn Name is also advised.
-    -- EG: UUFG:AddTag("BCDM: Health", "UNIT_HEALTH UNIT_MAXHEALTH", function(unit) return UnitHealth(unit) or 0 end, "Health", "Show Health")
+    -- EG: RUFG:AddTag("BCDM: Health", "UNIT_HEALTH UNIT_MAXHEALTH", function(unit) return UnitHealth(unit) or 0 end, "Health", "Show Health")
 
     if not tagString or not tagEvents or not tagMethod or not tagType or not tagDescription then return end
 
     oUF.Tags.Methods[tagString] = tagMethod
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 
-    local tagDatabase = UUF:FetchTagData(tagType)
+    local tagDatabase = RUF:FetchTagData(tagType)
     if not tagDatabase then return end
 
     tagDatabase[1][tagString] = tagDescription
@@ -90,7 +90,7 @@ for i = 1, 3 do
     Tags["curpp:manapercent-with-sign:abbr" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 end
 
-UUF.SEPARATOR_TAGS = {
+RUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
     ["-"] = "-",
@@ -111,7 +111,7 @@ UUF.SEPARATOR_TAGS = {
 }
 }
 
-UUF.TOT_SEPARATOR_TAGS = {
+RUF.TOT_SEPARATOR_TAGS = {
     {
         ["»"] = "»",
         ["-"] = "-",
@@ -197,7 +197,7 @@ local abbrevData = {
 }
 
 local function AbbreviateValue(value)
-    local useCustomAbbreviations = UUF.db.profile.General.UseCustomAbbreviations
+    local useCustomAbbreviations = RUF.db.profile.General.UseCustomAbbreviations
     if useCustomAbbreviations then
         return AbbreviateNumbers(value, abbrevData)
     else
@@ -211,7 +211,7 @@ end
 
 local function FetchUnitPowerColour(unit)
     local powerType = UnitPowerType(unit)
-    local powerColour = powerType and UUF.db.profile.General.Colours.Power[powerType]
+    local powerColour = powerType and RUF.db.profile.General.Colours.Power[powerType]
     if powerColour then
         local powerColourR, powerColourG, powerColourB = unpack(powerColour)
         return powerColourR, powerColourG, powerColourB
@@ -270,14 +270,14 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     if unitStatus then
         return unitStatus
     else
-        if UUF.SEPARATOR == "[]" then
+        if RUF.SEPARATOR == "[]" then
             return string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
-        elseif UUF.SEPARATOR == "()" then
+        elseif RUF.SEPARATOR == "()" then
             return string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
-        elseif UUF.SEPARATOR == " " then
+        elseif RUF.SEPARATOR == " " then
             return string.format("%s %.0f%%", unitHealth, unitHealthPercent)
         else
-            return string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%", unitHealth, RUF.SEPARATOR, unitHealthPercent)
         end
     end
 end
@@ -291,14 +291,14 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     if unitStatus then
         return unitStatus
     else
-        if UUF.SEPARATOR == "[]" then
+        if RUF.SEPARATOR == "[]" then
             return string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif UUF.SEPARATOR == "()" then
+        elseif RUF.SEPARATOR == "()" then
             return string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif UUF.SEPARATOR == " " then
+        elseif RUF.SEPARATOR == " " then
             return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
         else
-            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), RUF.SEPARATOR, unitHealthPercent)
         end
     end
 end
@@ -381,7 +381,7 @@ oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
     if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        local manaColour = RUF.db.profile.General.Colours.Power[0]
         if manaColour then
             local manaColourR, manaColourG, manaColourB = unpack(manaColour)
             return string.format("|cff%02x%02x%02x%.f|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
@@ -405,7 +405,7 @@ oUF.Tags.Methods["curpp:manapercent-with-sign:healer:colour"] = function(unit)
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
     if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        local manaColour = RUF.db.profile.General.Colours.Power[0]
         if manaColour then
             local manaColourR, manaColourG, manaColourB = unpack(manaColour)
             return string.format("|cff%02x%02x%02x%.f%%|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
@@ -485,7 +485,7 @@ end
 
 oUF.Tags.Methods["maxhp:abbr:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
+    local classColourR, classColourG, classColourB = RUF:GetUnitColour(unit)
     local unitMaxHealth = UnitHealthMax(unit)
     if unitMaxHealth then
         return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, AbbreviateValue(unitMaxHealth))
@@ -493,23 +493,23 @@ oUF.Tags.Methods["maxhp:abbr:colour"] = function(unit)
 end
 
 oUF.Tags.Methods["name:colour"] = function(unit)
-    local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
+    local classColourR, classColourG, classColourB = RUF:GetUnitColour(unit)
     local unitName = UnitName(unit) or ""
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
 oUF.Tags.Methods["name:target"] = function(unit)
     local targetUnit = unit and (unit .. "target")
-    local arrowSeperator = UUF.TOT_SEPARATOR
+    local arrowSeperator = RUF.TOT_SEPARATOR
     if not targetUnit or not UnitExists(targetUnit) then return "" end
     return string.format(" %s %s", arrowSeperator, UnitName(targetUnit) or "")
 end
 
 oUF.Tags.Methods["name:target:colour"] = function(unit)
     local targetUnit = unit and (unit .. "target")
-    local arrowSeperator = UUF.TOT_SEPARATOR
+    local arrowSeperator = RUF.TOT_SEPARATOR
     if not targetUnit or not UnitExists(targetUnit) then return "" end
-    local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+    local classColourR, classColourG, classColourB = RUF:GetUnitColour(targetUnit)
     local unitName = UnitName(targetUnit) or ""
     return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
@@ -520,7 +520,7 @@ end
 
 oUF.Tags.Methods["reactioncolour"] = function(unit)
     local unitReaction = UnitReaction(unit, "player")
-    local reactionColour = unitReaction and UUF.db.profile.General.Colours.Reaction[unitReaction]
+    local reactionColour = unitReaction and RUF.db.profile.General.Colours.Reaction[unitReaction]
     if reactionColour then
         local reactionColourR, reactionColourG, reactionColourB = unpack(reactionColour)
         return string.format("|cff%02x%02x%02x", reactionColourR * 255, reactionColourG * 255, reactionColourB * 255)
@@ -531,11 +531,11 @@ end
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
-    if UUF:IsSecretValue(unitName) then return unitName end
+    if RUF:IsSecretValue(unitName) then return unitName end
     if maxChars and maxChars > 0 then
         unitName = string.format("%." .. maxChars .. "s", unitName)
     end
-    return UUF:CleanTruncateUTF8String(unitName)
+    return RUF:CleanTruncateUTF8String(unitName)
 end
 
 for i = 1, 25 do
@@ -544,7 +544,7 @@ end
 
 for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i .. ":colour"] = function(unit)
-        local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
+        local classColourR, classColourG, classColourB = RUF:GetUnitColour(unit)
         local shortenedName = ShortenUnitName(unit, i)
         return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
@@ -555,7 +555,7 @@ for i = 1, 25 do
         local targetUnit = unit and (unit .. "target")
         if not targetUnit or not UnitExists(targetUnit) then return "" end
         local shortenedName = ShortenUnitName(targetUnit, i)
-        local arrowSeperator = UUF.TOT_SEPARATOR
+        local arrowSeperator = RUF.TOT_SEPARATOR
         return string.format(" %s %s", arrowSeperator, shortenedName)
     end
 end
@@ -564,9 +564,9 @@ for i = 1, 25 do
     oUF.Tags.Methods["name:target:short:" .. i .. ":colour"] = function(unit)
         local targetUnit = unit and (unit .. "target")
         if not targetUnit or not UnitExists(targetUnit) then return "" end
-        local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+        local classColourR, classColourG, classColourB = RUF:GetUnitColour(targetUnit)
         local shortenedName = ShortenUnitName(targetUnit, i)
-        local arrowSeperator = UUF.TOT_SEPARATOR
+        local arrowSeperator = RUF.TOT_SEPARATOR
         return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
 end
@@ -590,14 +590,14 @@ for i = 1, 3 do
         if not unit or not UnitExists(unit) then return "" end
         local unitHealth = UnitHealth(unit)
         local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        if UUF.SEPARATOR == "[]" then
+        if RUF.SEPARATOR == "[]" then
             return string.format("%s [%." .. precision .. "f%%]", unitHealth, unitHealthPercent)
-        elseif UUF.SEPARATOR == "()" then
+        elseif RUF.SEPARATOR == "()" then
             return string.format("%s (%." .. precision .. "f%%)", unitHealth, unitHealthPercent)
-        elseif UUF.SEPARATOR == " " then
+        elseif RUF.SEPARATOR == " " then
             return string.format("%s %." .. precision .. "f%%", unitHealth, unitHealthPercent)
         else
-            return string.format("%s %s %." .. precision .. "f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %." .. precision .. "f%%", unitHealth, RUF.SEPARATOR, unitHealthPercent)
         end
     end
 
@@ -605,14 +605,14 @@ for i = 1, 3 do
         if not unit or not UnitExists(unit) then return "" end
         local unitHealth = UnitHealth(unit)
         local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        if UUF.SEPARATOR == "[]" then
+        if RUF.SEPARATOR == "[]" then
             return string.format("%s [%." .. precision .. "f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif UUF.SEPARATOR == "()" then
+        elseif RUF.SEPARATOR == "()" then
             return string.format("%s (%." .. precision .. "f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif UUF.SEPARATOR == " " then
+        elseif RUF.SEPARATOR == " " then
             return string.format("%s %." .. precision .. "f%%", AbbreviateValue(unitHealth), unitHealthPercent)
         else
-            return string.format("%s %s %." .. precision .. "f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %." .. precision .. "f%%", AbbreviateValue(unitHealth), RUF.SEPARATOR, unitHealthPercent)
         end
     end
 
@@ -806,7 +806,7 @@ local MiscTags = {
     }
 }
 
-function UUF:FetchTagData(queriedDB)
+function RUF:FetchTagData(queriedDB)
     if queriedDB == "Health" then
         return HealthTags
     elseif queriedDB == "Power" then
@@ -818,6 +818,6 @@ function UUF:FetchTagData(queriedDB)
     end
 end
 
-function UUFG:GetTags()
+function RUFG:GetTags()
     return oUF.Tags
 end

@@ -1,7 +1,7 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
-    local MouseoverDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
+function RUF:CreateUnitMouseoverIndicator(unitFrame, unit)
+    local MouseoverDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
 	if unitFrame.MouseoverHighlight then return unitFrame.MouseoverHighlight end
 
     local MouseoverHighlight = CreateFrame("Frame", nil, unitFrame.Health, "BackdropTemplate")
@@ -9,7 +9,7 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
 
     if MouseoverDB.Style == "BORDER" then
-        MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
+        MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
         MouseoverHighlight:SetBackdropColor(0,0,0,0)
         MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
     elseif MouseoverDB.Style == "GRADIENT" then
@@ -22,7 +22,7 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
         MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
         MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
     else
-        MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
+        MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
         MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
         MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
     end
@@ -30,20 +30,20 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     MouseoverHighlight:Hide()
     MouseoverHighlight:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
 	unitFrame.MouseoverHighlight = MouseoverHighlight
-    unitFrame:HookScript("OnEnter", function() local DB = UUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
-    unitFrame:HookScript("OnLeave", function() local DB = UUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
+    unitFrame:HookScript("OnEnter", function() local DB = RUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
+    unitFrame:HookScript("OnLeave", function() local DB = RUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
 
     return MouseoverHighlight
 end
 
-function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-    local MouseoverDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
+function RUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
+    local MouseoverDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
 
     if MouseoverDB.Enabled then
-        unitFrame.MouseoverHighlight = unitFrame.MouseoverHighlight or UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
+        unitFrame.MouseoverHighlight = unitFrame.MouseoverHighlight or RUF:CreateUnitMouseoverIndicator(unitFrame, unit)
 
         if MouseoverDB.Style == "BORDER" then
-            unitFrame.MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
+            unitFrame.MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
             unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
         elseif MouseoverDB.Style == "GRADIENT" then
@@ -56,7 +56,7 @@ function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
             unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
         else
-            unitFrame.MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
+            unitFrame.MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
             unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
         end

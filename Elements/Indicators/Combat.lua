@@ -1,9 +1,9 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
+function RUF:CreateUnitCombatIndicator(unitFrame, unit)
+    local CombatDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Combat
 
-    local Combat = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_CombatIndicator", "OVERLAY")
+    local Combat = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit).."_CombatIndicator", "OVERLAY")
     Combat:SetSize(CombatDB.Size, CombatDB.Size)
     Combat:SetPoint(CombatDB.Layout[1], unitFrame.HighLevelContainer, CombatDB.Layout[2], CombatDB.Layout[3], CombatDB.Layout[4])
 
@@ -13,7 +13,7 @@ function UUF:CreateUnitCombatIndicator(unitFrame, unit)
             Combat:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Combat:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            Combat:SetTexture(UUF.StatusTextures["Combat"][CombatDB.Texture])
+            Combat:SetTexture(RUF.StatusTextures["Combat"][CombatDB.Texture])
             Combat:SetTexCoord(0, 1, 0, 1)
         end
         if UnitAffectingCombat(unitFrame.unit) then Combat:Show() end
@@ -22,11 +22,11 @@ function UUF:CreateUnitCombatIndicator(unitFrame, unit)
     return Combat
 end
 
-function UUF:UpdateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
+function RUF:UpdateUnitCombatIndicator(unitFrame, unit)
+    local CombatDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Combat
 
     if CombatDB.Enabled then
-        unitFrame.CombatIndicator = unitFrame.CombatIndicator or UUF:CreateUnitCombatIndicator(unitFrame, unit)
+        unitFrame.CombatIndicator = unitFrame.CombatIndicator or RUF:CreateUnitCombatIndicator(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("CombatIndicator") then unitFrame:EnableElement("CombatIndicator") end
 
@@ -38,7 +38,7 @@ function UUF:UpdateUnitCombatIndicator(unitFrame, unit)
                 unitFrame.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
             else
-                unitFrame.CombatIndicator:SetTexture(UUF.StatusTextures["Combat"][CombatDB.Texture])
+                unitFrame.CombatIndicator:SetTexture(RUF.StatusTextures["Combat"][CombatDB.Texture])
                 unitFrame.CombatIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if UnitAffectingCombat(unitFrame.unit) then

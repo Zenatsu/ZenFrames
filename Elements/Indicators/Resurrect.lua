@@ -1,10 +1,10 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreateUnitResurrectIndicator(unitFrame, unit)
-	local ResurrectDB = UUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
+function RUF:CreateUnitResurrectIndicator(unitFrame, unit)
+	local ResurrectDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
 	if not ResurrectDB then return end
 
-	local ResurrectIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_ResurrectIndicator", "OVERLAY")
+	local ResurrectIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_ResurrectIndicator", "OVERLAY")
 	ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
 	ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], unitFrame.HighLevelContainer, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
 	ResurrectIndicator:SetAtlas("RaidFrame-Icon-Rez")
@@ -18,12 +18,12 @@ function UUF:CreateUnitResurrectIndicator(unitFrame, unit)
 	return ResurrectIndicator
 end
 
-function UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
-	local ResurrectDB = UUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
+function RUF:UpdateUnitResurrectIndicator(unitFrame, unit)
+	local ResurrectDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
 	if not ResurrectDB then return end
 
 	if ResurrectDB.Enabled then
-		unitFrame.ResurrectIndicator = unitFrame.ResurrectIndicator or UUF:CreateUnitResurrectIndicator(unitFrame, unit)
+		unitFrame.ResurrectIndicator = unitFrame.ResurrectIndicator or RUF:CreateUnitResurrectIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ResurrectIndicator") then unitFrame:EnableElement("ResurrectIndicator") end
 
 		unitFrame.ResurrectIndicator:ClearAllPoints()

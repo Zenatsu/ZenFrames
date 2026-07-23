@@ -1,14 +1,14 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local function SetRestingTexture(restingTexture)
     if not restingTexture then return end
-    return UUF.StatusTextures["Resting"][restingTexture]
+    return RUF.StatusTextures["Resting"][restingTexture]
 end
 
-function UUF:CreateUnitRestingIndicator(unitFrame, unit)
-    local RestingDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Resting
+function RUF:CreateUnitRestingIndicator(unitFrame, unit)
+    local RestingDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Resting
 
-    local Resting = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_RestingIndicator", "OVERLAY")
+    local Resting = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit).."_RestingIndicator", "OVERLAY")
     Resting:SetSize(RestingDB.Size, RestingDB.Size)
     Resting:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
 
@@ -18,7 +18,7 @@ function UUF:CreateUnitRestingIndicator(unitFrame, unit)
             Resting:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Resting:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            Resting:SetTexture(UUF.StatusTextures["Resting"][RestingDB.Texture])
+            Resting:SetTexture(RUF.StatusTextures["Resting"][RestingDB.Texture])
             Resting:SetTexCoord(0, 1, 0, 1)
         end
         if IsResting() then Resting:Show() end
@@ -27,11 +27,11 @@ function UUF:CreateUnitRestingIndicator(unitFrame, unit)
     return Resting
 end
 
-function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
-    local RestingDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Resting
+function RUF:UpdateUnitRestingIndicator(unitFrame, unit)
+    local RestingDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Resting
 
     if RestingDB.Enabled then
-        unitFrame.RestingIndicator = unitFrame.RestingIndicator or UUF:CreateUnitRestingIndicator(unitFrame, unit)
+        unitFrame.RestingIndicator = unitFrame.RestingIndicator or RUF:CreateUnitRestingIndicator(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:EnableElement("RestingIndicator") end
 
@@ -43,7 +43,7 @@ function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
                 unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
             else
-                unitFrame.RestingIndicator:SetTexture(UUF.StatusTextures["Resting"][RestingDB.Texture])
+                unitFrame.RestingIndicator:SetTexture(RUF.StatusTextures["Resting"][RestingDB.Texture])
                 unitFrame.RestingIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if IsResting() then

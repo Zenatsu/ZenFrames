@@ -1,5 +1,5 @@
-local _, UUF = ...
-local oUF = UUF.oUF
+local _, RUF = ...
+local oUF = RUF.oUF
 local raidFrameIndex = 0
 local raidStyleRegistered = false
 
@@ -11,85 +11,85 @@ local function ApplyScripts(unitFrame)
     unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
 end
 
-function UUF:CreateUnitFrame(unitFrame, unit)
+function RUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
-	if unitFrame:GetParent() == UUF.AUGMENTATION_RAID_HEADER then unitFrame.isAugmentationRaidFrame = true end
-    local UnitDB = UUF:GetUnitDB(unitFrame, unit)
+	if unitFrame:GetParent() == RUF.AUGMENTATION_RAID_HEADER then unitFrame.isAugmentationRaidFrame = true end
+    local UnitDB = RUF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
     local isFocus = unit == "focus"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
-    local isParty = UUF:GetNormalizedUnit(unit) == "party"
-    local isRaid = UUF:GetNormalizedUnit(unit) == "raid"
+    local isParty = RUF:GetNormalizedUnit(unit) == "party"
+    local isRaid = RUF:GetNormalizedUnit(unit) == "raid"
 
-    UUF:CreateUnitContainer(unitFrame, unit)
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then UUF:CreateUnitCastBar(unitFrame, unit) end
-    UUF:CreateUnitHealthBar(unitFrame, unit)
-    if UnitDB.HealthBar.DispelHighlight and (isPlayer or isTarget or isFocus or isParty or isRaid) then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
-    UUF:CreateUnitHealPrediction(unitFrame, unit)
-    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then UUF:CreateUnitPortrait(unitFrame, unit) end
-    UUF:CreateUnitPowerBar(unitFrame, unit)
-    if isPlayer then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
-    if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
-    UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget or isParty or isRaid then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:CreateUnitReadyCheckIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:CreateUnitResurrectIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:CreateUnitSummonIndicator(unitFrame, unit) end
-    if isParty or isRaid then UUF:CreateUnitRoleIndicator(unitFrame, unit) end
-    if isParty or isRaid then UUF:CreateUnitPhaseIndicator(unitFrame, unit) end
-    if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
-    if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
-    if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
-    if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
-    if isTarget then UUF:CreateUnitClassificationIndicator(unitFrame, unit) end
-    if isTarget then UUF:CreateUnitQuestIndicator(unitFrame, unit) end
-    UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
-    UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
-    UUF:CreateUnitThreatIndicator(unitFrame, unit)
-    UUF:CreateUnitAuras(unitFrame, unit)
-    UUF:CreateUnitTags(unitFrame, unit)
+    RUF:CreateUnitContainer(unitFrame, unit)
+    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then RUF:CreateUnitCastBar(unitFrame, unit) end
+    RUF:CreateUnitHealthBar(unitFrame, unit)
+    if UnitDB.HealthBar.DispelHighlight and (isPlayer or isTarget or isFocus or isParty or isRaid) then RUF:CreateUnitDispelHighlight(unitFrame, unit) end
+    RUF:CreateUnitHealPrediction(unitFrame, unit)
+    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then RUF:CreateUnitPortrait(unitFrame, unit) end
+    RUF:CreateUnitPowerBar(unitFrame, unit)
+    if isPlayer then RUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
+    if isPlayer then RUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
+    RUF:CreateUnitRaidTargetMarker(unitFrame, unit)
+    if isPlayer or isTarget or isParty or isRaid then RUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:CreateUnitReadyCheckIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:CreateUnitResurrectIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:CreateUnitSummonIndicator(unitFrame, unit) end
+    if isParty or isRaid then RUF:CreateUnitRoleIndicator(unitFrame, unit) end
+    if isParty or isRaid then RUF:CreateUnitPhaseIndicator(unitFrame, unit) end
+    if isPlayer or isTarget then RUF:CreateUnitCombatIndicator(unitFrame, unit) end
+    if isPlayer then RUF:CreateUnitRestingIndicator(unitFrame, unit) end
+    if isPlayer then RUF:CreateUnitPvPIndicator(unitFrame, unit) end
+    if isPlayer then RUF:CreateUnitTotems(unitFrame, unit) end
+    if isTarget then RUF:CreateUnitClassificationIndicator(unitFrame, unit) end
+    if isTarget then RUF:CreateUnitQuestIndicator(unitFrame, unit) end
+    RUF:CreateUnitMouseoverIndicator(unitFrame, unit)
+    RUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
+    RUF:CreateUnitThreatIndicator(unitFrame, unit)
+    RUF:CreateUnitAuras(unitFrame, unit)
+    RUF:CreateUnitTags(unitFrame, unit)
 	if isRaid then
-		unitFrame.UUFConfiguredUnit = unit
+		unitFrame.RUFConfiguredUnit = unit
 		unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
 			if attribute ~= "unit" then return end
 			if not value then
-				UUF:UnregisterRangeFrame(frame)
-				UUF:UnregisterTargetGlowIndicatorFrame(frame)
-				if frame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(frame) end
-				frame.UUFGroupUnit = nil
+				RUF:UnregisterRangeFrame(frame)
+				RUF:UnregisterTargetGlowIndicatorFrame(frame)
+				if frame.DispelHighlightUnit then RUF:UnregisterDispelHighlightEvents(frame) end
+				frame.RUFGroupUnit = nil
 				return
 			end
-			local RaidDB = UUF:GetUnitDB(frame, value)
+			local RaidDB = RUF:GetUnitDB(frame, value)
 			if not RaidDB or not RaidDB.Enabled then return end
-			if frame.DispelHighlightUnit and frame.DispelHighlightUnit ~= value then UUF:UnregisterDispelHighlightEvents(frame) end
-			UUF:RegisterRangeFrame(frame, value)
-			UUF:RegisterTargetGlowIndicatorFrame(frame, value)
-			if frame.UUFGroupUnit ~= value then
-				frame.UUFGroupUnit = value
-				if frame.DispelHighlight then UUF:UpdateUnitDispelHighlight(frame, value) end
+			if frame.DispelHighlightUnit and frame.DispelHighlightUnit ~= value then RUF:UnregisterDispelHighlightEvents(frame) end
+			RUF:RegisterRangeFrame(frame, value)
+			RUF:RegisterTargetGlowIndicatorFrame(frame, value)
+			if frame.RUFGroupUnit ~= value then
+				frame.RUFGroupUnit = value
+				if frame.DispelHighlight then RUF:UpdateUnitDispelHighlight(frame, value) end
 			end
 			if frame.Health then frame.Health:ForceUpdate() end
-			if frame.Tags then for configuredTag in pairs(RaidDB.Tags) do UUF:UpdateUnitTag(frame, value, configuredTag) end elseif frame.UpdateTags then frame:UpdateTags() end
-			UUF:UpdateUnitPowerBar(frame, value)
-			UUF:UpdateUnitRoleIndicator(frame, value)
+			if frame.Tags then for configuredTag in pairs(RaidDB.Tags) do RUF:UpdateUnitTag(frame, value, configuredTag) end elseif frame.UpdateTags then frame:UpdateTags() end
+			RUF:UpdateUnitPowerBar(frame, value)
+			RUF:UpdateUnitRoleIndicator(frame, value)
 		end)
 	end
     ApplyScripts(unitFrame)
-    if isRaid then UUF:RegisterRaidFrame(unitFrame) end
+    if isRaid then RUF:RegisterRaidFrame(unitFrame) end
     return unitFrame
 end
 
-function UUF:LayoutBossFrames()
-    local Frame = UUF.db.profile.Units.boss.Frame
-    if #UUF.BOSS_FRAMES == 0 then return end
-    local bossFrames = UUF.BOSS_FRAMES
+function RUF:LayoutBossFrames()
+    local Frame = RUF.db.profile.Units.boss.Frame
+    if #RUF.BOSS_FRAMES == 0 then return end
+    local bossFrames = RUF.BOSS_FRAMES
     if Frame.GrowthDirection == "UP" then
         bossFrames = {}
-        for i = #UUF.BOSS_FRAMES, 1, -1 do bossFrames[#bossFrames+1] = UUF.BOSS_FRAMES[i] end
+        for i = #RUF.BOSS_FRAMES, 1, -1 do bossFrames[#bossFrames+1] = RUF.BOSS_FRAMES[i] end
     end
-    local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
+    local layoutConfig = RUF.LayoutConfig[Frame.Layout[1]]
     local frameHeight = bossFrames[1]:GetHeight()
     local containerHeight = (frameHeight + Frame.Layout[5]) * #bossFrames - Frame.Layout[5]
     local offsetY = containerHeight * layoutConfig.offsetMultiplier
@@ -98,145 +98,145 @@ function UUF:LayoutBossFrames()
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
 end
 
-function UUF:SpawnUnitFrame(unit)
-    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-	local augmentationEnabled = unit == "raid" and UUF.db.profile.Units.raid.augmentation.Enabled and UUF:IsAugmentationEvoker()
+function RUF:SpawnUnitFrame(unit)
+    local UnitDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)]
+	local augmentationEnabled = unit == "raid" and RUF.db.profile.Units.raid.augmentation.Enabled and RUF:IsAugmentationEvoker()
 	if not UnitDB or (not UnitDB.Enabled and not augmentationEnabled) then
         if UnitDB and UnitDB.ForceHideBlizzard then
-			if unit == "raid" then UUF:HideBlizzardRaidFrames() else oUF:DisableBlizzard(unit) end
+			if unit == "raid" then RUF:HideBlizzardRaidFrames() else oUF:DisableBlizzard(unit) end
 		end
         return
     end
     local FrameDB = UnitDB.Frame
-    if unit == "raid" and UnitDB.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
+    if unit == "raid" and UnitDB.ForceHideBlizzard then RUF:HideBlizzardRaidFrames() end
 
 	if unit == "raid" then
 		if not raidStyleRegistered then
-			oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame)
+			oUF:RegisterStyle(RUF:FetchFrameName(unit), function(unitFrame)
 				raidFrameIndex = raidFrameIndex + 1
-				UUF:CreateUnitFrame(unitFrame, "raid" .. raidFrameIndex)
+				RUF:CreateUnitFrame(unitFrame, "raid" .. raidFrameIndex)
 			end)
 			raidStyleRegistered = true
 		end
 	else
-		oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
+		oUF:RegisterStyle(RUF:FetchFrameName(unit), function(unitFrame) RUF:CreateUnitFrame(unitFrame, unit) end)
 	end
-    oUF:SetActiveStyle(UUF:FetchFrameName(unit))
+    oUF:SetActiveStyle(RUF:FetchFrameName(unit))
 	if unit == "raid" then
-		if UnitDB.Enabled and not UUF.RAID_CONTAINER then UUF:SpawnGroupFrame("raid") end
-		if augmentationEnabled then UUF:SpawnAugmentationRaidFrames() end
+		if UnitDB.Enabled and not RUF.RAID_CONTAINER then RUF:SpawnGroupFrame("raid") end
+		if augmentationEnabled then RUF:SpawnAugmentationRaidFrames() end
 		return
 	elseif unit == "party" then
-		return UUF:SpawnGroupFrame(unit)
+		return RUF:SpawnGroupFrame(unit)
 	end
 
     if unit == "boss" then
-        for i = 1, UUF.MAX_BOSS_FRAMES do
-            UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
-            UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
-            UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
-            UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
-            UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
-            UUF:RegisterRangeFrame(UUF:FetchFrameName(unit .. i), unit .. i)
+        for i = 1, RUF.MAX_BOSS_FRAMES do
+            RUF[unit:upper() .. i] = oUF:Spawn(unit .. i, RUF:FetchFrameName(unit .. i))
+            RUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
+            RUF.BOSS_FRAMES[i] = RUF[unit:upper() .. i]
+            RUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
+            RUF:RegisterTargetGlowIndicatorFrame(RUF:FetchFrameName(unit .. i), unit .. i)
+            RUF:RegisterRangeFrame(RUF:FetchFrameName(unit .. i), unit .. i)
         end
-        UUF:LayoutBossFrames()
+        RUF:LayoutBossFrames()
     else
-        UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
-        UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
-        UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
-        if unit == "player" or unit == "target" or unit == "focus" then UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit) end
+        RUF[unit:upper()] = oUF:Spawn(unit, RUF:FetchFrameName(unit))
+        RUF:RegisterTargetGlowIndicatorFrame(RUF:FetchFrameName(unit), unit)
+        RUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
+        if unit == "player" or unit == "target" or unit == "focus" then RUF:RegisterDispelHighlightEvents(RUF[unit:upper()], unit) end
     end
 
     if unit == "player" or unit == "target" then
-        local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
-        UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-        UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+        local parentFrame = RUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["RUF_CDMAnchor"] or UIParent
+        RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-        local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
-        UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-        UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+        local parentFrame = _G[RUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
+        RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
-    if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
-	UUF:CreateMover(unit)
+    if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then RUF:RegisterRangeFrame(RUF:FetchFrameName(unit), unit) end
+	RUF:CreateMover(unit)
 
 	if UnitDB.Enabled then
         if unit == "boss" then
-            for i = 1, UUF.MAX_BOSS_FRAMES do
-                RegisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Show()
+            for i = 1, RUF.MAX_BOSS_FRAMES do
+                RegisterUnitWatch(RUF[unit:upper() .. i])
+                RUF[unit:upper() .. i]:Show()
             end
         else
-            RegisterUnitWatch(UUF[unit:upper()])
-            UUF[unit:upper()]:Show()
+            RegisterUnitWatch(RUF[unit:upper()])
+            RUF[unit:upper()]:Show()
         end
     else
         if unit == "boss" then
-            for i = 1, UUF.MAX_BOSS_FRAMES do
-                UnregisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Hide()
+            for i = 1, RUF.MAX_BOSS_FRAMES do
+                UnregisterUnitWatch(RUF[unit:upper() .. i])
+                RUF[unit:upper() .. i]:Hide()
             end
         else
-            UnregisterUnitWatch(UUF[unit:upper()])
-            UUF[unit:upper()]:Hide()
+            UnregisterUnitWatch(RUF[unit:upper()])
+            RUF[unit:upper()]:Hide()
         end
     end
 
-    return UUF[unit:upper()]
+    return RUF[unit:upper()]
 end
 
-function UUF:UpdateUnitFrame(unitFrame, unit)
-    local UnitDB = UUF:GetUnitDB(unitFrame, unit)
+function RUF:UpdateUnitFrame(unitFrame, unit)
+    local UnitDB = RUF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
     local isFocus = unit == "focus"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
-    local isParty = UUF:GetNormalizedUnit(unit) == "party"
-    local isRaid = UUF:GetNormalizedUnit(unit) == "raid"
+    local isParty = RUF:GetNormalizedUnit(unit) == "party"
+    local isRaid = RUF:GetNormalizedUnit(unit) == "raid"
 
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then UUF:UpdateUnitCastBar(unitFrame, unit) end
-    UUF:UpdateUnitHealthBar(unitFrame, unit)
-    UUF:UpdateUnitHealPrediction(unitFrame, unit)
-    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then UUF:UpdateUnitPortrait(unitFrame, unit) end
-    UUF:UpdateUnitPowerBar(unitFrame, unit)
-    if isPlayer then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
-    if isPlayer then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
-    UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget or isParty or isRaid then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:UpdateUnitReadyCheckIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:UpdateUnitResurrectIndicator(unitFrame, unit) end
-	if isParty or isRaid then UUF:UpdateUnitSummonIndicator(unitFrame, unit) end
-    if isParty or isRaid then UUF:UpdateUnitRoleIndicator(unitFrame, unit) end
-    if isParty or isRaid then UUF:UpdateUnitPhaseIndicator(unitFrame, unit) end
-    if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
-    if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
-    if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
-    if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
-    if isTarget then UUF:UpdateUnitClassificationIndicator(unitFrame, unit) end
-    if isTarget then UUF:UpdateUnitQuestIndicator(unitFrame, unit) end
-    UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-    UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
-    UUF:UpdateUnitThreatIndicator(unitFrame, unit)
-    UUF:UpdateUnitAuras(unitFrame, unit)
-	if unit ~= "player" then UUF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
-	UUF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
+    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then RUF:UpdateUnitCastBar(unitFrame, unit) end
+    RUF:UpdateUnitHealthBar(unitFrame, unit)
+    RUF:UpdateUnitHealPrediction(unitFrame, unit)
+    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then RUF:UpdateUnitPortrait(unitFrame, unit) end
+    RUF:UpdateUnitPowerBar(unitFrame, unit)
+    if isPlayer then RUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
+    if isPlayer then RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
+    RUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
+    if isPlayer or isTarget or isParty or isRaid then RUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:UpdateUnitReadyCheckIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:UpdateUnitResurrectIndicator(unitFrame, unit) end
+	if isParty or isRaid then RUF:UpdateUnitSummonIndicator(unitFrame, unit) end
+    if isParty or isRaid then RUF:UpdateUnitRoleIndicator(unitFrame, unit) end
+    if isParty or isRaid then RUF:UpdateUnitPhaseIndicator(unitFrame, unit) end
+    if isPlayer or isTarget then RUF:UpdateUnitCombatIndicator(unitFrame, unit) end
+    if isPlayer then RUF:UpdateUnitRestingIndicator(unitFrame, unit) end
+    if isPlayer then RUF:UpdateUnitPvPIndicator(unitFrame, unit) end
+    if isPlayer then RUF:UpdateUnitTotems(unitFrame, unit) end
+    if isTarget then RUF:UpdateUnitClassificationIndicator(unitFrame, unit) end
+    if isTarget then RUF:UpdateUnitQuestIndicator(unitFrame, unit) end
+    RUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
+    RUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
+    RUF:UpdateUnitThreatIndicator(unitFrame, unit)
+    RUF:UpdateUnitAuras(unitFrame, unit)
+	if unit ~= "player" then RUF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
+	RUF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
     unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 end
 
-function UUF:UpdateBossFrames()
-    for i in pairs(UUF.BOSS_FRAMES) do
-        UUF:UpdateUnitFrame(UUF["BOSS"..i], "boss"..i)
+function RUF:UpdateBossFrames()
+    for i in pairs(RUF.BOSS_FRAMES) do
+        RUF:UpdateUnitFrame(RUF["BOSS"..i], "boss"..i)
     end
-	UUF:UpdateTestEnvironment("boss", "all")
-    UUF:LayoutBossFrames()
+	RUF:UpdateTestEnvironment("boss", "all")
+    RUF:LayoutBossFrames()
 end
 
-function UUF:UpdateAllUnitFrames()
+function RUF:UpdateAllUnitFrames()
 	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
-		if UUF[unit:upper()] then UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end
+		if RUF[unit:upper()] then RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end
 	end
-	UUF:UpdateBossFrames()
-	UUF:UpdateGroupFrame("party")
-	UUF:UpdateGroupFrame("raid")
-	UUF:UpdateAugmentationRaidFrames()
+	RUF:UpdateBossFrames()
+	RUF:UpdateGroupFrame("party")
+	RUF:UpdateGroupFrame("raid")
+	RUF:UpdateAugmentationRaidFrames()
 end

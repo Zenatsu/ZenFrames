@@ -1,7 +1,7 @@
-local _, UUF = ...
+local _, RUF = ...
 local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
-UUF.RangeEvtFrames = {}
+RUF.RangeEvtFrames = {}
 
 local rangeTicker = false
 
@@ -255,7 +255,7 @@ local function UnitSpellRange(unit, spells)
 	local isNotInRange = false
 	for spellID in pairs(spells) do
 		local inRange = C_Spell.IsSpellInRange(spellID, unit)
-		if UUF:IsSecretValue(inRange) then
+		if RUF:IsSecretValue(inRange) then
 			return inRange
 		elseif inRange then
 			return true
@@ -269,7 +269,7 @@ end
 local function UnitInSpellsRange(unit, category)
 	local spells = activeSpells[category]
 	local inRange = not next(spells) and 1 or UnitSpellRange(unit, spells)
-	if UUF:IsSecretValue(inRange) then return inRange end
+	if RUF:IsSecretValue(inRange) then return inRange end
 
 	if (not inRange or inRange == 1) and not InCombatLockdown() then
 		return CheckInteractDistance(unit, 4)
@@ -285,7 +285,7 @@ local function FriendlyIsInRange(unit, frame)
 	end
 
 	local inRange, wasChecked = UnitInRange(unit)
-	if UUF:IsSecretValue(wasChecked) then
+	if RUF:IsSecretValue(wasChecked) then
 		if UnitInParty(unit) or UnitInRaid(unit) then
 			frame.RangeIsInRange = inRange
 			frame.RangeWasChecked = wasChecked
@@ -299,15 +299,15 @@ local function FriendlyIsInRange(unit, frame)
 end
 
 local function UpdateRangeFrames()
-	for unit, unitFrames in pairs(UUF.RangeEvtFrames) do
+	for unit, unitFrames in pairs(RUF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			if frame:IsVisible() then UUF:UpdateRangeAlpha(frame, unit) end
+			if frame:IsVisible() then RUF:UpdateRangeAlpha(frame, unit) end
 		end
 	end
 end
 
 local function UpdateRangeTicker()
-	local shouldRun = UUF.db.profile.General.Range.Enabled and next(UUF.RangeEvtFrames)
+	local shouldRun = RUF.db.profile.General.Range.Enabled and next(RUF.RangeEvtFrames)
 	if shouldRun and not rangeTicker then
 		rangeTicker = C_Timer.NewTicker(0.2, UpdateRangeFrames)
 	elseif not shouldRun and rangeTicker then
@@ -316,57 +316,57 @@ local function UpdateRangeTicker()
 	end
 end
 
-function UUF:RegisterRangeFrame(frameName, unit)
+function RUF:RegisterRangeFrame(frameName, unit)
 	if not frameName or not unit then return end
 	local frame = type(frameName) == "table" and frameName or _G[frameName]
 	if not frame then return end
 
-	local previousUnit = frame.UUFRangeUnit
+	local previousUnit = frame.RUFRangeUnit
 	if previousUnit and previousUnit ~= unit then
-		local previousFrames = UUF.RangeEvtFrames[previousUnit]
+		local previousFrames = RUF.RangeEvtFrames[previousUnit]
 		if previousFrames then
 			previousFrames[frame] = nil
-			if not next(previousFrames) then UUF.RangeEvtFrames[previousUnit] = nil end
+			if not next(previousFrames) then RUF.RangeEvtFrames[previousUnit] = nil end
 		end
 	end
 
-	local unitFrames = UUF.RangeEvtFrames[unit]
+	local unitFrames = RUF.RangeEvtFrames[unit]
 	if not unitFrames then
 		unitFrames = {}
-		UUF.RangeEvtFrames[unit] = unitFrames
+		RUF.RangeEvtFrames[unit] = unitFrames
 	end
 	unitFrames[frame] = true
-	frame.UUFRangeUnit = unit
+	frame.RUFRangeUnit = unit
 
 	UpdateRangeTicker()
-	UUF:UpdateRangeAlpha(frame, unit)
+	RUF:UpdateRangeAlpha(frame, unit)
 end
 
-function UUF:UnregisterRangeFrame(frame)
-	if not frame or not frame.UUFRangeUnit then return end
-	local unit = frame.UUFRangeUnit
-	local unitFrames = UUF.RangeEvtFrames[unit]
+function RUF:UnregisterRangeFrame(frame)
+	if not frame or not frame.RUFRangeUnit then return end
+	local unit = frame.RUFRangeUnit
+	local unitFrames = RUF.RangeEvtFrames[unit]
 	if unitFrames then
 		unitFrames[frame] = nil
-		if not next(unitFrames) then UUF.RangeEvtFrames[unit] = nil end
+		if not next(unitFrames) then RUF.RangeEvtFrames[unit] = nil end
 	end
-	frame.UUFRangeUnit = nil
+	frame.RUFRangeUnit = nil
 	UpdateRangeTicker()
 end
 
-function UUF:IsRangeFrameRegistered(unit) return UUF.RangeEvtFrames[unit] ~= nil end
+function RUF:IsRangeFrameRegistered(unit) return RUF.RangeEvtFrames[unit] ~= nil end
 
-function UUF:UpdateAllRangeFrames()
-	for unit, unitFrames in pairs(UUF.RangeEvtFrames) do
+function RUF:UpdateAllRangeFrames()
+	for unit, unitFrames in pairs(RUF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			UUF:UpdateRangeAlpha(frame, unit)
+			RUF:UpdateRangeAlpha(frame, unit)
 		end
 	end
 	UpdateRangeTicker()
 end
 
-function UUF:UpdateRangeAlpha(frame, unit)
-	local RangeDB = UUF.db.profile.General.Range
+function RUF:UpdateRangeAlpha(frame, unit)
+	local RangeDB = RUF.db.profile.General.Range
 	if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
 	frame.RangeIsInRange = nil
 	frame.RangeWasChecked = nil
@@ -378,12 +378,12 @@ function UUF:UpdateRangeAlpha(frame, unit)
 
 	if UnitIsDeadOrGhost(unit) then
 		inRange = UnitInSpellsRange(unit, "resurrect")
-		if not UUF:IsSecretValue(inRange) then inRange = inRange == true end
+		if not RUF:IsSecretValue(inRange) then inRange = inRange == true end
 	elseif UnitCanAttack("player", unit) then
 		inRange = UnitInSpellsRange(unit, "enemy")
 	else
 		local isPet = UnitIsUnit(unit, "pet")
-		if not UUF:IsSecretValue(isPet) and isPet then
+		if not RUF:IsSecretValue(isPet) and isPet then
 			inRange = UnitInSpellsRange(unit, "pet")
 		elseif UnitIsConnected(unit) then
 			inRange = FriendlyIsInRange(unit, frame)
@@ -392,10 +392,10 @@ function UUF:UpdateRangeAlpha(frame, unit)
 		end
 	end
 
-	if UUF:IsSecretValue(frame.RangeIsInRange) then
+	if RUF:IsSecretValue(frame.RangeIsInRange) then
 		frame:SetAlphaFromBoolean(frame.RangeIsInRange, inAlpha, outAlpha)
 		return
-	elseif UUF:IsSecretValue(inRange) then
+	elseif RUF:IsSecretValue(inRange) then
 		frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
 		return
 	end
@@ -410,9 +410,9 @@ RangeEventFrame:RegisterEvent("UNIT_IN_RANGE_UPDATE")
 RangeEventFrame:RegisterEvent("UNIT_CONNECTION")
 RangeEventFrame:RegisterEvent("UNIT_PHASE")
 local function UpdateRangeUnit(rangeUnit)
-	local unitFrames = UUF.RangeEvtFrames[rangeUnit]
+	local unitFrames = RUF.RangeEvtFrames[rangeUnit]
 	if not unitFrames then return end
-	for frame in pairs(unitFrames) do UUF:UpdateRangeAlpha(frame, rangeUnit) end
+	for frame in pairs(unitFrames) do RUF:UpdateRangeAlpha(frame, rangeUnit) end
 end
 
 RangeEventFrame:SetScript("OnEvent", function(_, event, unit)

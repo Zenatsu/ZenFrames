@@ -1,6 +1,6 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreatePositionController()
+function RUF:CreatePositionController()
     local ECDM = ""
 
     if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
@@ -12,10 +12,10 @@ function UUF:CreatePositionController()
     end
 
     if ECDM and ECDM:IsShown() then
-        local CDMAnchor = CreateFrame("Frame", "UUF_CDMAnchor", UIParent)
+        local CDMAnchor = CreateFrame("Frame", "RUF_CDMAnchor", UIParent)
         CDMAnchor:SetAllPoints(ECDM)
         CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
     else
-        UUF:PrettyPrint("|cFF8080FFAnchor Point|r was not found.")
+        RUF:PrettyPrint("|cFF8080FFAnchor Point|r was not found.")
     end
 end

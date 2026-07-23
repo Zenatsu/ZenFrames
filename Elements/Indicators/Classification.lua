@@ -1,8 +1,8 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local function UpdateClassificationTexture(ClassificationIndicator, _, classification)
-	local ClassificationIndicatorDB = UUF.db.profile.Units.target.Indicators.Classification
-	local ClassificationTextures = UUF.ClassificationTextures[ClassificationIndicatorDB.Texture]
+	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
+	local ClassificationTextures = RUF.ClassificationTextures[ClassificationIndicatorDB.Texture]
 	if ClassificationIndicatorDB.Texture == "CLASSIFICATION0" or ClassificationIndicatorDB.Texture == "CLASSIFICATION1" then
 		if ClassificationTextures[classification] then
 			ClassificationIndicator:SetAtlas(ClassificationTextures[classification], false)
@@ -14,9 +14,9 @@ local function UpdateClassificationTexture(ClassificationIndicator, _, classific
 	end
 end
 
-function UUF:CreateUnitClassificationIndicator(unitFrame, unit)
-	local ClassificationIndicatorDB = UUF.db.profile.Units.target.Indicators.Classification
-	local ClassificationIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_ClassificationIndicator", "OVERLAY")
+function RUF:CreateUnitClassificationIndicator(unitFrame, unit)
+	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
+	local ClassificationIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_ClassificationIndicator", "OVERLAY")
 	ClassificationIndicator:SetSize(ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Size)
 	ClassificationIndicator:SetPoint(ClassificationIndicatorDB.Layout[1], unitFrame.HighLevelContainer, ClassificationIndicatorDB.Layout[2], ClassificationIndicatorDB.Layout[3], ClassificationIndicatorDB.Layout[4])
 	ClassificationIndicator.PostUpdate = UpdateClassificationTexture
@@ -30,11 +30,11 @@ function UUF:CreateUnitClassificationIndicator(unitFrame, unit)
 	return ClassificationIndicator
 end
 
-function UUF:UpdateUnitClassificationIndicator(unitFrame, unit)
-	local ClassificationIndicatorDB = UUF.db.profile.Units.target.Indicators.Classification
+function RUF:UpdateUnitClassificationIndicator(unitFrame, unit)
+	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
 
 	if ClassificationIndicatorDB.Enabled then
-		unitFrame.ClassificationIndicator = unitFrame.ClassificationIndicator or UUF:CreateUnitClassificationIndicator(unitFrame, unit)
+		unitFrame.ClassificationIndicator = unitFrame.ClassificationIndicator or RUF:CreateUnitClassificationIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ClassificationIndicator") then unitFrame:EnableElement("ClassificationIndicator") end
 
 		unitFrame.ClassificationIndicator:ClearAllPoints()

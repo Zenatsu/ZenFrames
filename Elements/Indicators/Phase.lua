@@ -1,10 +1,10 @@
-local _, UUF = ...
+local _, RUF = ...
 
-function UUF:CreateUnitPhaseIndicator(unitFrame, unit)
-	local PhaseDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Phase
+function RUF:CreateUnitPhaseIndicator(unitFrame, unit)
+	local PhaseDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Phase
 	if not PhaseDB then return end
 
-	local PhaseIndicator = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PhaseIndicator", unitFrame.HighLevelContainer)
+	local PhaseIndicator = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PhaseIndicator", unitFrame.HighLevelContainer)
 	PhaseIndicator:SetSize(PhaseDB.Size, PhaseDB.Size)
 	PhaseIndicator:SetPoint(PhaseDB.Layout[1], unitFrame.HighLevelContainer, PhaseDB.Layout[2], PhaseDB.Layout[3], PhaseDB.Layout[4])
 	PhaseIndicator:SetFrameLevel(unitFrame.HighLevelContainer:GetFrameLevel() + 5)
@@ -23,12 +23,12 @@ function UUF:CreateUnitPhaseIndicator(unitFrame, unit)
 	return PhaseIndicator
 end
 
-function UUF:UpdateUnitPhaseIndicator(unitFrame, unit)
-	local PhaseDB = UUF:GetUnitDB(unitFrame, unit).Indicators.Phase
+function RUF:UpdateUnitPhaseIndicator(unitFrame, unit)
+	local PhaseDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Phase
 	if not PhaseDB then return end
 
 	if PhaseDB.Enabled then
-		unitFrame.PhaseIndicator = unitFrame.PhaseIndicator or UUF:CreateUnitPhaseIndicator(unitFrame, unit)
+		unitFrame.PhaseIndicator = unitFrame.PhaseIndicator or RUF:CreateUnitPhaseIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("PhaseIndicator") then unitFrame:EnableElement("PhaseIndicator") end
 
 		unitFrame.PhaseIndicator:ClearAllPoints()

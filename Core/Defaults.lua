@@ -1,4 +1,4 @@
-local _, UUF = ...
+local _, RUF = ...
 
 local Defaults = {
     global = {
@@ -647,7 +647,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "UUF_Target",
+                    AnchorParent = "RUF_Target",
                     Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1},
                     FrameStrata = "LOW",
                 },
@@ -817,7 +817,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "UUF_Player",
+                    AnchorParent = "RUF_Player",
                     Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 36.1},
                     FrameStrata = "LOW",
                 },
@@ -1047,7 +1047,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "UUF_Focus",
+                    AnchorParent = "RUF_Focus",
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     FrameStrata = "LOW",
                 },
@@ -1217,7 +1217,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "UUF_Player",
+                    AnchorParent = "RUF_Player",
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -26.1},
                     FrameStrata = "LOW",
                 },
@@ -2409,4 +2409,4 @@ local Defaults = {
 }
 
 ---@return table Defaults Returns the Default Table.
-function UUF:GetDefaultDB() return Defaults end
+function RUF:GetDefaultDB() return Defaults end
