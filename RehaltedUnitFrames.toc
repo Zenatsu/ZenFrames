@@ -1,14 +1,10 @@
-## Title: |cFF8080FFRehalted|rUnitFrames
+## Title: |cFF990007Rehalted|rUnitFrames
 ## Interface: 120000, 120001, 120005, 120007, 120100
-## Version: V12.0.25
-## Author: |cFF8080FFRehalted|r
-## Notes: Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
-## SavedVariables: UUFDB
-## Category-enUS: |cFF8080FFRehalted|r Development
-## IconTexture: Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Logo.tga
-## X-oUF: UnhaltedUnitFrames
-## X-Curse-Project-ID: 1235670
-## X-Wago-ID: 96do35NO
+## Version: V12.1.00
+## Author: Origional by |cFF8080FFUnhalted|r, continued by Zenatsu
+## Notes: Continuation of Unhalted Unitframes, A Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
+## Category: |cFF990007Rehalted|r Development
+## IconTexture: Interface\AddOns\RehaltedUnitFrames\Media\Textures\Logo.tga
 
 # Load Libraries
 Libraries/Init.xml
