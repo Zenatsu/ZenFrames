@@ -4,8 +4,20 @@ UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
+UUF.PARTY_TEST_MODE = false
+UUF.RAID_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+UUF.PARTY_FRAMES = {}
+UUF.MAX_PARTY_FRAMES = 4
+UUF.RAID_FRAMES = {}
+UUF.AUGMENTATION_RAID_FRAMES = {}
+UUF.RAID_TEST_FRAMES = {}
+UUF.RAID_HEADERS = {}
+UUF.AUGMENTATION_RAID_FRAME_COUNT = 0
+UUF.MAX_RAID_FRAMES = 40
+UUF.MAX_RAID_GROUPS = 8
+UUF.MAX_RAID_FRAMES_PER_GROUP = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
@@ -88,12 +100,92 @@ UUF.ClassificationTextures = {
 }
 
 UUF.QuestTextures = {
-    DEFAULT = "Interface\\TargetingFrame\\PortraitQuestBadge",
-    QUEST0 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
-    QUEST1 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+    ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
+    ["QUEST0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
+    ["QUEST1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+}
+
+UUF.RoleTextures = {
+    ["Blizzard"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
+    },
+    ["Colour"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga",
+    },
+    ["White"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.png",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.png",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.png",
+    },
+    ["ElvUI"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
+    },
+	["Square"] = {
+		["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png",
+		["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png",
+		["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png",
+	},
+}
+
+UUF.ReadyCheckTextures = {
+	["White"] = {
+		["READY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
+		["NOTREADY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
+		["WAITING"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
+	},
+    ["HiRes"] = {
+		["READY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
+		["NOTREADY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
+		["WAITING"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
+	},
+}
+
+UUF.InterruptSpellIDs = {
+	["DEATHKNIGHT"] = {47528},
+	["DEMONHUNTER"] = {183752},
+	["DRUID"] = {106839, 78675, 38675},
+	["EVOKER"] = {351338},
+	["HUNTER"] = {187707, 147362},
+	["MAGE"] = {2139},
+	["MONK"] = {116705},
+	["PALADIN"] = {96231, 31935},
+	["PRIEST"] = {15487},
+	["ROGUE"] = {1766},
+	["SHAMAN"] = {57994},
+	["WARLOCK"] = {19647, 132409, 89766, 119910, 1276467},
+	["WARRIOR"] = {6552},
 }
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
+
+function UUF:GetInterruptSpellID()
+	local playerInterrupt = UUF.InterruptSpellIDs[UnitClassBase("player")]
+	if not playerInterrupt then return end
+	for i = 1, #playerInterrupt do
+		local spellID = playerInterrupt[i]
+		if C_SpellBook.IsSpellKnownOrInSpellBook then
+			if C_SpellBook.IsSpellKnownOrInSpellBook(spellID) or C_SpellBook.IsSpellKnownOrInSpellBook(spellID, Enum.SpellBookSpellBank.Pet) then return spellID end
+		elseif IsSpellKnown and IsSpellKnown(spellID) then
+			return spellID
+		end
+	end
+end
+
+function UUF:IsInterruptOnCooldown()
+	local spellID = UUF:GetInterruptSpellID()
+	if not spellID then return false end
+	if C_Spell.GetSpellCooldown then
+		local cooldownInfo = C_Spell.GetSpellCooldown(spellID)
+		return cooldownInfo and cooldownInfo.isEnabled and cooldownInfo.isActive and not cooldownInfo.isOnGCD or false
+	end
+	return false
+end
 
 function UUF:FetchFrameName(unit)
     local UnitToFrame = {
@@ -104,9 +196,14 @@ function UUF:FetchFrameName(unit)
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
         ["boss"] = "UUF_Boss",
+        ["party"] = "UUF_Party",
+        ["partyplayer"] = "UUF_PartyPlayer",
+        ["raid"] = "UUF_Raid",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -136,19 +233,22 @@ function UUF:GetCooldownDurationComponents(displayStyle, minValue)
     end
 end
 
-function UUF:ApplyCooldownText(icon, textRegion, unit)
+function UUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     if not icon then return end
     local CooldownTextDB = UUF.db.profile.General.CooldownText
+    for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
+        if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
+    end
     if icon.SetCountdownFormatter then
         CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
         icon:SetCountdownFormatter(CooldownDurationFormatter)
     end
-    if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration end
+	if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
     if not textRegion then
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
-                    UUF:ApplyCooldownText(icon, region, unit)
+					UUF:ApplyCooldownText(icon, region, unit, unitFrame)
                     return
                 end
             end
@@ -253,6 +353,22 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+    local DefaultStatusColours = UUF:GetDefaultDB().profile.General.Colours.Status
+    local StatusColours = General.Colours.Status or DefaultStatusColours
+    local tappedColor = StatusColours.Tapped or DefaultStatusColours.Tapped
+    local disconnectedColor = StatusColours.Disconnected or DefaultStatusColours.Disconnected
+    local deadBackdropColor = StatusColours.DeadBackdrop or DefaultStatusColours.DeadBackdrop
+    oUF.colors.tapped = oUF:CreateColor(tappedColor[1], tappedColor[2], tappedColor[3])
+    oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
+    oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
+
+    local DefaultThreatColours = UUF:GetDefaultDB().profile.General.Colours.Threat
+    local ThreatColours = General.Colours.Threat or DefaultThreatColours
+    for threatStatus, defaultColor in pairs(DefaultThreatColours) do
+        local color = ThreatColours[threatStatus] or defaultColor
+        oUF.colors.threat[threatStatus] = oUF:CreateColor(color[1], color[2], color[3])
+    end
+
     if General.Colours.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,
@@ -350,8 +466,25 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit
+end
+
+function UUF:GetUnitDB(unitFrame, unit, units)
+	units = units or UUF.db.profile.Units
+	local normalizedUnit = unitFrame and unitFrame.isAugmentationRaidFrame and "augmentation" or UUF:GetNormalizedUnit(unit)
+	return normalizedUnit == "augmentation" and units.raid.augmentation or units[normalizedUnit]
+end
+
+function UUF:ForEachUnitDB(callback)
+	for unit, unitDB in pairs(UUF.db.profile.Units) do callback(unitDB, unit) end
+	callback(UUF.db.profile.Units.raid.augmentation, "augmentation")
+end
+
+function UUF:IsAugmentationEvoker()
+	if UnitClassBase("player") ~= "EVOKER" then return false end
+	local specializationIndex = C_SpecializationInfo.GetSpecialization()
+	return specializationIndex and C_SpecializationInfo.GetSpecializationInfo(specializationIndex) == 1473 or false
 end
 
 function UUF:RequiresAlternativePowerBar()
@@ -489,7 +622,7 @@ function UUF:GetSecondaryPowerType()
 end
 
 function UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
-    local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
+	local SecondaryPowerBarDB = UUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
     return SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and (unitFrame.Runes or unitFrame.ClassPower)
 end
 
@@ -500,8 +633,8 @@ local function NormalizeBarPosition(value, fallback)
     return fallback
 end
 
-function UUF:GetConfiguredPowerBarPosition(unit)
-    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+function UUF:GetConfiguredPowerBarPosition(unit, unitFrame)
+	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
     if not PowerBarDB then return "BOTTOM" end
     if PowerBarDB.Position then
         return NormalizeBarPosition(PowerBarDB.Position, "BOTTOM")
@@ -512,8 +645,8 @@ function UUF:GetConfiguredPowerBarPosition(unit)
     return "BOTTOM"
 end
 
-function UUF:GetConfiguredSecondaryPowerBarPosition(unit)
-    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+function UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
+	local UnitDB = UUF:GetUnitDB(unitFrame, unit)
     local SecondaryPowerBarDB = UnitDB.SecondaryPowerBar
     if not SecondaryPowerBarDB then return "TOP" end
     if SecondaryPowerBarDB.Position then
@@ -528,12 +661,12 @@ end
 function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
     if not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
 
-    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
     if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power) then
         return 0
     end
 
-    if UUF:GetConfiguredPowerBarPosition(unit) ~= UUF:GetConfiguredSecondaryPowerBarPosition(unit) then
+	if UUF:GetConfiguredPowerBarPosition(unit, unitFrame) ~= UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) then
         return 0
     end
 
@@ -541,8 +674,8 @@ function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
 end
 
 function UUF:UpdateHealthBarLayout(unitFrame, unit)
-    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
-    local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
+	local PowerBarDB = UUF:GetUnitDB(unitFrame, unit).PowerBar
+	local SecondaryPowerBarDB = UUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
 
     local topDepth = 0
     local bottomDepth = 0
@@ -551,7 +684,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local hasSecondaryPower = UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
 
     if hasPrimaryPower then
-        if UUF:GetConfiguredPowerBarPosition(unit) == "TOP" then
+		if UUF:GetConfiguredPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + PowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + PowerBarDB.Height + 1
@@ -559,7 +692,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 
     if hasSecondaryPower then
-        if UUF:GetConfiguredSecondaryPowerBarPosition(unit) == "TOP" then
+		if UUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + SecondaryPowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + SecondaryPowerBarDB.Height + 1
@@ -659,3 +792,19 @@ UUF.AURA_BLACKLIST = {
     [80354] = true,     -- Temporal Displacement
     [95809] = true,     -- Hunter Pet Insanity
 }
+
+UUF.SCMAnchors = {
+    ["Player"] = "UUF_Player",
+    ["Target"] = "UUF_Target",
+    ["Pet"] = "UUF_Pet",
+    ["Focus"] = "UUF_Focus",
+    ["Focus Target"] = "UUF_FocusTarget",
+    ["Target of Target"] = "UUF_TargetTarget",
+}
+
+function UUF:RefreshProfiles()
+	UUF:ResolveLSM()
+	UUF:LoadCustomColours()
+	UUF:UpdateAllUnitFrames()
+	UUF:ForEachUnitDB(function(_, unit) UUF:UpdateUnitTags(unit) end)
+end
