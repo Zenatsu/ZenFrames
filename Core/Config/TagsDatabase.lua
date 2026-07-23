@@ -29,6 +29,8 @@ function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
 end
 
 local Tags = {
+    ["perhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
+    ["perhp-with-sign"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
@@ -40,8 +42,11 @@ local Tags = {
     ["curpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
-    ["curpp:manapercent"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
-    ["curpp:manapercent:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+	["curpp:manapercent"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+	["curpp:manapercent:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent-with-sign:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent-with-sign:healer:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:manapercent-with-sign"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:manapercent-with-sign:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
@@ -49,31 +54,33 @@ local Tags = {
     ["maxpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["maxpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
-    ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
-    ["name:target"] = "UNIT_NAME_UPDATE UNIT_TARGET",
-    ["name:target:colour"] = "UNIT_NAME_UPDATE UNIT_TARGET",
+    ["name"] = "UNIT_CONNECTION GROUP_ROSTER_UPDATE",
+    ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_CONNECTION UNIT_FACTION UNIT_NAME_UPDATE GROUP_ROSTER_UPDATE",
+    ["name:target"] = "UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_TARGET GROUP_ROSTER_UPDATE",
+    ["name:target:colour"] = "UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_TARGET GROUP_ROSTER_UPDATE",
 
     ["reactioncolour"] = "UNIT_FACTION UNIT_NAME_UPDATE",
 }
 
 for i = 1, 25 do
-    Tags["name:short:" .. i] = "UNIT_NAME_UPDATE"
+    Tags["name:short:" .. i] = "UNIT_CONNECTION UNIT_NAME_UPDATE GROUP_ROSTER_UPDATE"
 end
 
 for i = 1, 25 do
-    Tags["name:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE"
+    Tags["name:short:" .. i .. ":colour"] = "UNIT_CONNECTION UNIT_NAME_UPDATE GROUP_ROSTER_UPDATE"
 end
 
 for i = 1, 25 do
-    Tags["name:target:short:" .. i] = "UNIT_NAME_UPDATE UNIT_TARGET"
+    Tags["name:target:short:" .. i] = "UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_TARGET GROUP_ROSTER_UPDATE"
 end
 
 for i = 1, 25 do
-    Tags["name:target:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE UNIT_TARGET"
+    Tags["name:target:short:" .. i .. ":colour"] = "UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_TARGET GROUP_ROSTER_UPDATE"
 end
 
 for i = 1, 3 do
     Tags["perhp" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["perhp-with-sign" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
     Tags["curhpperhp" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
     Tags["curhpperhp:abbr" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
     Tags["perpp" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
@@ -212,10 +219,41 @@ local function FetchUnitPowerColour(unit)
     return 1, 1, 1
 end
 
+oUF.Tags.Methods["perhp"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    if unitStatus then
+        return unitStatus
+    else
+        return string.format("%.0f", unitHealthPercent)
+    end
+end
+
+oUF.Tags.Methods["perhp-with-sign"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    if unitStatus then
+        return unitStatus
+    else
+        return string.format("%.0f%%", unitHealthPercent)
+    end
+end
+
+for i = 1, 3 do
+    local precision = i
+    oUF.Tags.Methods["perhp-with-sign" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+        return string.format("%." .. precision .. "f", unitHealthPercent)
+    end
+end
+
 oUF.Tags.Methods["curhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
     if unitStatus then
         return unitStatus
     else
@@ -228,7 +266,7 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
     if unitStatus then
         return unitStatus
     else
@@ -249,7 +287,7 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
     if unitStatus then
         return unitStatus
     else
@@ -324,6 +362,54 @@ oUF.Tags.Methods["curpp:manapercent"] = function(unit)
         return string.format("%.f", powerPercent)
     else
         return string.format("%s", unitPower)
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent:healer"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f", powerPercent)
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
+    if not unit then return end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        if manaColour then
+            local manaColourR, manaColourG, manaColourB = unpack(manaColour)
+            return string.format("|cff%02x%02x%02x%.f|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
+        end
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent-with-sign:healer"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f%%", powerPercent)
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent-with-sign:healer:colour"] = function(unit)
+    if not unit then return end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        if manaColour then
+            local manaColourR, manaColourG, manaColourB = unpack(manaColour)
+            return string.format("|cff%02x%02x%02x%.f%%|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
+        end
     end
 end
 
@@ -494,6 +580,12 @@ for i = 1, 3 do
         return string.format("%." .. precision .. "f", unitHealthPercent)
     end
 
+    oUF.Tags.Methods["perhp-with-sign" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+        return string.format("%." .. precision .. "f", unitHealthPercent)
+    end
+
     oUF.Tags.Methods["curhpperhp" .. ":" .. precision] = function(unit)
         if not unit or not UnitExists(unit) then return "" end
         local unitHealth = UnitHealth(unit)
@@ -626,8 +718,11 @@ local PowerTags = {
         ["maxpp:colour"] = "Maximum Power with Colour",
         ["maxpp:abbr:colour"] = "Maximum Power with Abbreviation and Colour",
         ["missingpp"] = "Missing Power",
-        ["curpp:manapercent"] = "Current Power but Mana as Percentage",
-        ["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
+		["curpp:manapercent"] = "Current Power but Mana as Percentage",
+		["curpp:manapercent:healer"] = "Mana Percentage for Healers",
+		["curpp:manapercent-with-sign:healer"] = "Mana Percentage for Healers with % Sign",
+		["curpp:manapercent-with-sign:healer:colour"] = "Mana Percentage for Healers with % Sign and Mana Colour",
+		["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
         ["curpp:manapercent-with-sign"] = "Current Power but Mana as Percentage with % Sign",
         ["curpp:manapercent-with-sign:abbr"] = "Current Power but Mana as Percentage with % Sign and Abbreviation",
         ["perpp:2"] = "Percentage Power with Decimal Precision (1 - 3)",
@@ -642,8 +737,10 @@ local PowerTags = {
         "curpp:colour",
         "curpp:abbr",
         "curpp:abbr:colour",
-        "curpp:manapercent",
-        "curpp:manapercent:abbr",
+		"curpp:manapercent",
+		"curpp:manapercent:healer",
+		"curpp:manapercent:healer:colour",
+		"curpp:manapercent:abbr",
         "curpp:manapercent-with-sign",
         "curpp:manapercent-with-sign:abbr",
         "perpp:2",
