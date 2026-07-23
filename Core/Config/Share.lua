@@ -3,6 +3,19 @@ local Serialize = LibStub:GetLibrary("AceSerializer-3.0")
 local Compress = LibStub:GetLibrary("LibDeflate")
 local UUF_IMPORT_PREFIX = "!UUF_"
 
+local function MergeInto(target, source)
+    for key, value in pairs(source) do
+        if type(value) == "table" then
+            if type(target[key]) ~= "table" then
+                target[key]={}
+            end
+            MergeInto(target[key], value)
+        else
+            target[key]=value
+        end
+    end
+end
+
 local function SerializeLuaValue(value, indentation, serializedTables)
     local valueType = type(value)
     if valueType == "string" then return string.format("%q", value) end
@@ -96,10 +109,7 @@ local function ApplyImportedProfileToCurrent(profile)
         return
     end
 
-    wipe(UUF.db.profile)
-    for key, value in pairs(profile) do
-        UUF.db.profile[key] = value
-    end
+    MergeInto(UUF.db.profile, profile)
 
     UUFG.RefreshProfiles()
     local general = UUF.db.profile and UUF.db.profile.General

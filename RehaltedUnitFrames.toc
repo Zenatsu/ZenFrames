@@ -5,6 +5,7 @@
 ## Notes: Continuation of Unhalted Unitframes, A Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
 ## Category: |cFF990007Rehalted|r Development
 ## IconTexture: Interface\AddOns\RehaltedUnitFrames\Media\Textures\Logo.tga
+## SavedVariables: UUFDB
 
 # Load Libraries
 Libraries/Init.xml

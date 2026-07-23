@@ -287,31 +287,36 @@ local function GenerateSupportText(parentFrame)
 end
 
 local function BuildMainNavigationTree()
-	local unitNavigation = {
-		{ text = "Player", value = "Player" },
-		{ text = "Target", value = "Target" },
-		{ text = "Target of Target", value = "TargetTarget" },
-		{ text = "Pet", value = "Pet" },
-		{ text = "Focus", value = "Focus" },
-		{ text = "Focus Target", value = "FocusTarget" },
-		{ text = "Party", value = "Party" },
-		{ text = "Raid", value = "Raid" },
+    local globalSubmenu = {
+		{text = "Toggles", value = "GlobalToggles"},
+        {text = "Fonts", value = "GlobalFonts"},
+		{text = "Textures", value = "GlobalTextures"},
+		{text = "Range", value = "GlobalRange"},
+		{text = "Tag Settings", value = "GlobalTags"},
+		{text = "Cooldown Text", value = "CooldownText"},
+    }
+    local unitSubmenu = {
+		{text = "Player", value = "Player"},
+		{text = "Target", value = "Target"},
+		{text = "Target of Target", value = "TargetTarget"},
+		{text = "Pet", value = "Pet"},
+		{text = "Focus", value = "Focus"},
+		{text = "Focus Target", value = "FocusTarget"},
+		{text = "Party", value = "Party"},
+		{text = "Raid", value = "Raid"},
+        {text = "Boss", value = "Boss"},
 	}
-	if UUF:IsAugmentationEvoker() then unitNavigation[#unitNavigation + 1] = { text = "Augmentation", value = "Augmentation" } end
-	unitNavigation[#unitNavigation + 1] = { text = "Boss", value = "Boss" }
-	return {
-		{ text = "General", value = "General" },
-		{text = "Global", value = "Global", children = {
-			{text = "Toggles", value = "GlobalToggles"},
-			{text = "Fonts", value = "GlobalFonts"},
-			{text = "Textures", value = "GlobalTextures"},
-			{text = "Range", value = "GlobalRange"},
-			{text = "Tag Settings", value = "GlobalTags"},
-			{text = "Cooldown Text", value = "CooldownText"},
-		}},
-		{text = "Units", value = "Units", children = unitNavigation},
-		{ text = "Tags", value = "Tags" },
-		{ text = "Profiles", value = "Profiles" },
+    local testSubmenu = {
+        {text = "Test Sub 1", value = "TestSub1"},
+    }
+    if UUF:IsAugmentationEvoker() then table.insert(unitSubmenu, 5, {text = "Augmentation", value = "Augmentation"}) end
+    return {
+		{text = "General", value = "General" },
+		{text = "Global", value = "Global", children = globalSubmenu},
+		{text = "Units", value = "Units", children = unitSubmenu},
+		{text = "Tags", value = "Tags" },
+		{text = "Profiles", value = "Profiles" },
+        {text = "Test Tab", value = "TestTab", children = testSubmenu},
 	}
 end
 
@@ -4560,6 +4565,39 @@ local function CreateProfileSettings(containerParent)
     SharingContainer:AddChild(ExportDefaultsButton)
 end
 
+local function CreateTestSettings(containerParent)
+    local container = GUIWidgets.CreateInlineGroup(containerParent, "Test Group")
+    GUIWidgets.CreateInformationTag(container, "This is a test group to learn the GUI widgets")
+    
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Test Check")
+    Toggle:SetRelativeWidth(0.5)
+    container:AddChild(Toggle)
+
+    local Slider = AG:Create("Slider")
+    Slider:SetLabel("Test Slider")
+    Slider:SetValue(1)
+    Slider:SetSliderValues(0, 10, 1) -- Args: Min, Max, Step
+    Slider:SetCallback("OnValueChanged", function(_,_,value) print("Slider Moved to: ",value)end)
+    Slider:SetRelativeWidth(0.5)
+    container:AddChild(Slider)
+
+    local Button = AG:Create("Button")
+    Button:SetText("Test Button")
+    Button:SetRelativeWidth(0.23)
+    Button:SetCallback("OnClick", function() print("Button!") end)
+    container:AddChild(Button)
+
+    local testList = {1,2,3,4,5}
+    local Dropdown = AG:Create("Dropdown")
+    Dropdown:SetLabel("Test Dropdown")
+    Dropdown:SetRelativeWidth(0.1)
+    Dropdown:SetList(testList)
+    Dropdown:SetValue(1)
+    Dropdown:SetCallback("OnValueChanged", function(_, _, value) end)
+    container:AddChild(Dropdown)
+end
+
 function UUF:CreateGUI()
     if isGUIOpen then return end
     if InCombatLockdown() then return end
@@ -4735,6 +4773,11 @@ function UUF:CreateGUI()
 
             CreateProfileSettings(ScrollFrame)
 
+            ScrollFrame:DoLayout()
+        elseif MainTab == "TestTab" then
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+            CreateTestSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         end
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end

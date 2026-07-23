@@ -1,3 +1,5 @@
+## V12.1.1
+- Modified the import function to handle missing data.
 ## V12.1.0
 - Add Party / Raid Frames.
 - Add Dedicated Augmentation Raid Frames.
