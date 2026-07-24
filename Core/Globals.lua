@@ -204,6 +204,7 @@ function RUF:FetchFrameName(unit)
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "RUF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "RUF_Party" .. unitID end
     if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "RUF_Raid" .. unitID end
+    if unit == "player" and RUF.DESIGNER_PREVIEW_ACTIVE then return "RUF_PlayerDesignerPreview" end
     return UnitToFrame[unit]
 end
 
@@ -288,11 +289,11 @@ function RUF:GetPixelPerfectScale()
 end
 
 local function SetupSlashCommands()
-    SLASH_RUF1 = "/uuf"
+    SLASH_RUF1 = "/ruf"
     SLASH_RUF2 = "/RehaltedUnitFrames"
     SLASH_RUF3 = "/uf"
     SlashCmdList["RUF"] = function() RUF:CreateGUI() end
-    if RUF.db.global.DisplayLoginMessage then RUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.") end
+    if RUF.db.global.DisplayLoginMessage then RUF:PrettyPrint("'|cFF990007/ruf|r' for in-game configuration.") end
 
     -- RL command
     SLASH_RUFRELOAD1 = "/rl"

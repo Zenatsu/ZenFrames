@@ -270,6 +270,7 @@ local function DisableAllTestModes()
 	RUF:UpdateTestEnvironment("boss", "all")
 	RUF:UpdateTestEnvironment("party", "all")
 	RUF:UpdateTestEnvironment("raid", "all")
+    RUF:HideDesignerPreview()
 	for _, frameMover in pairs(RUF.MOVERS or {}) do frameMover:Hide() end
 end
 
@@ -316,6 +317,7 @@ local function BuildMainNavigationTree()
 		{text = "Units", value = "Units", children = unitSubmenu},
 		{text = "Tags", value = "Tags" },
 		{text = "Profiles", value = "Profiles" },
+        {text = "Designer", value = "Designer" },
         {text = "Test Tab", value = "TestTab", children = testSubmenu},
 	}
 end
@@ -4624,6 +4626,7 @@ function RUF:CreateGUI()
         Wrapper:SetFullHeight(true)
         Wrapper:SetLayout("Fill")
         GUIContainer:AddChild(Wrapper)
+        local PreviewContainer
 
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
@@ -4774,6 +4777,12 @@ function RUF:CreateGUI()
             CreateProfileSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
+        elseif MainTab == "Designer" then
+            PreviewContainer = AG:Create("SimpleGroup")
+            PreviewContainer:SetLayout("Fill")
+            PreviewContainer:SetFullWidth(true)
+            PreviewContainer:SetFullHeight(true)
+            Wrapper:AddChild(PreviewContainer)  
         elseif MainTab == "TestTab" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
@@ -4783,6 +4792,7 @@ function RUF:CreateGUI()
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame) else RUF:HideDesignerPreview() end
         GenerateSupportText(Container)
     end
 

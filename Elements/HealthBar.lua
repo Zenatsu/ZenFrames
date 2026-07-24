@@ -105,12 +105,12 @@ function RUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         if unit == "player" or unit == "target" then
             local parentFrame = RUF:GetUnitDB(unitFrame, unit).HealthBar.AnchorToCooldownViewer and _G["RUF_CDMAnchor"] or UIParent
-            RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-            RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+            unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+            unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
             local parentFrame = _G[RUF:GetUnitDB(unitFrame, unit).Frame.AnchorParent] or UIParent
-            RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-            RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+            unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+            unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         end
     end
 

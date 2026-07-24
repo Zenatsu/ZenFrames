@@ -11,4 +11,5 @@
     <Script file="Config/GUI.lua"/>
     <Script file="Config/Share.lua"/>
     <Script file="Config/TagsDatabase.lua"/>
+    <script file="config/Designer.lua"/>
 </Ui>
