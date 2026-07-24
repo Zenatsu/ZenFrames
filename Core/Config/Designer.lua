@@ -23,6 +23,7 @@ function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the des
 
     if activeStyle then oUF:SetActiveStyle(activeStyle) end
     
+    previewFrame:Hide()
     RUF.DESIGNER_PREVIEW_FRAME = previewFrame
     return previewFrame
 end
@@ -35,9 +36,17 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     RUF:UpdateUnitFrame(previewFrame, "player")
     RUF.DESIGNER_PREVIEW_ACTIVE = false
     
+    if previewFrame:IsElementEnabled("Auras") then previewFrame:DisableElement("Auras") end
+    if previewFrame:IsElementEnabled("CustomAuras") then previewFrame:DisableElement("CustomAuras") end
+    if previewFrame:IsElementEnabled("PrivateAuras") then previewFrame:DisableElement("PrivateAuras") end
+
     previewFrame:SetSize(fDB.Width, fDB.Height)
     previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
     previewFrame:SetFrameLevel(100)
+    if previewFrame.HighLevelContainer then
+            previewFrame.HighLevelContainer:SetFrameStrata("FULLSCREEN_DIALOG")
+        end
+
 
     if previewFrame.Health then
         previewFrame.Health:SetMinMaxValues(0,100)
@@ -48,18 +57,269 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
         previewFrame.Power:SetValue(45)
         previewFrame.Power:Show()
     end
+
+    RUF:ApplyDesignerSampleData()
 end
 
 function RUF:ShowDesignerPreview(parentFrame) -- Show the preview
     local previewFrame = RUF:CreateDesignerPreviewFrame()
     previewFrame:SetParent(parentFrame)
+    previewFrame:Show()
     RUF:UpdateDesignerPreviewFrame()
     previewFrame:ClearAllPoints()
     previewFrame:SetPoint("CENTER", parentFrame, "CENTER", 0,0)
     previewFrame:SetFrameLevel(parentFrame:GetFrameLevel()+10)
-    previewFrame:Show()
+    RUF:AnchorDesignerOverlays()
 end
 
 function RUF:HideDesignerPreview() -- hide the preview
     if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
+    RUF:ResetDesignerInteractionState()
 end
+
+-- Designer Widget registry. Inspired by Platynator's designer tool, this sets up to show and maintain the widgets within the designer preview frame
+
+local overlays = {} -- entry key
+local overLayer -- Parent frame for overlays
+local selectedEntry -- currently selected entry
+
+local function GetPlayerDB() return RUF.db.profile.Units.player end
+
+local function TagEntry(tagKey, label)
+    return {
+        key = tagKey, label = label, kind = "tag",
+        getDB = function() return GetPlayerDB().Tags[tagKey] end,
+        getRegion = function(previewFrame) return previewFrame.Tags and previewFrame.Tags[tagKey] end,
+        refreshPreview = function(previewFrame)
+            RUF.DESIGNER_PREVIEW_ACTIVE = true
+            RUF:UpdateUnitTag(previewFrame, "player", tagKey)
+            RUF.DESIGNER_PREVIEW_ACTIVE = false
+        end,
+        refreshLive = function() if RUF.PLAYER then RUF:UpdateUnitTag(RUF.PLAYER, "player", tagKey) end
+    end,
+    }
+end
+
+local function IndicatorEntry(entry)
+   entry.kind = "indicator"
+   entry.getDB = function() return GetPlayerDB().Indicators[entry.dbKey] end
+   entry.refreshPreview = function(previewFrame)
+    RUF.DESIGNER_PREVIEW_ACTIVE = true
+    entry.update(previewFrame)
+    RUF.DESIGNER_PREVIEW_ACTIVE = false
+   end
+   entry.refreshLive = function() if RUF.PLAYER then entry.update(RUF.PLAYER) end end
+   return entry
+end
+
+RUF.DESIGNER_WIDGETS = {
+    TagEntry("TagOne", "Tag One"),
+    TagEntry("TagTwo", "Tag Two"),
+    TagEntry("TagThree", "Tag Three"),
+    TagEntry("TagFour", "Tag Four"),
+    TagEntry("TagFive", "Tag Five"),
+    IndicatorEntry({
+        key = "RaidTargetMarker", label = "Raid Target Marker", dbKey = "RaidTargetMarker",
+        oUFElements = {"RaidTargetIndicator"},
+        getRegion = function(previewFrame) return previewFrame.RaidTargetIndicator end,
+        update = function(unitFrame) RUF:UpdateUnitRaidTargetMarker(unitFrame,"player") end,
+        sample = function(previewFrame)
+            local region = previewFrame.RaidTargetIndicator if not region then return end
+            region:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])
+            SetRaidTargetIconTexture(region, 8) -- skull
+            region:Show()
+        end,
+    }),
+    IndicatorEntry({
+        key = "LeaderAssistant", label = "Leader Indicator", dbKey = "LeaderAssistantIndicator", oUFElements = {"LeaderIndicator", "AssistantIndicator"},
+        getRegion = function(previewFrame) return previewFrame.LeaderIndicator end,
+        update = function(unitFrame) RUF:UpdateUnitLeaderAssistantIndicator(unitFrame,"player") end,
+        sample = function(previewFrame)
+            local region = previewFrame.LeaderIndicator if not region then return end
+            region:SetTexture([[Interface\GroupFrame\UI-Group-LeaderIcon]])
+            region:SetTexCoord(0,1,0,1)
+            region:Show()
+            if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout and Overlap.
+        end,
+    }),
+    IndicatorEntry({
+        key = "Resting", label = "Resting Indicator", dbKey = "Resting", oUFElements = {"RestingIndicator"},
+        getRegion = function(previewFrame) return previewFrame.RestingIndicator end,
+        update = function(unitFrame) RUF:UpdateUnitRestingIndicator(unitFrame, "player") end, -- Update sets the texture, visibility is state driven
+        sample = function(previewFrame) if previewFrame.RestingIndicator then previewFrame.RestingIndicator:Show() end
+    end,
+    }),
+    IndicatorEntry({
+        key = "Combat", label = "Combat Indicator", dbKey = "Combat", oUFElements = {"CombatIndicator"},
+        getRegion = function(previewFrame) return previewFrame.CombatIndicator end,
+        update = function(unitFrame) RUF:UpdateUnitCombatIndicator(unitFrame,"player") end,
+        sample = function(previewFrame) if previewFrame.CombatIndicator then previewFrame.CombatIndicator:Show() end
+    end,
+    }),
+    IndicatorEntry({
+        key = "PvP", label = "PvP Indicator", dbKey = "PvP", oUFElements = {"PvPIndicator"},
+        getRegion = function(previewFrame) return previewFrame.PvPIndicator end,
+        update = function(unitFrame) RUF:UpdateUnitPvPIndicator(unitFrame,"player") end,
+        sample = function(previewFrame)
+            local region = previewFrame.PvPIndicator if not region then return end
+            local faction = UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"
+            region:SetTexture("Interface\\TargetingFrame\\UI-PvP-" .. faction)
+            region:SetTexCoord(0, 0.65625, 0, 0.65625)
+            region:Show()
+            if region.Badge then region.Badge:Hide() end
+        end,
+    }),
+}
+
+function RUF:ApplyDesignerSampleData()
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME 
+    if not previewFrame then return end
+
+    for _, entry in ipairs(RUF.DESIGNER_WIDGETS) do
+        local db = entry.getDB()
+        if entry.kind == "indicator" then 
+            if db and db.Enabled then
+                for _, elementName in ipairs(entry.oUFElements) do
+                    if previewFrame:IsElementEnabled(elementName) then previewFrame:DisableElement(elementName) end
+                end
+                if entry.sample then entry.sample(previewFrame) end
+            end
+        else
+            local region = entry.getRegion(previewFrame)
+            if region and (not db.Tag or db.Tag == "") then region:SetText(entry.label) end
+        end
+    end
+end
+
+-- Overlay region with overlay visuals
+local BLEED, MIN_HIT = 4,16 -- Pixel bleed, with a minimal mouse hit area
+
+local function UpdateOverlayVisual(overlay)
+    if overlay.entry == selectedEntry then
+        overlay:SetBackdropBorderColor(1,0.82,0,1)  -- Gold: Selected
+    elseif overlay.hovered then
+        overlay:SetBackdropBorderColor(1,1,1,0.7)   -- White: Hovered
+    else
+        overlay:SetBackdropBorderColor(1,1,1,0)     -- Invisible: not hovered, not selected
+    end
+end
+
+function RUF:UpdateDesignerStatusText()
+    if not overLayer then return end
+    if selectedEntry then
+        local db = selectedEntry.getDB()
+        overLayer.Status:SetFormattedText("|cFFFFD100%s|r    Anchor: %s -> %s    X: %d Y: %d", selectedEntry.label, db.Layout[1], db.Layout[2], db.Layout[3], db.Layout[4])
+    else
+        overLayer.Status:SetText("Hover over a widget to highlight it. Click to select. Drag to move.")
+    end    
+end
+
+local function GetOverLayer()
+    if overLayer then return overLayer end
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    overLayer = CreateFrame("Frame", "RUF_DesignerOverLayer", previewFrame)
+    overLayer:SetAllPoints(previewFrame)
+    overLayer:SetFrameStrata("FULLSCREEN_DIALOG")
+    overLayer:SetFrameLevel(1000)
+    overLayer:EnableMouse(true)
+    overLayer:SetScript("OnMouseDown", function() RUF:SetDesignerSelection(nil) end)
+    overLayer.Status = overLayer:CreateFontString(nil, "OVERLAY")
+    overLayer.Status:SetFont(RUF.Media.Font, 12, "OUTLINE")
+    overLayer.Status:SetPoint("TOP", previewFrame, "BOTTOM", 0,-12)
+    overLayer.Status:SetText("Hover over a widget to highlight it")
+    return overLayer
+end
+
+local function CreateOverlay(entry, index)
+    local layer = GetOverLayer()
+    local overlay = CreateFrame("Button", "RUF_DesignerOverlay_" .. entry.key, layer, "BackdropTemplate")
+    overlay.entry = entry
+    overlay:SetFrameLevel(layer:GetFrameLevel() +10+ index) -- Always sit above the parent frame level
+    overlay:SetBackdrop(RUF.BACKDROP)
+    overlay:SetBackdropColor(0,0,0,0)
+    overlay:SetMovable(true)
+    overlay:RegisterForDrag("LeftButton")
+    overlay:SetScript("OnEnter", function(self) 
+        self.hovered = true 
+        UpdateOverlayVisual(self)
+        if not selectedEntry then overLayer.Status:SetText("Hovering: " .. self.entry.label) end
+    end)
+    overlay:SetScript("OnLeave", function(self)
+        self.hovered = false
+        UpdateOverlayVisual(self)
+        RUF:UpdateDesignerStatusText()
+    end)
+    overlay:SetScript("OnClick", function(self) RUF:SetDesignerSelection(self.entry) end)
+    UpdateOverlayVisual(overlay)
+    overlays[entry.key] = overlay
+    overlay:SetScript("OnDragStart", function(self)
+        RUF:SetDesignerSelection(self.entry)
+        self.startX, self.startY = self:GetCenter()
+        self:StartMoving() 
+        local region = self.entry.getRegion(RUF.DESIGNER_PREVIEW_FRAME)
+        if region then region:ClearAllPoints() region:SetPoint("CENTER", self, "CENTER", 0, 0) end
+    end)
+    overlay:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        local endX, endY = self:GetCenter()
+        local startX, startY = self.startX, self.startY
+        self.startX, self.startY = nil, nil
+        if not (startX and endX) then RUF:AnchorDesignerOverlays() return end
+
+        local db = self.entry.getDB()
+        db.Layout[3] = math.floor(db.Layout[3] + (endX - startX) + 0.5)
+        db.Layout[4] = math.floor(db.Layout[4] + (endY - startY) + 0.5)
+
+        self.entry.refreshPreview(RUF.DESIGNER_PREVIEW_FRAME)
+        self.entry.refreshLive()
+        RUF:ApplyDesignerSampleData()
+        RUF:AnchorDesignerOverlays()
+        RUF:UpdateDesignerStatusText()
+    end)
+    return overlay
+end
+
+function RUF:AnchorDesignerOverlays()
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    if not previewFrame then return end
+    GetOverLayer()
+    for index, entry in ipairs(RUF.DESIGNER_WIDGETS) do
+        local region = entry.getRegion(previewFrame)
+        local db = entry.getDB()
+        local isActive = region and db and (entry.kind == "tag" or db.Enabled)
+        local overlay = overlays[entry.key]
+        if isActive then
+            overlay = overlay or CreateOverlay(entry, index)
+            local w, h = region:GetWidth(), region:GetHeight()
+            if RUF:IsSecretValue(w) or RUF:IsSecretValue(h) then
+                local fontSize = (entry.kind == "tag" and db.FontSize) or 16
+                w, h = fontSize * 5, fontSize
+            end
+            overlay:SetSize(
+                math.max((w or 0) + BLEED * 2, MIN_HIT),
+                math.max((h or 0) + BLEED * 2, MIN_HIT))
+            overlay:ClearAllPoints()
+            overlay:SetPoint(db.Layout[1], overLayer, db.Layout[2], db.Layout[3], db.Layout[4])
+            overlay:Show()
+        elseif overlay then
+            overlay:Hide()
+        end
+    end
+end
+
+function RUF:ResetDesignerInteractionState()
+    for _, overlay in pairs(overlays) do
+        overlay:StopMovingOrSizing()
+        overlay.startX, overlay.startY = nil, nil
+        overlay.hovered = false
+    end
+    RUF:SetDesignerSelection(nil)
+end
+
+function RUF:SetDesignerSelection(entry)
+    selectedEntry = entry
+    for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
+    RUF:UpdateDesignerStatusText()
+end
+
+_G.RUFDebug = RUF
