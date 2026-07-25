@@ -1,5 +1,9 @@
 ## V12.1.1
 - Modified the import function to handle missing data.
+- Added Designer feature for nameplates
+- Designer: widgets can now be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
+- Designer: the preview is now a bounded canvas that rejects and snaps back drops made outside its bounds.
+- Designer: selecting a widget now shows its settings inline below the preview instead of requiring the Units tab.
 ## V12.1.0
 - Add Party / Raid Frames.
 - Add Dedicated Augmentation Raid Frames.

@@ -1,5 +1,10 @@
 local _, RUF = ...
 local oUF = RUF.oUF
+local overlays = {} 
+local overLayer
+local selectedEntry
+local showingDropMessage = false
+local designerUnit = "player"
 
 function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the designer
     if RUF.DESIGNER_PREVIEW_FRAME then return RUF.DESIGNER_PREVIEW_FRAME end
@@ -61,115 +66,145 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     RUF:ApplyDesignerSampleData()
 end
 
-function RUF:ShowDesignerPreview(parentFrame) -- Show the preview
+function RUF:ShowDesignerPreview(parentFrame, unit, optionsContainer)
+    if unit and unit ~= designerUnit then RUF:SetDesignerUnit(unit) end
+    RUF.DESIGNER_CANVAS_FRAME = parentFrame
+    RUF.DESIGNER_OPTIONS_CONTAINER = optionsContainer
+
     local previewFrame = RUF:CreateDesignerPreviewFrame()
     previewFrame:SetParent(parentFrame)
     previewFrame:Show()
     RUF:UpdateDesignerPreviewFrame()
     previewFrame:ClearAllPoints()
-    previewFrame:SetPoint("CENTER", parentFrame, "CENTER", 0,0)
+    previewFrame:SetPoint("CENTER", parentFrame, "CENTER",0,0)
     previewFrame:SetFrameLevel(parentFrame:GetFrameLevel()+10)
     RUF:AnchorDesignerOverlays()
+    RUF:SetDesignerSelection(selectedEntry)
 end
 
-function RUF:HideDesignerPreview() -- hide the preview
+function RUF:HideDesignerPreview()
+    RUF.DESIGNER_CANVAS_FRAME = nil
+    RUF.DESIGNER_OPTIONS_CONTAINER = nil
     if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
     RUF:ResetDesignerInteractionState()
 end
 
 -- Designer Widget registry. Inspired by Platynator's designer tool, this sets up to show and maintain the widgets within the designer preview frame
 
-local overlays = {} -- entry key
-local overLayer -- Parent frame for overlays
-local selectedEntry -- currently selected entry
+local function GetLiveFrame(unit) return RUF[unit:upper()] end
 
-local function GetPlayerDB() return RUF.db.profile.Units.player end
-
-local function TagEntry(tagKey, label)
+local function TagEntry(unit, tagKey, label)
     return {
-        key = tagKey, label = label, kind = "tag",
-        getDB = function() return GetPlayerDB().Tags[tagKey] end,
+        key = tagKey, label = label, kind = "tag", unit = unit,
+        getDB = function() return RUF:GetUnitDB(nil, unit).Tags[tagKey] end,
         getRegion = function(previewFrame) return previewFrame.Tags and previewFrame.Tags[tagKey] end,
         refreshPreview = function(previewFrame)
             RUF.DESIGNER_PREVIEW_ACTIVE = true
-            RUF:UpdateUnitTag(previewFrame, "player", tagKey)
+            RUF:UpdateUnitTag(previewFrame, unit, tagKey)
             RUF.DESIGNER_PREVIEW_ACTIVE = false
         end,
-        refreshLive = function() if RUF.PLAYER then RUF:UpdateUnitTag(RUF.PLAYER, "player", tagKey) end
-    end,
+        refreshLive = function()
+            local liveFrame = GetLiveFrame(unit)
+            if liveFrame then RUF:UpdateUnitTag(liveFrame, unit, tagKey) end
+        end,
     }
 end
 
-local function IndicatorEntry(entry)
+local function IndicatorEntry(unit, entry)
    entry.kind = "indicator"
-   entry.getDB = function() return GetPlayerDB().Indicators[entry.dbKey] end
+   entry.unit = unit
+   entry.getDB = function() return RUF:GetUnitDB(nil, unit).Indicators[entry.dbKey] end
    entry.refreshPreview = function(previewFrame)
     RUF.DESIGNER_PREVIEW_ACTIVE = true
     entry.update(previewFrame)
     RUF.DESIGNER_PREVIEW_ACTIVE = false
    end
-   entry.refreshLive = function() if RUF.PLAYER then entry.update(RUF.PLAYER) end end
+   entry.refreshLive = function()
+        local liveFrame = GetLiveFrame(unit)
+        if liveFrame then entry.update(liveFrame) end
+   end
    return entry
 end
 
-RUF.DESIGNER_WIDGETS = {
-    TagEntry("TagOne", "Tag One"),
-    TagEntry("TagTwo", "Tag Two"),
-    TagEntry("TagThree", "Tag Three"),
-    TagEntry("TagFour", "Tag Four"),
-    TagEntry("TagFive", "Tag Five"),
-    IndicatorEntry({
-        key = "RaidTargetMarker", label = "Raid Target Marker", dbKey = "RaidTargetMarker",
-        oUFElements = {"RaidTargetIndicator"},
-        getRegion = function(previewFrame) return previewFrame.RaidTargetIndicator end,
-        update = function(unitFrame) RUF:UpdateUnitRaidTargetMarker(unitFrame,"player") end,
-        sample = function(previewFrame)
-            local region = previewFrame.RaidTargetIndicator if not region then return end
-            region:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])
-            SetRaidTargetIconTexture(region, 8) -- skull
-            region:Show()
+local function BuildDesignerRegistry(unit)
+    local registry = {
+        TagEntry(unit, "TagOne", "Tag One"),
+        TagEntry(unit, "TagTwo", "Tag Two"),
+        TagEntry(unit, "TagThree", "Tag Three"),
+        TagEntry(unit, "TagFour", "Tag Four"),
+        TagEntry(unit, "TagFive", "Tag Five"),
+        IndicatorEntry(unit, {
+            key = "RaidTargetMarker", label = "Raid Target Marker", dbKey = "RaidTargetMarker",
+            oUFElements = {"RaidTargetIndicator"},
+            getRegion = function(previewFrame) return previewFrame.RaidTargetIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitRaidTargetMarker(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.RaidTargetIndicator if not region then return end
+                region:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])
+                SetRaidTargetIconTexture(region, 8) -- skull
+                region:Show()
+            end,
+        }),
+        IndicatorEntry(unit, {
+            key = "LeaderAssistant", label = "Leader Indicator", dbKey = "LeaderAssistantIndicator", oUFElements = {"LeaderIndicator", "AssistantIndicator"},
+            getRegion = function(previewFrame) return previewFrame.LeaderIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.LeaderIndicator if not region then return end
+                region:SetTexture([[Interface\GroupFrame\UI-Group-LeaderIcon]])
+                region:SetTexCoord(0,1,0,1)
+                region:Show()
+                if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout and Overlap.
+            end,
+        }),
+        IndicatorEntry(unit, {
+            key = "Resting", label = "Resting Indicator", dbKey = "Resting", oUFElements = {"RestingIndicator"},
+            getRegion = function(previewFrame) return previewFrame.RestingIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitRestingIndicator(unitFrame, unit) end, -- Update sets the texture, visibility is state driven
+            sample = function(previewFrame) if previewFrame.RestingIndicator then previewFrame.RestingIndicator:Show() end
         end,
-    }),
-    IndicatorEntry({
-        key = "LeaderAssistant", label = "Leader Indicator", dbKey = "LeaderAssistantIndicator", oUFElements = {"LeaderIndicator", "AssistantIndicator"},
-        getRegion = function(previewFrame) return previewFrame.LeaderIndicator end,
-        update = function(unitFrame) RUF:UpdateUnitLeaderAssistantIndicator(unitFrame,"player") end,
-        sample = function(previewFrame)
-            local region = previewFrame.LeaderIndicator if not region then return end
-            region:SetTexture([[Interface\GroupFrame\UI-Group-LeaderIcon]])
-            region:SetTexCoord(0,1,0,1)
-            region:Show()
-            if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout and Overlap.
+        }),
+        IndicatorEntry(unit, {
+            key = "Combat", label = "Combat Indicator", dbKey = "Combat", oUFElements = {"CombatIndicator"},
+            getRegion = function(previewFrame) return previewFrame.CombatIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitCombatIndicator(unitFrame, unit) end,
+            sample = function(previewFrame) if previewFrame.CombatIndicator then previewFrame.CombatIndicator:Show() end
         end,
-    }),
-    IndicatorEntry({
-        key = "Resting", label = "Resting Indicator", dbKey = "Resting", oUFElements = {"RestingIndicator"},
-        getRegion = function(previewFrame) return previewFrame.RestingIndicator end,
-        update = function(unitFrame) RUF:UpdateUnitRestingIndicator(unitFrame, "player") end, -- Update sets the texture, visibility is state driven
-        sample = function(previewFrame) if previewFrame.RestingIndicator then previewFrame.RestingIndicator:Show() end
-    end,
-    }),
-    IndicatorEntry({
-        key = "Combat", label = "Combat Indicator", dbKey = "Combat", oUFElements = {"CombatIndicator"},
-        getRegion = function(previewFrame) return previewFrame.CombatIndicator end,
-        update = function(unitFrame) RUF:UpdateUnitCombatIndicator(unitFrame,"player") end,
-        sample = function(previewFrame) if previewFrame.CombatIndicator then previewFrame.CombatIndicator:Show() end
-    end,
-    }),
-    IndicatorEntry({
-        key = "PvP", label = "PvP Indicator", dbKey = "PvP", oUFElements = {"PvPIndicator"},
-        getRegion = function(previewFrame) return previewFrame.PvPIndicator end,
-        update = function(unitFrame) RUF:UpdateUnitPvPIndicator(unitFrame,"player") end,
-        sample = function(previewFrame)
-            local region = previewFrame.PvPIndicator if not region then return end
-            local faction = UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"
-            region:SetTexture("Interface\\TargetingFrame\\UI-PvP-" .. faction)
-            region:SetTexCoord(0, 0.65625, 0, 0.65625)
-            region:Show()
-            if region.Badge then region.Badge:Hide() end
-        end,
-    }),
-}
+        }),
+        IndicatorEntry(unit, {
+            key = "PvP", label = "PvP Indicator", dbKey = "PvP", oUFElements = {"PvPIndicator"},
+            getRegion = function(previewFrame) return previewFrame.PvPIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitPvPIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.PvPIndicator if not region then return end
+                local faction = UnitFactionGroup("player") == "Horde" and "Horde" or "Alliance"
+                region:SetTexture("Interface\\TargetingFrame\\UI-PvP-" .. faction)
+                region:SetTexCoord(0, 0.65625, 0, 0.65625)
+                region:Show()
+                if region.Badge then region.Badge:Hide() end
+            end,
+        }),
+    }
+
+    local entriesByKey = {}
+    for _, entry in ipairs(registry) do entriesByKey[entry.key] = entry end
+    for key, overlay in pairs(overlays) do
+        overlay.entry = entriesByKey[key]
+        if not overlay.entry then overlay:Hide() end
+    end
+    return registry
+end
+
+RUF.DESIGNER_WIDGETS = BuildDesignerRegistry(designerUnit)
+
+function RUF:GetDesignerUnit() return designerUnit end
+
+function RUF:SetDesignerUnit(unit)
+    if unit == designerUnit then return end
+    RUF:SetDesignerSelection(nil)
+    designerUnit = unit
+    RUF.DESIGNER_WIDGETS = BuildDesignerRegistry(unit)
+end
 
 function RUF:ApplyDesignerSampleData()
     local previewFrame = RUF.DESIGNER_PREVIEW_FRAME 
@@ -189,6 +224,19 @@ function RUF:ApplyDesignerSampleData()
             if region and (not db.Tag or db.Tag == "") then region:SetText(entry.label) end
         end
     end
+    if previewFrame.Totems then
+        for _, totem in ipairs(previewFrame.Totems) do totem:EnableMouse(false) end
+    end
+end
+
+function RUF:RefreshDesignerWidget(entry)
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    if not previewFrame or not previewFrame:IsShown() then return end
+    entry.refreshPreview(previewFrame)
+    entry.refreshLive()
+    RUF:ApplyDesignerSampleData()
+    RUF:AnchorDesignerOverlays()
+    RUF:UpdateDesignerStatusText()
 end
 
 -- Overlay region with overlay visuals
@@ -202,6 +250,27 @@ local function UpdateOverlayVisual(overlay)
     else
         overlay:SetBackdropBorderColor(1,1,1,0)     -- Invisible: not hovered, not selected
     end
+end
+
+local function IsInsideCanvas(overlay, x, y)
+    local canvas = RUF.DESIGNER_CANVAS_FRAME
+    if not (canvas and x and y) then return true end
+    local scale = overlay:GetEffectiveScale() / canvas:GetEffectiveScale()
+    local left, bottom, width, height = canvas:GetRect()
+    if not left then return true end
+    local scale = overlay:GetEffectiveScale()/canvas:GetEffectiveScale()
+    x,y = x*scale, y*scale
+    return x >= left and x <= left + width and y >= bottom and y <= bottom + height
+end
+
+local function ShowDropRejectedMessage()
+    if not overLayer then return end
+    showingDropMessage = true
+    overLayer.Status:SetText("|cFFFF4040Dropped outside the canvas - position not saved.|r")
+    C_Timer.After(1.5, function()
+        showingDropMessage = false
+        RUF:UpdateDesignerStatusText()
+    end)
 end
 
 function RUF:UpdateDesignerStatusText()
@@ -238,6 +307,7 @@ local function CreateOverlay(entry, index)
     overlay:SetBackdrop(RUF.BACKDROP)
     overlay:SetBackdropColor(0,0,0,0)
     overlay:SetMovable(true)
+    overlay:SetClampedToScreen(true)
     overlay:RegisterForDrag("LeftButton")
     overlay:SetScript("OnEnter", function(self) 
         self.hovered = true 
@@ -247,7 +317,7 @@ local function CreateOverlay(entry, index)
     overlay:SetScript("OnLeave", function(self)
         self.hovered = false
         UpdateOverlayVisual(self)
-        RUF:UpdateDesignerStatusText()
+        if not showingDropMessage then RUF:UpdateDesignerStatusText() end
     end)
     overlay:SetScript("OnClick", function(self) RUF:SetDesignerSelection(self.entry) end)
     UpdateOverlayVisual(overlay)
@@ -265,24 +335,53 @@ local function CreateOverlay(entry, index)
         local startX, startY = self.startX, self.startY
         self.startX, self.startY = nil, nil
         if not (startX and endX) then RUF:AnchorDesignerOverlays() return end
+        
+        if not IsInsideCanvas(self, endX, endY) then
+            RUF:RefreshDesignerWidget(self.entry)
+            ShowDropRejectedMessage()
+            return
+        end
 
         local db = self.entry.getDB()
         db.Layout[3] = math.floor(db.Layout[3] + (endX - startX) + 0.5)
         db.Layout[4] = math.floor(db.Layout[4] + (endY - startY) + 0.5)
 
-        self.entry.refreshPreview(RUF.DESIGNER_PREVIEW_FRAME)
-        self.entry.refreshLive()
-        RUF:ApplyDesignerSampleData()
-        RUF:AnchorDesignerOverlays()
-        RUF:UpdateDesignerStatusText()
+        RUF:RefreshDesignerWidget(self.entry)
+        RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, self.entry)
     end)
     return overlay
+end
+
+local canvasBorder
+
+local function GetCanvasBorder(canvas)
+    if not canvasBorder then
+        canvasBorder = CreateFrame("Frame", "RUF_DesignerCanvasBorder", canvas, "BackdropTemplate")
+        canvasBorder:SetBackdrop(RUF.BACKDROP)
+        canvasBorder:SetBackdropColor(0, 0, 0, 0) -- fill invisible, outline only
+        canvasBorder:SetBackdropBorderColor(1, 1, 1, 0.4)
+    end
+    canvasBorder:SetParent(canvas) -- canvas is a different recycled frame each tab-open
+    canvasBorder:ClearAllPoints()
+    canvasBorder:SetAllPoints(canvas)
+    canvasBorder:Show()
+    return canvasBorder
 end
 
 function RUF:AnchorDesignerOverlays()
     local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
     if not previewFrame then return end
     GetOverLayer()
+
+    local canvas = RUF.DESIGNER_CANVAS_FRAME
+    if canvas then
+        overLayer.Status:ClearAllPoints()
+        overLayer.Status:SetPoint("BOTTOM", canvas, "BOTTOM",0,6)
+        canvas:EnableMouse(true)
+        canvas:SetScript("OnMouseDown", function() RUF:SetDesignerSelection(nil) end)
+        GetCanvasBorder(canvas)
+    end
+
     for index, entry in ipairs(RUF.DESIGNER_WIDGETS) do
         local region = entry.getRegion(previewFrame)
         local db = entry.getDB()
@@ -313,6 +412,7 @@ function RUF:ResetDesignerInteractionState()
         overlay.startX, overlay.startY = nil, nil
         overlay.hovered = false
     end
+    if overLayer and overLayer.Status then overLayer.Status:ClearAllPoints() end
     RUF:SetDesignerSelection(nil)
 end
 
@@ -320,6 +420,7 @@ function RUF:SetDesignerSelection(entry)
     selectedEntry = entry
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
+    RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
 end
 
-_G.RUFDebug = RUF
+_G.RUFDebug = RUF -- For /run debugging commands

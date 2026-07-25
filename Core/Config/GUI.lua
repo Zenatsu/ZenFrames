@@ -83,6 +83,8 @@ local CooldownBreakpointSettings = {
 }
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
+local DESIGNER_CANVAS_HEIGHT = 210 
+local DESIGNER_OPTIONS_HEIGHT = 300
 local AuraAnchorParents = {{Frame = "Unit Frame", Health = "Health Bar"}, {"Frame", "Health"}}
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
@@ -2398,7 +2400,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 	GUIWidgets.DeepDisable(LayoutContainer, not SummonDB.Enabled)
 end
 
-local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallback)
+local function CreateAssistantSettings(containerParent, unit, updateCallback)
     local LeaderAssistantDB = GetUnitDB(unit).Indicators.LeaderAssistantIndicator
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
@@ -2644,8 +2646,8 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     RefreshPhaseGUI()
 end
 
-local function CreatePvPIndicatorSettings(containerParent, updateCallback)
-    local PvPIndicatorDB = RUF.db.profile.Units.player.Indicators.PvP
+local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
+    local PvPIndicatorDB = GetUnitDB(unit).Indicators.PvP
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "PvP Indicator Settings")
 
@@ -3146,7 +3148,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitRaidTargetMarker(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "LeaderAssistant" then
-            CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitLeaderAssistantIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateAssistantSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitLeaderAssistantIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Role" then
             CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Phase" then
@@ -3162,7 +3164,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "Combat" then
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() RUF:UpdateUnitCombatIndicator(RUF[unit:upper()], unit) end)
         elseif IndicatorTab == "PvP" and unit == "player" then
-            CreatePvPIndicatorSettings(IndicatorContainer, function() RUF:UpdateUnitPvPIndicator(RUF.PLAYER, "player") end)
+            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() RUF:UpdateUnitPvPIndicator(RUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitMouseoverIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "TargetIndicator" then
@@ -3235,7 +3237,7 @@ local function CreateIndicatorSettings(containerParent, unit)
     containerParent:AddChild(IndicatorContainerTabGroup)
 end
 
-local function CreateTagSetting(containerParent, unit, tagDB)
+local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
 	local TagDB = GetUnitDB(unit).Tags[tagDB]
 	local function UpdateTag()
 		if unit == "boss" and RUF.BOSS_TEST_MODE or unit == "party" and RUF.PARTY_TEST_MODE or unit == "raid" and RUF.RAID_TEST_MODE then
@@ -3243,6 +3245,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
 		else
 			RUF:UpdateUnitTags(unit, tagDB)
 		end
+        if updateCallback then updateCallback() end
 	end
 
     local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
@@ -3343,6 +3346,30 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     TagSelectionContainer:AddChild(MiscTagDropdown)
 
     containerParent:DoLayout()
+end
+
+local DesignerIndicatorBuilders = {
+    RaidTargetMarker = CreateRaidTargetMarkerSettings,
+    LeaderAssistant = CreateAssistantSettings,
+    PvP = CreatePvPIndicatorSettings,
+}
+
+function RUF:BuildDesignerWidgetOptions(container, unit, entry)
+    if not (container and container.frame) then return end
+    container:ReleaseChildren()
+    if not entry then
+        return
+    end
+    local function Refresh() RUF:RefreshDesignerWidget(entry) end
+    if entry.kind == "tag" then
+        CreateTagSetting(container, unit, entry.key, Refresh)
+    elseif entry.key == "Resting" or entry.key == "Combat" then
+        CreateStatusSettings(container, unit, entry.key, Refresh)
+    else
+        local builder = DesignerIndicatorBuilders[entry.key]
+        if builder then builder(container, unit, Refresh) end
+    end
+    container:DoLayout()
 end
 
 local function CreateTagsSettings(containerParent, unit)
@@ -4626,7 +4653,7 @@ function RUF:CreateGUI()
         Wrapper:SetFullHeight(true)
         Wrapper:SetLayout("Fill")
         GUIContainer:AddChild(Wrapper)
-        local PreviewContainer
+        local PreviewContainer, DesignerOptionsScroll
 
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
@@ -4778,11 +4805,17 @@ function RUF:CreateGUI()
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Designer" then
+            Wrapper:SetLayout("List")
+
             PreviewContainer = AG:Create("SimpleGroup")
             PreviewContainer:SetLayout("Fill")
             PreviewContainer:SetFullWidth(true)
-            PreviewContainer:SetFullHeight(true)
-            Wrapper:AddChild(PreviewContainer)  
+            PreviewContainer:SetAutoAdjustHeight(false)
+            PreviewContainer:SetHeight(DESIGNER_CANVAS_HEIGHT)
+            Wrapper:AddChild(PreviewContainer)
+
+            DesignerOptionsScroll = GUIWidgets.CreateScrollFrame(Wrapper)
+            DesignerOptionsScroll:SetHeight(DESIGNER_OPTIONS_HEIGHT)
         elseif MainTab == "TestTab" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
@@ -4792,7 +4825,7 @@ function RUF:CreateGUI()
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
-        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame) else RUF:HideDesignerPreview() end
+        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame, "player", DesignerOptionsScroll) else RUF:HideDesignerPreview() end
         GenerateSupportText(Container)
     end
 
