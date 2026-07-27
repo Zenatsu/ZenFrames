@@ -3,7 +3,7 @@ local _, RUF = ...
 function RUF:CreateThreatIndicatorOverlay(unitFrame, unit)
 	local ThreatIndicator = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
 	ThreatIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 4)
-	ThreatIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
+	ThreatIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
 	ThreatIndicator:SetBackdropColor(0, 0, 0, 0)
 	ThreatIndicator:SetBackdropBorderColor(1, 1, 1, 1)
 	ThreatIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)

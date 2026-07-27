@@ -57,7 +57,7 @@ local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 		end
 	end
 	if not restyle and button.Overlay then
-		button.Overlay:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
+		button.Overlay:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
 		button.Overlay:ClearAllPoints()
 		button.Overlay:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
 		button.Overlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)

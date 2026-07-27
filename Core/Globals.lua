@@ -38,8 +38,6 @@ RUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\RehaltedUnitFrames\
 RUF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Stripes.png")
 RUF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png")
 
-RUF.LSM:Register("background", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
-
 RUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
 RUF.LSM:Register("font", "Avante", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
 RUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")

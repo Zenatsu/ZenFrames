@@ -6,6 +6,7 @@ local RUFGUI = {}
 local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
+local decorFrames = {}
 
 local function GetUnitDB(unit)
 	return RUF:GetUnitDB(nil, unit)
@@ -83,8 +84,6 @@ local CooldownBreakpointSettings = {
 }
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
-local DESIGNER_CANVAS_HEIGHT = 210 
-local DESIGNER_OPTIONS_HEIGHT = 300
 local AuraAnchorParents = {{Frame = "Unit Frame", Health = "Health Bar"}, {"Frame", "Health"}}
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
@@ -4809,13 +4808,21 @@ function RUF:CreateGUI()
 
             PreviewContainer = AG:Create("SimpleGroup")
             PreviewContainer:SetLayout("Fill")
-            PreviewContainer:SetFullWidth(true)
+            if RUF.DesignerStyle.Layout.CanvasWidth then
+                PreviewContainer:SetFullWidth(false)
+                PreviewContainer:SetWidth(RUF.DesignerStyle.Layout.CanvasWidth)
+            else
+                PreviewContainer:SetFullWidth(true)
+            end
             PreviewContainer:SetAutoAdjustHeight(false)
-            PreviewContainer:SetHeight(DESIGNER_CANVAS_HEIGHT)
+            PreviewContainer:SetHeight(RUF.DesignerStyle.Layout.CanvasHeight)
             Wrapper:AddChild(PreviewContainer)
-
             DesignerOptionsScroll = GUIWidgets.CreateScrollFrame(Wrapper)
-            DesignerOptionsScroll:SetHeight(DESIGNER_OPTIONS_HEIGHT)
+            if RUF.DesignerStyle.Layout.OptionsWidth then
+                DesignerOptionsScroll:SetFullWidth(false)
+                DesignerOptionsScroll:SetWidth(RUF.DesignerStyle.Layout.OptionsWidth)
+            end
+            DesignerOptionsScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight)
         elseif MainTab == "TestTab" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 

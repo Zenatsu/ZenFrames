@@ -7,6 +7,7 @@
     <Script file="UnitFrame.lua"/>
     <Script file="GroupFrames.lua"/>
 
+    <script file="Config/DesignerStyle.lua"/>
     <Script file="Config/GUIWidgets.lua"/>
     <Script file="Config/GUI.lua"/>
     <Script file="Config/Share.lua"/>

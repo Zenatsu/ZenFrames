@@ -5,6 +5,8 @@ local overLayer
 local selectedEntry
 local showingDropMessage = false
 local designerUnit = "player"
+local STYLE = RUF.DesignerStyle
+local decorFrames = {} -- keyed decor frames: "Canvas" border, "OptionsPanel" backdrop
 
 function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the designer
     if RUF.DESIGNER_PREVIEW_FRAME then return RUF.DESIGNER_PREVIEW_FRAME end
@@ -55,11 +57,11 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
 
     if previewFrame.Health then
         previewFrame.Health:SetMinMaxValues(0,100)
-        previewFrame.Health:SetValue(70)
+         previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
     end
     if previewFrame.Power then
         previewFrame.Power:SetMinMaxValues(0,100)
-        previewFrame.Power:SetValue(45)
+        previewFrame.Power:SetValue(STYLE.Preview.SamplePower)
         previewFrame.Power:Show()
     end
 
@@ -87,6 +89,7 @@ function RUF:HideDesignerPreview()
     RUF.DESIGNER_OPTIONS_CONTAINER = nil
     if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
     RUF:ResetDesignerInteractionState()
+    for _, decor in pairs(decorFrames) do decor:Hide() end
 end
 
 -- Designer Widget registry. Inspired by Platynator's designer tool, this sets up to show and maintain the widgets within the designer preview frame
@@ -240,15 +243,13 @@ function RUF:RefreshDesignerWidget(entry)
 end
 
 -- Overlay region with overlay visuals
-local BLEED, MIN_HIT = 4,16 -- Pixel bleed, with a minimal mouse hit area
-
 local function UpdateOverlayVisual(overlay)
     if overlay.entry == selectedEntry then
-        overlay:SetBackdropBorderColor(1,0.82,0,1)  -- Gold: Selected
+        overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Selected))  -- Gold: Selected
     elseif overlay.hovered then
-        overlay:SetBackdropBorderColor(1,1,1,0.7)   -- White: Hovered
+        overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Hovered))   -- White: Hovered
     else
-        overlay:SetBackdropBorderColor(1,1,1,0)     -- Invisible: not hovered, not selected
+        overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Idle))     -- Invisible: not hovered, not selected
     end
 end
 
@@ -266,8 +267,8 @@ end
 local function ShowDropRejectedMessage()
     if not overLayer then return end
     showingDropMessage = true
-    overLayer.Status:SetText("|cFFFF4040Dropped outside the canvas - position not saved.|r")
-    C_Timer.After(1.5, function()
+    overLayer.Status:SetText(STYLE.Palette.ErrorText .. "Dropped outside the canvas|r")
+    C_Timer.After(STYLE.StatusText.DropMessageSeconds, function()
         showingDropMessage = false
         RUF:UpdateDesignerStatusText()
     end)
@@ -277,7 +278,7 @@ function RUF:UpdateDesignerStatusText()
     if not overLayer then return end
     if selectedEntry then
         local db = selectedEntry.getDB()
-        overLayer.Status:SetFormattedText("|cFFFFD100%s|r    Anchor: %s -> %s    X: %d Y: %d", selectedEntry.label, db.Layout[1], db.Layout[2], db.Layout[3], db.Layout[4])
+        overLayer.Status:SetFormattedText(STYLE.Palette.SelectedText .. "%s|r    Anchor: %s -> %s    X: %d Y: %d", selectedEntry.label, db.Layout[1], db.Layout[2], db.Layout[3], db.Layout[4])
     else
         overLayer.Status:SetText("Hover over a widget to highlight it. Click to select. Drag to move.")
     end    
@@ -293,8 +294,8 @@ local function GetOverLayer()
     overLayer:EnableMouse(true)
     overLayer:SetScript("OnMouseDown", function() RUF:SetDesignerSelection(nil) end)
     overLayer.Status = overLayer:CreateFontString(nil, "OVERLAY")
-    overLayer.Status:SetFont(RUF.Media.Font, 12, "OUTLINE")
-    overLayer.Status:SetPoint("TOP", previewFrame, "BOTTOM", 0,-12)
+    overLayer.Status:SetFont(RUF.Media.Font, STYLE.StatusText.Size, STYLE.StatusText.Outline)
+    overLayer.Status:SetPoint("TOP", previewFrame, "BOTTOM", 0, STYLE.StatusText.FallbackOffsetY)
     overLayer.Status:SetText("Hover over a widget to highlight it")
     return overLayer
 end
@@ -304,8 +305,8 @@ local function CreateOverlay(entry, index)
     local overlay = CreateFrame("Button", "RUF_DesignerOverlay_" .. entry.key, layer, "BackdropTemplate")
     overlay.entry = entry
     overlay:SetFrameLevel(layer:GetFrameLevel() +10+ index) -- Always sit above the parent frame level
-    overlay:SetBackdrop(RUF.BACKDROP)
-    overlay:SetBackdropColor(0,0,0,0)
+    overlay:SetBackdrop(STYLE.Overlays.Backdrop)  
+     overlay:SetBackdropColor(unpack(STYLE.Overlays.Fill))
     overlay:SetMovable(true)
     overlay:SetClampedToScreen(true)
     overlay:RegisterForDrag("LeftButton")
@@ -352,20 +353,28 @@ local function CreateOverlay(entry, index)
     return overlay
 end
 
-local canvasBorder
+local function ApplyDecorStyle(key, decor)
+    local group = STYLE[key]
+    decor:SetBackdrop(group.Backdrop) -- NOTE: SetBackdrop wipes colors, so tint after
+    decor:SetBackdropColor(unpack(group.Fill))
+    decor:SetBackdropBorderColor(unpack(group.Border))
+end
 
-local function GetCanvasBorder(canvas)
-    if not canvasBorder then
-        canvasBorder = CreateFrame("Frame", "RUF_DesignerCanvasBorder", canvas, "BackdropTemplate")
-        canvasBorder:SetBackdrop(RUF.BACKDROP)
-        canvasBorder:SetBackdropColor(0, 0, 0, 0) -- fill invisible, outline only
-        canvasBorder:SetBackdropBorderColor(1, 1, 1, 0.4)
+local function GetDecorFrame(key, parent)
+    local decor = decorFrames[key]
+    if not decor then
+        decor = CreateFrame("Frame", "RUF_DesignerDecor_" .. key, parent, "BackdropTemplate")
+        decorFrames[key] = decor
     end
-    canvasBorder:SetParent(canvas) -- canvas is a different recycled frame each tab-open
-    canvasBorder:ClearAllPoints()
-    canvasBorder:SetAllPoints(canvas)
-    canvasBorder:Show()
-    return canvasBorder
+    ApplyDecorStyle(key, decor)
+    decor:SetParent(parent)
+    decor:SetFrameLevel(parent:GetFrameLevel())
+    decor:ClearAllPoints()
+    local pad = STYLE[key].Padding or {}
+    decor:SetPoint("TOPLEFT", parent, "TOPLEFT", -(pad.left or 0), (pad.top or 0))
+    decor:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", (pad.right or 0), -(pad.bottom or 0))
+    decor:Show()
+    return decor
 end
 
 function RUF:AnchorDesignerOverlays()
@@ -376,10 +385,15 @@ function RUF:AnchorDesignerOverlays()
     local canvas = RUF.DESIGNER_CANVAS_FRAME
     if canvas then
         overLayer.Status:ClearAllPoints()
-        overLayer.Status:SetPoint("BOTTOM", canvas, "BOTTOM",0,6)
+        overLayer.Status:SetPoint("BOTTOM", canvas, "BOTTOM", 0, STYLE.StatusText.CanvasBottomInset)
         canvas:EnableMouse(true)
         canvas:SetScript("OnMouseDown", function() RUF:SetDesignerSelection(nil) end)
-        GetCanvasBorder(canvas)
+        GetDecorFrame("Canvas", canvas)
+    end
+
+    local optionsWidget = RUF.DESIGNER_OPTIONS_CONTAINER
+    if optionsWidget and optionsWidget.frame then
+        GetDecorFrame("OptionsPanel", optionsWidget.frame)
     end
 
     for index, entry in ipairs(RUF.DESIGNER_WIDGETS) do
@@ -391,12 +405,12 @@ function RUF:AnchorDesignerOverlays()
             overlay = overlay or CreateOverlay(entry, index)
             local w, h = region:GetWidth(), region:GetHeight()
             if RUF:IsSecretValue(w) or RUF:IsSecretValue(h) then
-                local fontSize = (entry.kind == "tag" and db.FontSize) or 16
+                local fontSize = (entry.kind == "tag" and db.FontSize) or STYLE.Preview.FallbackFontSize
                 w, h = fontSize * 5, fontSize
             end
             overlay:SetSize(
-                math.max((w or 0) + BLEED * 2, MIN_HIT),
-                math.max((h or 0) + BLEED * 2, MIN_HIT))
+                math.max((w or 0) + STYLE.Layout.OverlayBleed * 2, STYLE.Layout.OverlayMinHit),
+                math.max((h or 0) + STYLE.Layout.OverlayBleed * 2, STYLE.Layout.OverlayMinHit))
             overlay:ClearAllPoints()
             overlay:SetPoint(db.Layout[1], overLayer, db.Layout[2], db.Layout[3], db.Layout[4])
             overlay:Show()
@@ -421,6 +435,18 @@ function RUF:SetDesignerSelection(entry)
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
     RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
+end
+
+function RUF:RefreshDesignerStyle()
+    for _, overlay in pairs(overlays) do
+        overlay:SetBackdrop(STYLE.Overlays.Backdrop)
+        overlay:SetBackdropColor(unpack(STYLE.Overlays.Fill))
+        UpdateOverlayVisual(overlay)
+    end
+    if overLayer and overLayer.Status then
+        overLayer.Status:SetFont(RUF.Media.Font, STYLE.StatusText.Size, STYLE.StatusText.Outline)
+    end
+    for key, decor in pairs(decorFrames) do ApplyDecorStyle(key, decor) end
 end
 
 _G.RUFDebug = RUF -- For /run debugging commands
