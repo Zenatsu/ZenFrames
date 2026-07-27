@@ -391,11 +391,6 @@ function RUF:AnchorDesignerOverlays()
         GetDecorFrame("Canvas", canvas)
     end
 
-    local optionsWidget = RUF.DESIGNER_OPTIONS_CONTAINER
-    if optionsWidget and optionsWidget.frame then
-        GetDecorFrame("OptionsPanel", optionsWidget.frame)
-    end
-
     for index, entry in ipairs(RUF.DESIGNER_WIDGETS) do
         local region = entry.getRegion(previewFrame)
         local db = entry.getDB()
@@ -434,7 +429,11 @@ function RUF:SetDesignerSelection(entry)
     selectedEntry = entry
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
-    RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
+    if entry then
+        RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
+    else
+        RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, nil)
+    end
 end
 
 function RUF:RefreshDesignerStyle()

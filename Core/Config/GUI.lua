@@ -6,6 +6,7 @@ local RUFGUI = {}
 local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
+local designerLastTab = "Frame"
 local decorFrames = {}
 
 local function GetUnitDB(unit)
@@ -3353,6 +3354,14 @@ local DesignerIndicatorBuilders = {
     PvP = CreatePvPIndicatorSettings,
 }
 
+local function BubbleDesignerLayout(container)
+    local ancestor = container
+    while ancestor and ancestor.parent do
+        ancestor = ancestor.parent
+        ancestor:DoLayout()
+    end
+end
+
 function RUF:BuildDesignerWidgetOptions(container, unit, entry)
     if not (container and container.frame) then return end
     container:ReleaseChildren()
@@ -3369,6 +3378,61 @@ function RUF:BuildDesignerWidgetOptions(container, unit, entry)
         if builder then builder(container, unit, Refresh) end
     end
     container:DoLayout()
+    BubbleDesignerLayout(container)
+end
+
+function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
+    if not (container and container.frame) then return end
+    if tabValue then
+        designerLastTab = tabValue
+    else
+        tabValue = designerLastTab
+    end
+    container:ReleaseChildren()
+
+    local function RefreshDesignerPreview()
+        RUF:UpdateDesignerPreviewFrame()
+        RUF:AnchorDesignerOverlays()
+    end
+
+    local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
+
+    if tabValue == "Frame" then
+        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element)
+            UpdateUnitSettings(unit, function() RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end, element)
+            RefreshDesignerPreview()
+        end)
+    elseif tabValue == "HealPrediction" then
+        CreateHealPredictionSettings(container, unit, function()
+            UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction")
+            RefreshDesignerPreview()
+        end)
+    elseif tabValue == "PowerBar" then
+        CreatePowerBarSettings(container, unit, function()
+            UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar")
+            RefreshDesignerPreview()
+        end)
+    elseif tabValue == "SecondaryPowerBar" and playerHasSecondaryPower then
+        CreateSecondaryPowerBarSettings(container, unit, function()
+            RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit)
+            RefreshDesignerPreview()
+        end)
+    elseif tabValue == "AlternativePowerBar" and RUF:RequiresAlternativePowerBar() then
+        CreateAlternativePowerBarSettings(container, unit, function()
+            UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end)
+            RefreshDesignerPreview()
+        end)
+    elseif tabValue == "CastBar" then
+        CreateCastBarSettings(container, unit)
+    elseif tabValue == "Portrait" then
+        CreatePortraitSettings(container, unit, function()
+            UpdateUnitSettings(unit, function() RUF:UpdateUnitPortrait(RUF[unit:upper()], unit) end, "Portrait")
+            RefreshDesignerPreview()
+        end)
+    end
+
+    container:DoLayout()
+    BubbleDesignerLayout(container)
 end
 
 local function CreateTagsSettings(containerParent, unit)
@@ -4652,7 +4716,7 @@ function RUF:CreateGUI()
         Wrapper:SetFullHeight(true)
         Wrapper:SetLayout("Fill")
         GUIContainer:AddChild(Wrapper)
-        local PreviewContainer, DesignerOptionsScroll
+        local PreviewContainer, DesignerOptionsScroll, DesignerTabGroup, DesignerTabContentScroll
 
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
@@ -4817,12 +4881,55 @@ function RUF:CreateGUI()
             PreviewContainer:SetAutoAdjustHeight(false)
             PreviewContainer:SetHeight(RUF.DesignerStyle.Layout.CanvasHeight)
             Wrapper:AddChild(PreviewContainer)
-            DesignerOptionsScroll = GUIWidgets.CreateScrollFrame(Wrapper)
+            DesignerOptionsScroll = AG:Create("SimpleGroup")
+            DesignerOptionsScroll:SetLayout("Flow")
             if RUF.DesignerStyle.Layout.OptionsWidth then
                 DesignerOptionsScroll:SetFullWidth(false)
                 DesignerOptionsScroll:SetWidth(RUF.DesignerStyle.Layout.OptionsWidth)
+            else
+                DesignerOptionsScroll:SetFullWidth(true)
             end
-            DesignerOptionsScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight)
+            Wrapper:AddChild(DesignerOptionsScroll)
+
+            local DesignerSettingsContainer = AG:Create("SimpleGroup")
+            DesignerSettingsContainer:SetFullWidth(true)
+            DesignerSettingsContainer:SetLayout("Flow")
+            DesignerOptionsScroll:AddChild(DesignerSettingsContainer)
+
+            local designerUnit = RUF:GetDesignerUnit()
+            local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
+            local designerTabs ={
+                {text = "Frame", value = "Frame" },
+                { text = "Heal Prediction", value = "HealPrediction" },
+                { text = "Power Bar", value = "PowerBar" },
+                { text = "Cast Bar", value = "CastBar" },
+                { text = "Portrait", value = "Portrait" },
+            }
+            local nextPowerTabIndex = 4
+            if playerHasSecondaryPower then
+                table.insert(designerTabs, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
+                nextPowerTabIndex = nextPowerTabIndex +1
+            end
+            if RUF:RequiresAlternativePowerBar() then
+                table.insert(designerTabs, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
+            end
+
+            DesignerTabGroup = AG:Create("TabGroup")
+            DesignerTabGroup:SetLayout("Flow")
+            DesignerTabGroup:SetFullWidth(true)
+            DesignerTabGroup:SetTabs(designerTabs)
+            DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
+                RUF:SetDesignerSelection(nil)
+                RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, DesignerTab) end)
+
+            DesignerTabContentScroll = GUIWidgets.CreateScrollFrame(DesignerTabGroup)
+            DesignerTabContentScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight - RUF.DesignerStyle.Layout.TabStripHeight)
+            RUF.DESIGNER_OPTIONS_CONTAINER = DesignerTabContentScroll
+            local startTab = designerLastTab
+            if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
+            if startTab == "AlternativePowerBar" and not RUF:RequiresAlternativePowerBar() then startTab = "Frame" end
+            DesignerTabGroup:SelectTab(startTab)
+            DesignerSettingsContainer:AddChild(DesignerTabGroup)
         elseif MainTab == "TestTab" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
@@ -4832,7 +4939,7 @@ function RUF:CreateGUI()
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
-        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame, "player", DesignerOptionsScroll) else RUF:HideDesignerPreview() end
+        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame, "player", DesignerTabContentScroll) else RUF:HideDesignerPreview() end
         GenerateSupportText(Container)
     end
 

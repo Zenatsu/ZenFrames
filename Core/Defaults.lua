@@ -195,6 +195,7 @@ local Defaults = {
                     Background = {34/255, 34/255, 34/255},
                     NotInterruptibleColour = {255/255, 64/255, 64/255},
                     InterruptedFailedColour = {64/255, 255/255, 64/255},
+                    InterruptCooldownColour = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
