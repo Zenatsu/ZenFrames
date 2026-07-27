@@ -147,14 +147,9 @@ function RUF:SpawnUnitFrame(unit)
         if unit == "player" or unit == "target" or unit == "focus" then RUF:RegisterDispelHighlightEvents(RUF[unit:upper()], unit) end
     end
 
-    if unit == "player" or unit == "target" then
-        local parentFrame = RUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["RUF_CDMAnchor"] or UIParent
-        RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    if RUF[unit:upper()] then -- boss spawns as BOSS1..n above; there is no single RUF.BOSS frame to size or place
         RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
-    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-        local parentFrame = _G[RUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
-        RUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-        RUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+        RUF:PlaceUnitFrame(RUF[unit:upper()], unit)
     end
     if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then RUF:RegisterRangeFrame(RUF:FetchFrameName(unit), unit) end
 	RUF:CreateMover(unit)
@@ -182,6 +177,20 @@ function RUF:SpawnUnitFrame(unit)
     end
 
     return RUF[unit:upper()]
+end
+
+function RUF:PlaceUnitFrame(unitFrame, unit)
+    if not unitFrame or unitFrame.isDesignerPreview then return end
+    local FrameDB = RUF:GetUnitDB(unitFrame, unit).Frame
+    if unit == "player" or unit == "target" then
+        local parentFrame = RUF:GetUnitDB(unitFrame, unit).HealthBar.AnchorToCooldownViewer and _G["RUF_CDMAnchor"] or UIParent
+        unitFrame:ClearAllPoints()
+        unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
+        local parentFrame = _G[FrameDB.AnchorParent] or UIParent
+        unitFrame:ClearAllPoints()
+        unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    end
 end
 
 function RUF:UpdateUnitFrame(unitFrame, unit)
@@ -220,7 +229,7 @@ function RUF:UpdateUnitFrame(unitFrame, unit)
     RUF:UpdateUnitAuras(unitFrame, unit)
 	if unit ~= "player" then RUF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
 	RUF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
-    unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
+    if not unitFrame.isDesignerPreview then unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata) end -- preview strata is designer-managed (FULLSCREEN_DIALOG)
 end
 
 function RUF:UpdateBossFrames()

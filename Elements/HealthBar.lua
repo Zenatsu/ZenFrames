@@ -101,17 +101,8 @@ function RUF:UpdateUnitHealthBar(unitFrame, unit)
     local DispelHighlightDB = RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 
     if unitFrame then
-        unitFrame:ClearAllPoints()
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
-        if unit == "player" or unit == "target" then
-            local parentFrame = RUF:GetUnitDB(unitFrame, unit).HealthBar.AnchorToCooldownViewer and _G["RUF_CDMAnchor"] or UIParent
-            unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-            unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
-        elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-            local parentFrame = _G[RUF:GetUnitDB(unitFrame, unit).Frame.AnchorParent] or UIParent
-            unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-            unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
-        end
+        RUF:PlaceUnitFrame(unitFrame, unit)
     end
 
     if unitFrame.Health then

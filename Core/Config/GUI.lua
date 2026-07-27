@@ -3354,11 +3354,15 @@ local DesignerIndicatorBuilders = {
     PvP = CreatePvPIndicatorSettings,
 }
 
+local CreateAuraSettings
+
 local function BubbleDesignerLayout(container)
+    local hops = 0
     local ancestor = container
-    while ancestor and ancestor.parent do
+    while ancestor and ancestor.parent and hops < 2 do
         ancestor = ancestor.parent
         ancestor:DoLayout()
+        hops = hops+1
     end
 end
 
@@ -3398,37 +3402,21 @@ function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
     local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
 
     if tabValue == "Frame" then
-        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element)
-            UpdateUnitSettings(unit, function() RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end, element)
-            RefreshDesignerPreview()
-        end)
+        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element) RefreshDesignerPreview() end)
     elseif tabValue == "HealPrediction" then
-        CreateHealPredictionSettings(container, unit, function()
-            UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction")
-            RefreshDesignerPreview()
-        end)
+        CreateHealPredictionSettings(container, unit, function() RefreshDesignerPreview() end)
+    elseif tabValue == "Auras" then
+        CreateAuraSettings(container, unit, function() RefreshDesignerPreview() end)
     elseif tabValue == "PowerBar" then
-        CreatePowerBarSettings(container, unit, function()
-            UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar")
-            RefreshDesignerPreview()
-        end)
+        CreatePowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
     elseif tabValue == "SecondaryPowerBar" and playerHasSecondaryPower then
-        CreateSecondaryPowerBarSettings(container, unit, function()
-            RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit)
-            RefreshDesignerPreview()
-        end)
+        CreateSecondaryPowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
     elseif tabValue == "AlternativePowerBar" and RUF:RequiresAlternativePowerBar() then
-        CreateAlternativePowerBarSettings(container, unit, function()
-            UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end)
-            RefreshDesignerPreview()
-        end)
+        CreateAlternativePowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
     elseif tabValue == "CastBar" then
         CreateCastBarSettings(container, unit)
     elseif tabValue == "Portrait" then
-        CreatePortraitSettings(container, unit, function()
-            UpdateUnitSettings(unit, function() RUF:UpdateUnitPortrait(RUF[unit:upper()], unit) end, "Portrait")
-            RefreshDesignerPreview()
-        end)
+        CreatePortraitSettings(container, unit, function() RefreshDesignerPreview() end)
     end
 
     container:DoLayout()
@@ -3461,7 +3449,7 @@ local function CreateTagsSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
+local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateCallback)
     local AuraDB = GetUnitDB(unit).Auras[auraDB]
     local isCustom = auraDB == "Custom"
     local filterAuraDB = auraDB == "Custom" and (AuraDB.Type == "Debuffs" and "Debuffs" or "Buffs") or auraDB
@@ -3762,10 +3750,10 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     containerParent:DoLayout()
 end
 
-local function CreatePrivateAuraSettings(containerParent, unit)
+local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local PrivateAurasDB = GetUnitDB(unit).Auras.PrivateAuras
     local function UpdatePrivateAuras()
-        UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras")
+        updateCallback()
     end
 
     local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Private Aura Settings")
@@ -3912,7 +3900,7 @@ local function CreatePrivateAuraSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateAuraSettings(containerParent, unit)
+function CreateAuraSettings(containerParent, unit, updateCallback)
     local AurasDB = GetUnitDB(unit).Auras
 
     local ShowAurasButton = AG:Create("Button")
@@ -3929,20 +3917,20 @@ local function CreateAuraSettings(containerParent, unit)
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
     FrameStrataDropdown:SetRelativeWidth(0.5)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UpdateUnitSettings(unit, function() RUF:UpdateUnitAurasStrata(unit) end, "Auras") end)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value updateCallback() end)
     containerParent:AddChild(FrameStrataDropdown)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
+            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs", updateCallback)
         elseif AuraTab == "Debuffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs", updateCallback)
         elseif AuraTab == "Custom" and AurasDB.Custom then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Custom")
+            CreateSpecificAuraSettings(AuraContainer, unit, "Custom", updateCallback)
         elseif AuraTab == "PrivateAuras" and AurasDB.PrivateAuras then
-            CreatePrivateAuraSettings(AuraContainer, unit)
+            CreatePrivateAuraSettings(AuraContainer, unit, updateCallback)
         end
         containerParent:DoLayout()
     end
@@ -4291,7 +4279,7 @@ local function CreateUnitSettings(containerParent, unit)
         elseif UnitTab == "HealPrediction" then
             CreateHealPredictionSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
         elseif UnitTab == "Auras" then
-            CreateAuraSettings(SubContainer, unit)
+            CreateAuraSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras") end)
         elseif UnitTab == "PowerBar" then
             CreatePowerBarSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar") end)
         elseif UnitTab == "SecondaryPowerBar" and unit == "player" and playerHasSecondaryPower then
@@ -4899,8 +4887,9 @@ function RUF:CreateGUI()
             local designerUnit = RUF:GetDesignerUnit()
             local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
             local designerTabs ={
-                {text = "Frame", value = "Frame" },
+                { text = "Frame", value = "Frame" },
                 { text = "Heal Prediction", value = "HealPrediction" },
+                { text = "Auras", value = "Auras" },
                 { text = "Power Bar", value = "PowerBar" },
                 { text = "Cast Bar", value = "CastBar" },
                 { text = "Portrait", value = "Portrait" },
@@ -4919,7 +4908,7 @@ function RUF:CreateGUI()
             DesignerTabGroup:SetFullWidth(true)
             DesignerTabGroup:SetTabs(designerTabs)
             DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
-                RUF:SetDesignerSelection(nil)
+                RUF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
                 RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, DesignerTab) end)
 
             DesignerTabContentScroll = GUIWidgets.CreateScrollFrame(DesignerTabGroup)
@@ -4939,7 +4928,14 @@ function RUF:CreateGUI()
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
-        if MainTab == "Designer" then RUF:ShowDesignerPreview(PreviewContainer.frame, "player", DesignerTabContentScroll) else RUF:HideDesignerPreview() end
+        if MainTab == "Designer" then
+            local canvasFrame = PreviewContainer.frame
+            C_Timer.After(0, function() -- fresh script-execution budget: entry UI build + preview rebuild together trip the "script ran too long" watchdog
+                if canvasFrame:IsShown() then RUF:ShowDesignerPreview(canvasFrame, "player", DesignerTabContentScroll) end
+            end)
+        else
+            RUF:HideDesignerPreview()
+        end
         GenerateSupportText(Container)
     end
 

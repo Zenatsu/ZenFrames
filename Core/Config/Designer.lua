@@ -7,16 +7,20 @@ local showingDropMessage = false
 local designerUnit = "player"
 local STYLE = RUF.DesignerStyle
 local decorFrames = {} -- keyed decor frames: "Canvas" border, "OptionsPanel" backdrop
+local previewStyleRegistered
 
 function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the designer
     if RUF.DESIGNER_PREVIEW_FRAME then return RUF.DESIGNER_PREVIEW_FRAME end
 
     local activeStyle = oUF:GetActiveStyle()
-    oUF:RegisterStyle("RUF_PlayerDesignerPreviewStyle", function(unitFrame)
-        RUF.DESIGNER_PREVIEW_ACTIVE=true
-        RUF:CreateUnitFrame(unitFrame, "player")
-        RUF.DESIGNER_PREVIEW_ACTIVE=false
-    end)
+    if not previewStyleRegistered then -- oUF errors on duplicate RegisterStyle; a failed Spawn would otherwise strand us re-registering
+        oUF:RegisterStyle("RUF_PlayerDesignerPreviewStyle", function(unitFrame)
+            RUF.DESIGNER_PREVIEW_ACTIVE=true
+            RUF:CreateUnitFrame(unitFrame, "player")
+            RUF.DESIGNER_PREVIEW_ACTIVE=false
+        end)
+        previewStyleRegistered = true
+    end
     oUF:SetActiveStyle("RUF_PlayerDesignerPreviewStyle")
 
     local previewFrame = oUF:Spawn("Player", "RUF_PlayerDesignerPreview_frame") -- spawn the preview frame of the player
@@ -53,6 +57,10 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     if previewFrame.HighLevelContainer then
             previewFrame.HighLevelContainer:SetFrameStrata("FULLSCREEN_DIALOG")
         end
+    -- Aura containers are strata-pinned from the DB in Elements/Auras.lua and stop following their parent; re-lift them for the preview
+    for _, key in ipairs({"BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer"}) do
+        if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
+    end
 
 
     if previewFrame.Health then
@@ -425,7 +433,14 @@ function RUF:ResetDesignerInteractionState()
     RUF:SetDesignerSelection(nil)
 end
 
+function RUF:ClearDesignerSelection() -- deselect WITHOUT rebuilding the options panel; for callers about to build it themselves
+    selectedEntry = nil
+    for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
+    RUF:UpdateDesignerStatusText()
+end
+
 function RUF:SetDesignerSelection(entry)
+    if not entry and not selectedEntry then return end -- blank-canvas click with nothing selected: rebuilding would only churn layout
     selectedEntry = entry
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
