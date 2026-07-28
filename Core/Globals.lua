@@ -276,8 +276,12 @@ function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     end
 end
 
-function RUF:Capitalize(STR)
-    return "|cFF8080FF" .. (STR:gsub("^%l", string.upper)) .. "|r"
+function RUF:SetTestPredictionBar(bar, value, maxValue, enabled)
+    if not bar then return end
+    if not enabled then bar:Hide() return end
+    bar:SetMinMaxValues(0, maxValue)
+    bar:SetValue(value)
+    bar:Show()
 end
 
 local function SetupSlashCommands()
@@ -381,9 +385,9 @@ local function AddAnchorsToBCDM()
     if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
     if select(4, GetBuildInfo()) >= 121000 then return end
     local RUF_Anchors = {
-        ["RUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
-        ["RUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
-        ["RUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
+        ["RUF_Player"] = "|cFF8080FFRehalted|rUnitFrames: Player Frame",
+        ["RUF_Target"] = "|cFF8080FFRehalted|rUnitFrames: Target Frame",
+        ["RUF_Pet"] = "|cFF8080FFRehalted|rUnitFrames: Pet Frame",
     }
     if BCDMG then
         BCDMG:AddAnchors("RehaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, RUF_Anchors)
@@ -438,13 +442,6 @@ function RUF:GetClassColour(unitFrame)
     local classColour = RAID_CLASS_COLORS[class]
     if classColour then
         return {classColour.r, classColour.g, classColour.b, 1}
-    end
-end
-
-function RUF:GetReactionColour(reaction)
-    local reactionColour = oUF.colors.reaction[reaction]
-    if reactionColour then
-        return {reactionColour.r, reactionColour.g, reactionColour.b, 1}
     end
 end
 

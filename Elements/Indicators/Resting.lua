@@ -1,10 +1,5 @@
 local _, RUF = ...
 
-local function SetRestingTexture(restingTexture)
-    if not restingTexture then return end
-    return RUF.StatusTextures["Resting"][restingTexture]
-end
-
 function RUF:CreateUnitRestingIndicator(unitFrame, unit)
     local RestingDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Resting
 

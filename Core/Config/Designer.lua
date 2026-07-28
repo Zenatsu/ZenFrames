@@ -54,26 +54,18 @@ function RUF:LiftDesignerPreviewStrata() -- Try to ensure the strata of the prev
     if castBarContainer then castBarContainer:SetFrameStrata("FULLSCREEN_DIALOG") end
 end
 
-local function SetTestPredictionBar(bar, value, maxValue, enabled)
-    if not bar then return end
-    if not enabled then bar:Hide() return end
-    bar:SetMinMaxValues(0, maxValue)
-    bar:SetValue(value)
-    bar:Show()
-end
-
 function RUF:ApplyDesignerHealPredictionPreview()
     local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
     if not previewFrame or not previewFrame.HealthPrediction then return end
     local HealPredictionDB = RUF:GetUnitDB(previewFrame, "player").HealPrediction
     local on = RUF.DESIGNER_PREVIEW_TOGGLES.HealPrediction
 
-    SetTestPredictionBar(previewFrame.HealthPrediction.damageAbsorb, STYLE.Preview.SampleAbsorb, 100, on and HealPredictionDB.Absorbs.Enabled)
-    SetTestPredictionBar(previewFrame.HealthPrediction.healAbsorb, STYLE.Preview.SampleHealAbsorb, 100, on and HealPredictionDB.HealAbsorbs.Enabled)
-    SetTestPredictionBar(previewFrame.HealthPrediction.healingPlayer, STYLE.Preview.SampleIncomingHeal, 100, on and HealPredictionDB.IncomingHeal.Enabled)
+    RUF:SetTestPredictionBar(previewFrame.HealthPrediction.damageAbsorb, STYLE.Preview.SampleAbsorb, 100, on and HealPredictionDB.Absorbs.Enabled)
+    RUF:SetTestPredictionBar(previewFrame.HealthPrediction.healAbsorb, STYLE.Preview.SampleHealAbsorb, 100, on and HealPredictionDB.HealAbsorbs.Enabled)
+    RUF:SetTestPredictionBar(previewFrame.HealthPrediction.healingPlayer, STYLE.Preview.SampleIncomingHeal, 100, on and HealPredictionDB.IncomingHeal.Enabled)
     if previewFrame.HealthPrediction.overDamageAbsorb then
         local showOverAbsorb = on and HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
-        SetTestPredictionBar(previewFrame.HealthPrediction.overDamageAbsorb, STYLE.Preview.SampleAbsorb, 100, showOverAbsorb)
+        RUF:SetTestPredictionBar(previewFrame.HealthPrediction.overDamageAbsorb, STYLE.Preview.SampleAbsorb, 100, showOverAbsorb)
         if previewFrame.HealthPrediction.overDamageAbsorb.Clip then
             if showOverAbsorb then previewFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else previewFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
         end
@@ -120,9 +112,6 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     RUF:ApplyDesignerDispelHighlightPreview()
     RUF:LiftDesignerPreviewStrata()
 
-    --debugging
-    print("strata:", RUF.DESIGNER_PREVIEW_FRAME:GetFrameStrata(), "level:", RUF.DESIGNER_PREVIEW_FRAME:GetFrameLevel())
-    if RUF.DESIGNER_PREVIEW_FRAME.HighLevelContainer then print("HLC strata:", RUF.DESIGNER_PREVIEW_FRAME.HighLevelContainer:GetFrameStrata()) end
 end
 
 function RUF:ShowDesignerPreview(parentFrame, unit, optionsContainer)
@@ -281,7 +270,7 @@ local function BuildDesignerRegistry(unit)
             update = function(unitFrame) RUF:UpdateUnitCastBar(unitFrame, unit) end,
         }),
         WidgetEntry(unit, {
-            key = "Totems", label = "Totems", dbKey = "Totems", oUFElements = {"Totems"},
+            key = "Totems", label = "Totems", dbKey = "Totems", oUFElements = {"Totems"}, designerTab = "Indicators",
             getRegion = function(previewFrame) return previewFrame.Totems and previewFrame.Totems[1] end,
             update = function(unitFrame) RUF:UpdateUnitTotems(unitFrame, unit) end,
         }),
@@ -355,7 +344,6 @@ end
 local function IsInsideCanvas(overlay, x, y)
     local canvas = RUF.DESIGNER_CANVAS_FRAME
     if not (canvas and x and y) then return true end
-    local scale = overlay:GetEffectiveScale() / canvas:GetEffectiveScale()
     local left, bottom, width, height = canvas:GetRect()
     if not left then return true end
     local scale = overlay:GetEffectiveScale()/canvas:GetEffectiveScale()
@@ -447,7 +435,7 @@ local function CreateOverlay(entry, index)
         db.Layout[4] = math.floor(db.Layout[4] + (endY - startY) + 0.5)
 
         RUF:RefreshDesignerWidget(self.entry)
-        RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, self.entry)
+        RUF:SetDesignerSelection(self.entry)
     end)
     return overlay
 end
@@ -538,8 +526,6 @@ function RUF:SetDesignerSelection(entry)
     if entry and entry.designerTab then
         SaveSubTab(designerUnit, entry.designerTab, entry.key)
         if RUF.DESIGNER_TAB_GROUP then RUF.DESIGNER_TAB_GROUP:SelectTab(entry.designerTab) end
-    elseif entry then
-        RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
     else
         RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, nil)
     end

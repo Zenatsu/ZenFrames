@@ -1,9 +1,9 @@
 local _, RUF = ...
-local UnhaltedUnitFrames = LibStub("AceAddon-3.0"):NewAddon("UnhaltedUnitFrames")
+local RehaltedUnitFrames = LibStub("AceAddon-3.0"):NewAddon("RehaltedUnitFrames")
 
-function UnhaltedUnitFrames:OnInitialize()
+function RehaltedUnitFrames:OnInitialize()
     RUF.db = LibStub("AceDB-3.0"):New("UUFDB", RUF:GetDefaultDB(), true)
-    RUF.LDS:EnhanceDatabase(RUF.db, "UnhaltedUnitFrames")
+    RUF.LDS:EnhanceDatabase(RUF.db, "RehaltedUnitFrames")
     RUF.TAG_UPDATE_INTERVAL = RUF.db.profile.General.TagUpdateInterval or 0.25
     RUF.SEPARATOR = RUF.db.profile.General.Separator or "||"
     RUF.TOT_SEPARATOR = RUF.db.profile.General.ToTSeparator or "»"
@@ -20,7 +20,7 @@ function UnhaltedUnitFrames:OnInitialize()
 	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, RUF.RefreshProfiles) end end)
 end
 
-function UnhaltedUnitFrames:OnEnable()
+function RehaltedUnitFrames:OnEnable()
     RUF:Init()
     RUF:CreatePositionController()
     RUF:SpawnUnitFrame("player")

@@ -74,14 +74,6 @@ local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
 	end
 end
 
-local function SetTestPredictionBar(bar, value, maxValue, enabled)
-	if not bar then return end
-	if not enabled then bar:Hide() return end
-	bar:SetMinMaxValues(0, maxValue)
-	bar:SetValue(value)
-	bar:Show()
-end
-
 local function ApplyTestTag(fontString, frame, tagDB, text)
 	if not fontString or not tagDB then return end
 	if tagDB.Tag == "" then fontString:Hide() return end
@@ -163,12 +155,12 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 
 	if (updateAll or element == "Frame" or element == "HealPrediction") and unitFrame.HealthPrediction then
 		RUF:UpdateUnitHealPrediction(unitFrame, unit)
-		SetTestPredictionBar(unitFrame.HealthPrediction.damageAbsorb, testData.absorb, testData.maxHealth, HealPredictionDB.Absorbs.Enabled)
-		SetTestPredictionBar(unitFrame.HealthPrediction.healAbsorb, testData.healAbsorb, testData.maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
-		SetTestPredictionBar(unitFrame.HealthPrediction.healingPlayer, testData.incomingHeal, testData.maxHealth, HealPredictionDB.IncomingHeal.Enabled)
+		RUF:SetTestPredictionBar(unitFrame.HealthPrediction.damageAbsorb, testData.absorb, testData.maxHealth, HealPredictionDB.Absorbs.Enabled)
+		RUF:SetTestPredictionBar(unitFrame.HealthPrediction.healAbsorb, testData.healAbsorb, testData.maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
+		RUF:SetTestPredictionBar(unitFrame.HealthPrediction.healingPlayer, testData.incomingHeal, testData.maxHealth, HealPredictionDB.IncomingHeal.Enabled)
 		if unitFrame.HealthPrediction.overDamageAbsorb then
 			local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
-			SetTestPredictionBar(unitFrame.HealthPrediction.overDamageAbsorb, testData.absorb, testData.maxHealth, showOverAbsorb)
+			RUF:SetTestPredictionBar(unitFrame.HealthPrediction.overDamageAbsorb, testData.absorb, testData.maxHealth, showOverAbsorb)
 			if unitFrame.HealthPrediction.overDamageAbsorb.Clip then
 				if showOverAbsorb then unitFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
 			end
@@ -492,12 +484,12 @@ local function UpdateBossTestEnvironment(element)
 			if (updateAll or element == "Frame" or element == "HealPrediction") and BossFrame.HealthPrediction then
 				RUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
 				local maxHealth = TestData[i].maxHealth
-				SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, TestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
-				SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, TestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
-				SetTestPredictionBar(BossFrame.HealthPrediction.healingPlayer, TestData[i].incomingHeal, maxHealth, HealPredictionDB.IncomingHeal.Enabled)
+				RUF:SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, TestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
+				RUF:SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, TestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
+				RUF:SetTestPredictionBar(BossFrame.HealthPrediction.healingPlayer, TestData[i].incomingHeal, maxHealth, HealPredictionDB.IncomingHeal.Enabled)
 				if BossFrame.HealthPrediction.overDamageAbsorb then
 					local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
-					SetTestPredictionBar(BossFrame.HealthPrediction.overDamageAbsorb, TestData[i].absorb, maxHealth, showOverAbsorb)
+					RUF:SetTestPredictionBar(BossFrame.HealthPrediction.overDamageAbsorb, TestData[i].absorb, maxHealth, showOverAbsorb)
 					if BossFrame.HealthPrediction.overDamageAbsorb.Clip then
 						if showOverAbsorb then BossFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else BossFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
 					end

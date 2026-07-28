@@ -201,19 +201,6 @@ local RoleTextures = {
 	["Square"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t",
 }
 
-local function EnableAurasTestMode(unit)
-	RUF.AURA_TEST_MODE = true
-	if unit == "augmentation" then
-		RUF:ForEachAugmentationRaidFrame(function(unitFrame, frameUnit)
-			if frameUnit then RUF:CreateTestAuras(unitFrame, frameUnit) end
-		end, false)
-	elseif unit == "party" or unit == "raid" or unit == "boss" then
-		RUF:UpdateTestEnvironment(unit, "Auras")
-	else
-		RUF:CreateTestAuras(RUF[unit:upper()], unit)
-	end
-end
-
 local function DisableAurasTestMode(unit)
 	RUF.AURA_TEST_MODE = false
 	if unit == "augmentation" then
@@ -297,13 +284,7 @@ end
 
 local function GenerateSupportText(parentFrame)
     local SupportOptions = {
-        -- "Support Me on |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Ko-Fi.png:13:18|t |cFF8080FFKo-Fi|r!",
-        -- "Support Me on |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Patreon.png:14:14|t |cFF8080FFPatreon|r!",
-        -- "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\PayPal.png:20:18|t |cFF8080FFPayPal Donations|r are appreciated!",
-        "Join the |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Discord.png:18:18|t |cFF8080FFDiscord|r Community!",
-        "Report Issues / Feedback on |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\GitHub.png:18:18|t |cFF8080FFGitHub|r!",
-        "Follow Me on |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Twitch.png:18:14|t |cFF8080FFTwitch|r!",
-        "|cFF8080FFSupport|r is truly appreciated |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t " .. "|cFF8080FFDevelopment|r takes time & effort."
+        "This is just a stand-in until I decide to do something with it."
     }
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
@@ -320,9 +301,6 @@ local function BuildMainNavigationTree()
 		{text = "Raid", value = "Raid"},
         {text = "Boss", value = "Boss"},
 	}
-    local testSubmenu = {
-        {text = "Test Sub 1", value = "TestSub1"},
-    }
     if RUF:IsAugmentationEvoker() then table.insert(unitSubmenu, 5, {text = "Augmentation", value = "Augmentation"}) end
     return {
 		{text = "General", value = "General" },
@@ -330,7 +308,6 @@ local function BuildMainNavigationTree()
 		{text = "Tags", value = "Tags" },
 		{text = "Profiles", value = "Profiles" },
         {text = "Designer", value = "Designer" },
-        {text = "Test Tab", value = "TestTab", children = testSubmenu},
 	}
 end
 
@@ -3310,13 +3287,6 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     containerParent:DoLayout()
 end
 
-local DesignerIndicatorBuilders = {
-    RaidTargetMarker = CreateRaidTargetMarkerSettings,
-    LeaderAssistant = CreateAssistantSettings,
-    PvP = CreatePvPIndicatorSettings,
-    Totems = CreateTotemsIndicatorSettings,
-}
-
 local CreateAuraSettings
 local CreateTagsSettings
 
@@ -3328,19 +3298,6 @@ local function BubbleDesignerLayout(container)
         ancestor:DoLayout()
         hops = hops+1
     end
-end
-
-function RUF:BuildDesignerWidgetOptions(container, unit, entry)
-    if not (container and container.frame) then return end
-    container:ReleaseChildren()
-    if not entry then
-        return
-    end
-    local function Refresh() RUF:RefreshDesignerWidget(entry) end
-    local builder = DesignerIndicatorBuilders[entry.key]
-    if builder then builder(container, unit, Refresh) end
-    container:DoLayout()
-    BubbleDesignerLayout(container)
 end
 
 function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
@@ -4550,7 +4507,7 @@ local function CreateProfileSettings(containerParent)
     ExportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ExportingHeading)
 
-    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFRehalted|r Unit Frame users.")
 
     local ExportingEditBox = AG:Create("EditBox")
     ExportingEditBox:SetLabel("Export String...")
@@ -4611,39 +4568,6 @@ local function CreateProfileSettings(containerParent)
     ExportDefaultsButton:SetFullWidth(true)
     ExportDefaultsButton:SetCallback("OnClick", function() DefaultsExportEditBox:SetText(RUF:ExportDefaultsTable()) DefaultsExportEditBox:HighlightText() DefaultsExportEditBox:SetFocus() end)
     SharingContainer:AddChild(ExportDefaultsButton)
-end
-
-local function CreateTestSettings(containerParent)
-    local container = GUIWidgets.CreateInlineGroup(containerParent, "Test Group")
-    GUIWidgets.CreateInformationTag(container, "This is a test group to learn the GUI widgets")
-    
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Test Check")
-    Toggle:SetRelativeWidth(0.5)
-    container:AddChild(Toggle)
-
-    local Slider = AG:Create("Slider")
-    Slider:SetLabel("Test Slider")
-    Slider:SetValue(1)
-    Slider:SetSliderValues(0, 10, 1) -- Args: Min, Max, Step
-    Slider:SetCallback("OnValueChanged", function(_,_,value) print("Slider Moved to: ",value)end)
-    Slider:SetRelativeWidth(0.5)
-    container:AddChild(Slider)
-
-    local Button = AG:Create("Button")
-    Button:SetText("Test Button")
-    Button:SetRelativeWidth(0.23)
-    Button:SetCallback("OnClick", function() print("Button!") end)
-    container:AddChild(Button)
-
-    local testList = {1,2,3,4,5}
-    local Dropdown = AG:Create("Dropdown")
-    Dropdown:SetLabel("Test Dropdown")
-    Dropdown:SetRelativeWidth(0.1)
-    Dropdown:SetList(testList)
-    Dropdown:SetValue(1)
-    Dropdown:SetCallback("OnValueChanged", function(_, _, value) end)
-    container:AddChild(Dropdown)
 end
 
 function RUF:CreateGUI()
@@ -4880,11 +4804,6 @@ function RUF:CreateGUI()
             DesignerTabGroup:SelectTab(startTab)
             RUF.DESIGNER_TAB_GROUP = DesignerTabGroup
             DesignerSettingsContainer:AddChild(DesignerTabGroup)
-        elseif MainTab == "TestTab" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateTestSettings(ScrollFrame)
-            ScrollFrame:DoLayout()
         end
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end

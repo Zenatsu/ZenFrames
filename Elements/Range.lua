@@ -354,8 +354,6 @@ function RUF:UnregisterRangeFrame(frame)
 	UpdateRangeTicker()
 end
 
-function RUF:IsRangeFrameRegistered(unit) return RUF.RangeEvtFrames[unit] ~= nil end
-
 function RUF:UpdateAllRangeFrames()
 	for unit, unitFrames in pairs(RUF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
