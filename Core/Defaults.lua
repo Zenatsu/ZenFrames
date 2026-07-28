@@ -271,6 +271,9 @@ local Defaults = {
                         Layout = {"RIGHT", "LEFT", -1, 0, 1},
                         GrowthDirection = "LEFT",
                     },
+                    Threat = {
+                        Enabled = false,
+                    },
                 },
                 Auras = {
                     FrameStrata = "LOW",

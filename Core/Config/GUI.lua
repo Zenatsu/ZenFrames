@@ -17,7 +17,7 @@ local function GetDefaultUnitDB(unit)
 	return RUF:GetUnitDB(nil, unit, RUF:GetDefaultDB().profile.Units)
 end
 
-local function SaveSubTab(unit, tabName, subTabValue)
+function SaveSubTab(unit, tabName, subTabValue)
     if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
     if not lastSelectedUnitTabs[unit].subTabs then lastSelectedUnitTabs[unit].subTabs = {} end
     lastSelectedUnitTabs[unit].subTabs[tabName] = subTabValue
@@ -29,6 +29,19 @@ end
 
 local function GetSavedMainTab(unit, defaultValue)
     return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].mainTab or defaultValue
+end
+
+RUF.DESIGNER_PREVIEW_TOGGLES = { Auras = false, DispelHighlight = false, HealPrediction = false, CastBar = false }
+
+local function CreateDesignerPreviewToggle(containerParent, key, updateCallback)
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Preview")
+    Toggle:SetValue(RUF.DESIGNER_PREVIEW_TOGGLES[key])
+    Toggle:SetCallback("OnValueChanged", function(_, _, value)
+        RUF.DESIGNER_PREVIEW_TOGGLES[key] = value
+        updateCallback() end)
+    containerParent:AddChild(Toggle)
+    return Toggle
 end
 
 local function UpdateUnitSettings(unit, updateCallback, element)
@@ -45,6 +58,11 @@ local function UpdateUnitSettings(unit, updateCallback, element)
 	elseif updateCallback then
 		updateCallback()
 	end
+
+    if RUF.DESIGNER_OPTIONS_CONTAINER and RUF:GetDesignerUnit() == unit then
+        RUF:UpdateDesignerPreviewFrame()
+        RUF:AnchorDesignerOverlays()
+    end
 end
 
 local UnitDBToUnitPrettyName = {
@@ -1069,7 +1087,8 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
 	if unit == "player" or unit == "target" or unit == "focus" or unit == "party" or unit == "raid" or unit == "augmentation" then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
-
+        
+        CreateDesignerPreviewToggle(DispelHighlightContainer, "DispelHighlight", function() updateCallback("HealthBar") end)
         local EnableDispelHighlightingToggle = AG:Create("CheckBox")
         EnableDispelHighlightingToggle:SetLabel("Enable Dispel Highlighting")
         EnableDispelHighlightingToggle:SetValue(HealthBarDB.DispelHighlight.Enabled)
@@ -1345,7 +1364,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(CastBarDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -1353,7 +1372,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(CastBarDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -1542,7 +1561,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     local SpellNameXPosSlider = AG:Create("Slider")
     SpellNameXPosSlider:SetLabel("X Position")
     SpellNameXPosSlider:SetValue(SpellNameTextDB.Layout[3])
-    SpellNameXPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    SpellNameXPosSlider:SetSliderValues(-255, 255, 0.1)
     SpellNameXPosSlider:SetRelativeWidth(0.25)
     SpellNameXPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[3] = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(SpellNameXPosSlider)
@@ -1550,7 +1569,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     local SpellNameYPosSlider = AG:Create("Slider")
     SpellNameYPosSlider:SetLabel("Y Position")
     SpellNameYPosSlider:SetValue(SpellNameTextDB.Layout[4])
-    SpellNameYPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    SpellNameYPosSlider:SetSliderValues(-255, 255, 0.1)
     SpellNameYPosSlider:SetRelativeWidth(0.25)
     SpellNameYPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[4] = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(SpellNameYPosSlider)
@@ -1638,7 +1657,7 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     local DurationXPosSlider = AG:Create("Slider")
     DurationXPosSlider:SetLabel("X Position")
     DurationXPosSlider:SetValue(DurationTextDB.Layout[3])
-    DurationXPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    DurationXPosSlider:SetSliderValues(-255, 255, 0.1)
     DurationXPosSlider:SetRelativeWidth(0.33)
     DurationXPosSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[3] = value updateCallback() end)
     DurationLayoutContainer:AddChild(DurationXPosSlider)
@@ -1646,7 +1665,7 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     local DurationYPosSlider = AG:Create("Slider")
     DurationYPosSlider:SetLabel("Y Position")
     DurationYPosSlider:SetValue(DurationTextDB.Layout[4])
-    DurationYPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    DurationYPosSlider:SetSliderValues(-255, 255, 0.1)
     DurationYPosSlider:SetRelativeWidth(0.33)
     DurationYPosSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[4] = value updateCallback() end)
     DurationLayoutContainer:AddChild(DurationYPosSlider)
@@ -1987,7 +2006,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(AlternativePowerBarDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -1995,7 +2014,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(AlternativePowerBarDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2098,7 +2117,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PortraitDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2106,7 +2125,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PortraitDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2184,7 +2203,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(RaidTargetMarkerDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2192,7 +2211,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(RaidTargetMarkerDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2260,7 +2279,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	local XPosSlider = AG:Create("Slider")
 	XPosSlider:SetLabel("X Position")
 	XPosSlider:SetValue(ReadyCheckDB.Layout[3])
-	XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	XPosSlider:SetSliderValues(-255, 255, 0.1)
 	XPosSlider:SetRelativeWidth(0.33)
 	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
 	LayoutContainer:AddChild(XPosSlider)
@@ -2268,7 +2287,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	local YPosSlider = AG:Create("Slider")
 	YPosSlider:SetLabel("Y Position")
 	YPosSlider:SetValue(ReadyCheckDB.Layout[4])
-	YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	YPosSlider:SetSliderValues(-255, 255, 0.1)
 	YPosSlider:SetRelativeWidth(0.33)
 	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
 	LayoutContainer:AddChild(YPosSlider)
@@ -2315,7 +2334,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
 	local XPosSlider = AG:Create("Slider")
 	XPosSlider:SetLabel("X Position")
 	XPosSlider:SetValue(ResurrectDB.Layout[3])
-	XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	XPosSlider:SetSliderValues(-255, 255, 0.1)
 	XPosSlider:SetRelativeWidth(0.33)
 	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
 	LayoutContainer:AddChild(XPosSlider)
@@ -2323,7 +2342,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
 	local YPosSlider = AG:Create("Slider")
 	YPosSlider:SetLabel("Y Position")
 	YPosSlider:SetValue(ResurrectDB.Layout[4])
-	YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	YPosSlider:SetSliderValues(-255, 255, 0.1)
 	YPosSlider:SetRelativeWidth(0.33)
 	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
 	LayoutContainer:AddChild(YPosSlider)
@@ -2375,7 +2394,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 	local XPosSlider = AG:Create("Slider")
 	XPosSlider:SetLabel("X Position")
 	XPosSlider:SetValue(SummonDB.Layout[3])
-	XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	XPosSlider:SetSliderValues(-255, 255, 0.1)
 	XPosSlider:SetRelativeWidth(0.33)
 	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[3] = value updateCallback() end)
 	LayoutContainer:AddChild(XPosSlider)
@@ -2383,7 +2402,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 	local YPosSlider = AG:Create("Slider")
 	YPosSlider:SetLabel("Y Position")
 	YPosSlider:SetValue(SummonDB.Layout[4])
-	YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	YPosSlider:SetSliderValues(-255, 255, 0.1)
 	YPosSlider:SetRelativeWidth(0.33)
 	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[4] = value updateCallback() end)
 	LayoutContainer:AddChild(YPosSlider)
@@ -2433,7 +2452,7 @@ local function CreateAssistantSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(LeaderAssistantDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2441,7 +2460,7 @@ local function CreateAssistantSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(LeaderAssistantDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2538,7 +2557,7 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(RoleDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2546,7 +2565,7 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(RoleDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2612,7 +2631,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PhaseDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2620,7 +2639,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PhaseDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2679,7 +2698,7 @@ local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PvPIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2687,7 +2706,7 @@ local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PvPIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2758,7 +2777,7 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(QuestIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2766,7 +2785,7 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(QuestIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2838,7 +2857,7 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(ClassificationIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2846,7 +2865,7 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(ClassificationIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2913,7 +2932,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(StatusDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2921,7 +2940,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(StatusDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3099,7 +3118,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     local TotemXPosSlider = AG:Create("Slider")
     TotemXPosSlider:SetLabel("X Position")
     TotemXPosSlider:SetValue(TotemsIndicatorDB.Layout[3])
-    TotemXPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    TotemXPosSlider:SetSliderValues(-255, 255, 0.1)
     TotemXPosSlider:SetRelativeWidth(0.25)
     TotemXPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(TotemXPosSlider)
@@ -3107,7 +3126,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     local TotemYPosSlider = AG:Create("Slider")
     TotemYPosSlider:SetLabel("Y Position")
     TotemYPosSlider:SetValue(TotemsIndicatorDB.Layout[4])
-    TotemYPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    TotemYPosSlider:SetSliderValues(-255, 255, 0.1)
     TotemYPosSlider:SetRelativeWidth(0.25)
     TotemYPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(TotemYPosSlider)
@@ -3160,11 +3179,11 @@ local function CreateIndicatorSettings(containerParent, unit)
 		elseif IndicatorTab == "Summon" then
 			CreateSummonIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Resting" then
-            CreateStatusSettings(IndicatorContainer, unit, "Resting", function() RUF:UpdateUnitRestingIndicator(RUF[unit:upper()], unit) end)
+            CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitRestingIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Combat" then
-            CreateStatusSettings(IndicatorContainer, unit, "Combat", function() RUF:UpdateUnitCombatIndicator(RUF[unit:upper()], unit) end)
+            CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitCombatIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "PvP" and unit == "player" then
-            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() RUF:UpdateUnitPvPIndicator(RUF[unit:upper()], unit) end)
+            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPvPIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitMouseoverIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "TargetIndicator" then
@@ -3172,7 +3191,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "ThreatIndicator" then
             CreateThreatIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitThreatIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Totems" then
-            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() RUF:UpdateUnitTotems(RUF[unit:upper()], unit) end)
+            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitTotems(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Quest" and unit == "target" then
             CreateQuestIndicatorSettings(IndicatorContainer, function() RUF:UpdateUnitQuestIndicator(RUF.TARGET, "target") end)
         elseif IndicatorTab == "Classification" and unit == "target" then
@@ -3288,7 +3307,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(TagDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value UpdateTag() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -3296,7 +3315,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(TagDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value UpdateTag() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3352,9 +3371,11 @@ local DesignerIndicatorBuilders = {
     RaidTargetMarker = CreateRaidTargetMarkerSettings,
     LeaderAssistant = CreateAssistantSettings,
     PvP = CreatePvPIndicatorSettings,
+    Totems = CreateTotemsIndicatorSettings,
 }
 
 local CreateAuraSettings
+local CreateTagsSettings
 
 local function BubbleDesignerLayout(container)
     local hops = 0
@@ -3373,14 +3394,8 @@ function RUF:BuildDesignerWidgetOptions(container, unit, entry)
         return
     end
     local function Refresh() RUF:RefreshDesignerWidget(entry) end
-    if entry.kind == "tag" then
-        CreateTagSetting(container, unit, entry.key, Refresh)
-    elseif entry.key == "Resting" or entry.key == "Combat" then
-        CreateStatusSettings(container, unit, entry.key, Refresh)
-    else
-        local builder = DesignerIndicatorBuilders[entry.key]
-        if builder then builder(container, unit, Refresh) end
-    end
+    local builder = DesignerIndicatorBuilders[entry.key]
+    if builder then builder(container, unit, Refresh) end
     container:DoLayout()
     BubbleDesignerLayout(container)
 end
@@ -3402,33 +3417,39 @@ function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
     local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
 
     if tabValue == "Frame" then
-        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element) RefreshDesignerPreview() end)
+        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element) UpdateUnitSettings(unit, function() RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end, element) end)
     elseif tabValue == "HealPrediction" then
-        CreateHealPredictionSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreateDesignerPreviewToggle(container, "HealPrediction", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
+        CreateHealPredictionSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
     elseif tabValue == "Auras" then
-        CreateAuraSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreateAuraSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras") end)
     elseif tabValue == "PowerBar" then
-        CreatePowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreatePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar") end)
     elseif tabValue == "SecondaryPowerBar" and playerHasSecondaryPower then
-        CreateSecondaryPowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreateSecondaryPowerBarSettings(container, unit, function() RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit) RefreshDesignerPreview() end)
     elseif tabValue == "AlternativePowerBar" and RUF:RequiresAlternativePowerBar() then
-        CreateAlternativePowerBarSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreateAlternativePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end) end)
     elseif tabValue == "CastBar" then
+        CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitCastBar(RUF[unit:upper()], unit) end, "CastBar") end)
         CreateCastBarSettings(container, unit)
     elseif tabValue == "Portrait" then
-        CreatePortraitSettings(container, unit, function() RefreshDesignerPreview() end)
+        CreatePortraitSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPortrait(RUF[unit:upper()], unit) end, "Portrait") end)
+    elseif tabValue == "Indicators" then
+        CreateIndicatorSettings(container, unit)
+    elseif tabValue == "Tags" then
+        CreateTagsSettings(container, unit)
     end
 
     container:DoLayout()
     BubbleDesignerLayout(container)
 end
 
-local function CreateTagsSettings(containerParent, unit)
+function CreateTagsSettings(containerParent, unit)
 
     local function SelectTagTab(TagContainer, _, TagTab)
         SaveSubTab(unit, "Tags", TagTab)
         TagContainer:ReleaseChildren()
-        CreateTagSetting(TagContainer, unit, TagTab)
+        CreateTagSetting(TagContainer, unit, TagTab, function() UpdateUnitSettings(unit, nil, "Tags") end)
         containerParent:DoLayout()
     end
 
@@ -3610,7 +3631,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(AuraDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.25)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[3] = value UpdateAuras() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -3618,7 +3639,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(AuraDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.25)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[4] = value UpdateAuras() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3709,7 +3730,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local CountXPosSlider = AG:Create("Slider")
     CountXPosSlider:SetLabel("X Position")
     CountXPosSlider:SetValue(AuraDB.Count.Layout[3])
-    CountXPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    CountXPosSlider:SetSliderValues(-255, 255, 0.1)
     CountXPosSlider:SetRelativeWidth(0.33)
     CountXPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[3] = value UpdateAuras() end)
     CountContainer:AddChild(CountXPosSlider)
@@ -3717,7 +3738,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local CountYPosSlider = AG:Create("Slider")
     CountYPosSlider:SetLabel("Y Position")
     CountYPosSlider:SetValue(AuraDB.Count.Layout[4])
-    CountYPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    CountYPosSlider:SetSliderValues(-255, 255, 0.1)
     CountYPosSlider:SetRelativeWidth(0.33)
     CountYPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[4] = value UpdateAuras() end)
     CountContainer:AddChild(CountYPosSlider)
@@ -3832,7 +3853,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PrivateAurasDB.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPosSlider:SetSliderValues(-255, 255, 0.1)
     XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[3] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -3840,7 +3861,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PrivateAurasDB.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPosSlider:SetSliderValues(-255, 255, 0.1)
     YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[4] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3902,21 +3923,19 @@ end
 
 function CreateAuraSettings(containerParent, unit, updateCallback)
     local AurasDB = GetUnitDB(unit).Auras
-
-    local ShowAurasButton = AG:Create("Button")
-	ShowAurasButton:SetText(RUF.AURA_TEST_MODE and "Hide Auras" or "Show Auras")
-	ShowAurasButton:SetRelativeWidth(0.5)
-	ShowAurasButton:SetCallback("OnClick", function()
-		if RUF.AURA_TEST_MODE then DisableAurasTestMode(unit) else EnableAurasTestMode(unit) end
-		ShowAurasButton:SetText(RUF.AURA_TEST_MODE and "Hide Auras" or "Show Auras")
-	end)
-	containerParent:AddChild(ShowAurasButton)
+    
+    CreateDesignerPreviewToggle(containerParent, "Auras", updateCallback)
+    
+    local Spacer = AG:Create("Label")
+    Spacer:SetText("")
+    Spacer:SetRelativeWidth(0.29)
+    containerParent:AddChild(Spacer)
 
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(0.5)
+    FrameStrataDropdown:SetRelativeWidth(0.3)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value updateCallback() end)
     containerParent:AddChild(FrameStrataDropdown)
 
@@ -3991,7 +4010,7 @@ local function CreateCooldownTextSettings(containerParent)
         local XPosSlider = AG:Create("Slider")
         XPosSlider:SetLabel("X Position")
         XPosSlider:SetValue(CooldownTextStyleDB.Layout[3])
-        XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+        XPosSlider:SetSliderValues(-255, 255, 0.1)
         XPosSlider:SetRelativeWidth(0.33)
         XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[3] = value RUF:UpdateAllUnitFrames() end)
         StyleContainerParent:AddChild(XPosSlider)
@@ -3999,7 +4018,7 @@ local function CreateCooldownTextSettings(containerParent)
         local YPosSlider = AG:Create("Slider")
         YPosSlider:SetLabel("Y Position")
         YPosSlider:SetValue(CooldownTextStyleDB.Layout[4])
-        YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+        YPosSlider:SetSliderValues(-255, 255, 0.1)
         YPosSlider:SetRelativeWidth(0.33)
         YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[4] = value RUF:UpdateAllUnitFrames() end)
         StyleContainerParent:AddChild(YPosSlider)
@@ -4884,29 +4903,36 @@ function RUF:CreateGUI()
             DesignerSettingsContainer:SetLayout("Flow")
             DesignerOptionsScroll:AddChild(DesignerSettingsContainer)
 
+            local ToggleMoversButton = AG:Create("Button")
+            ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+            ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+            DesignerSettingsContainer:AddChild(ToggleMoversButton)
+
             local designerUnit = RUF:GetDesignerUnit()
             local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
-            local designerTabs ={
+            local designerTab ={
                 { text = "Frame", value = "Frame" },
                 { text = "Heal Prediction", value = "HealPrediction" },
                 { text = "Auras", value = "Auras" },
                 { text = "Power Bar", value = "PowerBar" },
                 { text = "Cast Bar", value = "CastBar" },
                 { text = "Portrait", value = "Portrait" },
+                { text = "Indicators", value = "Indicators" },
+                { text = "Tags", value = "Tags" },
             }
             local nextPowerTabIndex = 4
             if playerHasSecondaryPower then
-                table.insert(designerTabs, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
+                table.insert(designerTab, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
                 nextPowerTabIndex = nextPowerTabIndex +1
             end
             if RUF:RequiresAlternativePowerBar() then
-                table.insert(designerTabs, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
+                table.insert(designerTab, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
             end
 
             DesignerTabGroup = AG:Create("TabGroup")
             DesignerTabGroup:SetLayout("Flow")
             DesignerTabGroup:SetFullWidth(true)
-            DesignerTabGroup:SetTabs(designerTabs)
+            DesignerTabGroup:SetTabs(designerTab)
             DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
                 RUF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
                 RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, DesignerTab) end)
@@ -4918,6 +4944,7 @@ function RUF:CreateGUI()
             if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
             if startTab == "AlternativePowerBar" and not RUF:RequiresAlternativePowerBar() then startTab = "Frame" end
             DesignerTabGroup:SelectTab(startTab)
+            RUF.DESIGNER_TAB_GROUP = DesignerTabGroup
             DesignerSettingsContainer:AddChild(DesignerTabGroup)
         elseif MainTab == "TestTab" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)

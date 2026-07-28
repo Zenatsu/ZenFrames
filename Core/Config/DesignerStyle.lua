@@ -43,38 +43,38 @@ REFRESH RULES: editing THIS FILE always needs /rl (Lua files load once).
 
 RUF.DesignerStyle = {
 
-    -- Sizes and spacing. Applied when the Designer tab is (re)built.
+    -- Sizes and spacing.
     Layout = {
-        CanvasHeight  = 210, -- preview band height inside the config window
+        CanvasHeight  = 210,
         CanvasWidth   = nil,
         TabStripHeight = 32,
-        OptionsHeight = 280, -- widget-options band height
+        OptionsHeight = 280,
         OptionsWidth  = nil,
-        OverlayBleed  = 4,   -- px each click-overlay extends past the widget
-        OverlayMinHit = 16,  -- minimum overlay hit box, keeps tiny icons clickable
+        OverlayBleed  = 4,
+        OverlayMinHit = 16,
     },
 
-    -- Shared colors: table form and escape-string form of the same palette.
+    -- Shared colors
     Palette = {
         Selected     = {1, 0.82, 0, 1},     -- gold: selected widget outline
-        Hovered      = {1, 1, 1, 0.7},      -- soft white: hovered outline
-        Idle         = {1, 1, 1, 0},        -- alpha 0 = outline hidden at rest
+        Hovered      = {1, 1, 1, 0.7},      -- soft white: hovered widget outline
+        Idle         = {1, 1, 1, 0},        -- alpha 0 when no widget selected
         Accent       = {0.5, 0.5, 1, 0.85}, -- RUF periwinkle (scrollbar thumb)
-        SelectedText = "|cFFFFD100",        -- gold, string form, for status text
-        ErrorText    = "|cFFFF4040",        -- red: drop-rejected warning
+        SelectedText = "|cFFFFD100",        -- gold
+        ErrorText    = "|cFFFF4040",        -- red
     },
 
-    -- Outline around the preview canvas band.
+    -- Outline around the preview canvas
     Canvas = {
         Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
             edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1,
             insets = {left = 0, right = 0, top = 0, bottom = 0} },
-        Fill   = {0, 0, 0, 0},   -- transparent: outline only
+        Fill   = {0, 0, 0, 0},   -- transparent outline only
         Border = {1, 1, 1, 0.4}, -- white at 40%
         Padding = {left=0, right=0, top=0, bottom=0}
     },
 
-    -- Panel drawn behind the widget-options band.
+    -- Panel drawn behind the widget-options
      OptionsPanel = {
         Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
             edgeFile = RUF.LSM:Fetch("border", "Blizzard Tooltip"),
@@ -85,8 +85,6 @@ RUF.DesignerStyle = {
         Padding = {left=6, right=6, top=0, bottom=6},
     },
 
-    -- The invisible-until-hovered boxes over each widget.
-    -- Border color comes from Palette above, driven by hover/select state.
     Overlays = {
         Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
             edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1,
@@ -100,14 +98,17 @@ RUF.DesignerStyle = {
         Size = 12,
         Outline = "OUTLINE",
         CanvasBottomInset = 6,    -- px above the canvas bottom edge
-        FallbackOffsetY = -12,    -- only used before a canvas exists (/rl to change)
-        DropMessageSeconds = 1.5, -- how long the red warning lingers
+        FallbackOffsetY = -12,
+        DropMessageSeconds = 1.5, -- how long the red warning lasts
     },
 
     -- Fake data so the preview bars are not empty or full.
     Preview = {
-        SampleHealth = 70,     -- out of 100
-        SamplePower  = 45,     -- out of 100
-        FallbackFontSize = 16, -- overlay size fallback when WoW hides tag metrics
+        SampleHealth = 70,          -- out of 100
+        SamplePower  = 45,          -- out of 100
+        SampleAbsorb = 20,          -- out of 100
+        SampleHealAbsorb = 15,      -- out of 100
+        SampleIncomingHeal = 25,    -- out of 100
+        FallbackFontSize = 16,      -- overlay size fallback
     },
 }

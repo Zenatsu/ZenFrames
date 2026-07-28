@@ -285,7 +285,7 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
             CastBarContainer:Hide()
         end
     end
-    if RUF.CASTBAR_TEST_MODE then RUF:CreateTestCastBar(unitFrame, unit) end
+    if RUF.CASTBAR_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.CastBar) then RUF:CreateTestCastBar(unitFrame, unit) end
 end
 
 function RUF:CreateTestCastBar(unitFrame, unit)
@@ -294,7 +294,7 @@ function RUF:CreateTestCastBar(unitFrame, unit)
     local GeneralDB = RUF.db.profile.General
     local CastBarDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
-    if RUF.CASTBAR_TEST_MODE then
+    if RUF.CASTBAR_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.CastBar) then
         if unitFrame.Castbar and CastBarDB.Enabled then
             unitFrame:DisableElement("Castbar")
             CastBarContainer:Show()

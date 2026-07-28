@@ -294,7 +294,7 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
             end
         end
     end
-    if RUF.AURA_TEST_MODE or unitFrame.isDesignerPreview == true then RUF:CreateTestAuras(unitFrame, unit) end
+    if RUF.AURA_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.Auras) then RUF:CreateTestAuras(unitFrame, unit) end
 end
 
 function RUF:CreateUnitAuras(unitFrame, unit)
@@ -524,7 +524,7 @@ function RUF:CreateTestAuras(unitFrame, unit)
 	local BuffAnchorParent = BuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
 	local DebuffAnchorParent = DebuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
 	local CustomAnchorParent = CustomDB and CustomDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-    if RUF.AURA_TEST_MODE or unitFrame.isDesignerPreview then
+    if RUF.AURA_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.Auras) then
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 

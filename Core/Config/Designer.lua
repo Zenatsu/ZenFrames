@@ -6,14 +6,14 @@ local selectedEntry
 local showingDropMessage = false
 local designerUnit = "player"
 local STYLE = RUF.DesignerStyle
-local decorFrames = {} -- keyed decor frames: "Canvas" border, "OptionsPanel" backdrop
+local decorFrames = {}
 local previewStyleRegistered
 
 function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the designer
     if RUF.DESIGNER_PREVIEW_FRAME then return RUF.DESIGNER_PREVIEW_FRAME end
 
     local activeStyle = oUF:GetActiveStyle()
-    if not previewStyleRegistered then -- oUF errors on duplicate RegisterStyle; a failed Spawn would otherwise strand us re-registering
+    if not previewStyleRegistered then
         oUF:RegisterStyle("RUF_PlayerDesignerPreviewStyle", function(unitFrame)
             RUF.DESIGNER_PREVIEW_ACTIVE=true
             RUF:CreateUnitFrame(unitFrame, "player")
@@ -39,6 +39,59 @@ function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the des
     return previewFrame
 end
 
+function RUF:LiftDesignerPreviewStrata() -- Try to ensure the strata of the preview frame is still at its level
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    if not previewFrame then return end
+
+    previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+    previewFrame:SetFrameLevel(100)
+
+    for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer"}) do
+        if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
+    end
+
+    local castBarContainer = previewFrame.Castbar and previewFrame.Castbar:GetParent()
+    if castBarContainer then castBarContainer:SetFrameStrata("FULLSCREEN_DIALOG") end
+end
+
+local function SetTestPredictionBar(bar, value, maxValue, enabled)
+    if not bar then return end
+    if not enabled then bar:Hide() return end
+    bar:SetMinMaxValues(0, maxValue)
+    bar:SetValue(value)
+    bar:Show()
+end
+
+function RUF:ApplyDesignerHealPredictionPreview()
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    if not previewFrame or not previewFrame.HealthPrediction then return end
+    local HealPredictionDB = RUF:GetUnitDB(previewFrame, "player").HealPrediction
+    local on = RUF.DESIGNER_PREVIEW_TOGGLES.HealPrediction
+
+    SetTestPredictionBar(previewFrame.HealthPrediction.damageAbsorb, STYLE.Preview.SampleAbsorb, 100, on and HealPredictionDB.Absorbs.Enabled)
+    SetTestPredictionBar(previewFrame.HealthPrediction.healAbsorb, STYLE.Preview.SampleHealAbsorb, 100, on and HealPredictionDB.HealAbsorbs.Enabled)
+    SetTestPredictionBar(previewFrame.HealthPrediction.healingPlayer, STYLE.Preview.SampleIncomingHeal, 100, on and HealPredictionDB.IncomingHeal.Enabled)
+    if previewFrame.HealthPrediction.overDamageAbsorb then
+        local showOverAbsorb = on and HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
+        SetTestPredictionBar(previewFrame.HealthPrediction.overDamageAbsorb, STYLE.Preview.SampleAbsorb, 100, showOverAbsorb)
+        if previewFrame.HealthPrediction.overDamageAbsorb.Clip then
+            if showOverAbsorb then previewFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else previewFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
+        end
+    end
+end
+
+function RUF:ApplyDesignerDispelHighlightPreview()
+    local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
+    if not previewFrame or not previewFrame.DispelHighlight then return end
+    if RUF.DESIGNER_PREVIEW_TOGGLES.DispelHighlight then
+        local color = oUF.colors.dispel[oUF.Enum.DispelType.Magic]
+        previewFrame.DispelHighlight:SetVertexColor(color.r, color.g, color.b)
+        previewFrame.DispelHighlight:Show()
+    else
+        previewFrame.DispelHighlight:Hide()
+    end
+end
+
 function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     local previewFrame = RUF:CreateDesignerPreviewFrame()
     local fDB = RUF.db.profile.Units.player.Frame
@@ -52,17 +105,6 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     if previewFrame:IsElementEnabled("PrivateAuras") then previewFrame:DisableElement("PrivateAuras") end
 
     previewFrame:SetSize(fDB.Width, fDB.Height)
-    previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-    previewFrame:SetFrameLevel(100)
-    if previewFrame.HighLevelContainer then
-            previewFrame.HighLevelContainer:SetFrameStrata("FULLSCREEN_DIALOG")
-        end
-    -- Aura containers are strata-pinned from the DB in Elements/Auras.lua and stop following their parent; re-lift them for the preview
-    for _, key in ipairs({"BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer"}) do
-        if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
-    end
-
-
     if previewFrame.Health then
         previewFrame.Health:SetMinMaxValues(0,100)
          previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
@@ -74,6 +116,13 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     end
 
     RUF:ApplyDesignerSampleData()
+    RUF:ApplyDesignerHealPredictionPreview()
+    RUF:ApplyDesignerDispelHighlightPreview()
+    RUF:LiftDesignerPreviewStrata()
+
+    --debugging
+    print("strata:", RUF.DESIGNER_PREVIEW_FRAME:GetFrameStrata(), "level:", RUF.DESIGNER_PREVIEW_FRAME:GetFrameLevel())
+    if RUF.DESIGNER_PREVIEW_FRAME.HighLevelContainer then print("HLC strata:", RUF.DESIGNER_PREVIEW_FRAME.HighLevelContainer:GetFrameStrata()) end
 end
 
 function RUF:ShowDesignerPreview(parentFrame, unit, optionsContainer)
@@ -106,7 +155,7 @@ local function GetLiveFrame(unit) return RUF[unit:upper()] end
 
 local function TagEntry(unit, tagKey, label)
     return {
-        key = tagKey, label = label, kind = "tag", unit = unit,
+        key = tagKey, label = label, kind = "tag", unit = unit, designerTab = "Tags",
         getDB = function() return RUF:GetUnitDB(nil, unit).Tags[tagKey] end,
         getRegion = function(previewFrame) return previewFrame.Tags and previewFrame.Tags[tagKey] end,
         refreshPreview = function(previewFrame)
@@ -121,20 +170,20 @@ local function TagEntry(unit, tagKey, label)
     }
 end
 
-local function IndicatorEntry(unit, entry)
-   entry.kind = "indicator"
+local function WidgetEntry(unit, entry)
    entry.unit = unit
-   entry.getDB = function() return RUF:GetUnitDB(nil, unit).Indicators[entry.dbKey] end
-   entry.refreshPreview = function(previewFrame)
-    RUF.DESIGNER_PREVIEW_ACTIVE = true
-    entry.update(previewFrame)
-    RUF.DESIGNER_PREVIEW_ACTIVE = false
+   entry.kind = entry.kind or (entry.dbKey and "indicator")
+   entry.getDB = entry.getDB or function() return RUF:GetUnitDB(nil, unit).Indicators[entry.dbKey] end
+   entry.refreshPreview = entry.refreshPreview or function(previewFrame)
+        RUF.DESIGNER_PREVIEW_ACTIVE = true
+        entry.update(previewFrame)
+        RUF.DESIGNER_PREVIEW_ACTIVE = false
    end
-   entry.refreshLive = function()
+   entry.refreshLive = entry.refreshLive or function()
         local liveFrame = GetLiveFrame(unit)
         if liveFrame then entry.update(liveFrame) end
-   end
-   return entry
+    end
+    return entry
 end
 
 local function BuildDesignerRegistry(unit)
@@ -144,8 +193,8 @@ local function BuildDesignerRegistry(unit)
         TagEntry(unit, "TagThree", "Tag Three"),
         TagEntry(unit, "TagFour", "Tag Four"),
         TagEntry(unit, "TagFive", "Tag Five"),
-        IndicatorEntry(unit, {
-            key = "RaidTargetMarker", label = "Raid Target Marker", dbKey = "RaidTargetMarker",
+        WidgetEntry(unit, {
+            key = "RaidTargetMarker", label = "Raid Target Marker", dbKey = "RaidTargetMarker", designerTab = "Indicators",
             oUFElements = {"RaidTargetIndicator"},
             getRegion = function(previewFrame) return previewFrame.RaidTargetIndicator end,
             update = function(unitFrame) RUF:UpdateUnitRaidTargetMarker(unitFrame, unit) end,
@@ -156,8 +205,8 @@ local function BuildDesignerRegistry(unit)
                 region:Show()
             end,
         }),
-        IndicatorEntry(unit, {
-            key = "LeaderAssistant", label = "Leader Indicator", dbKey = "LeaderAssistantIndicator", oUFElements = {"LeaderIndicator", "AssistantIndicator"},
+        WidgetEntry(unit, {
+            key = "LeaderAssistant", label = "Leader Indicator", dbKey = "LeaderAssistantIndicator", designerTab = "Indicators", oUFElements = {"LeaderIndicator", "AssistantIndicator"},
             getRegion = function(previewFrame) return previewFrame.LeaderIndicator end,
             update = function(unitFrame) RUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end,
             sample = function(previewFrame)
@@ -165,25 +214,25 @@ local function BuildDesignerRegistry(unit)
                 region:SetTexture([[Interface\GroupFrame\UI-Group-LeaderIcon]])
                 region:SetTexCoord(0,1,0,1)
                 region:Show()
-                if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout and Overlap.
+                if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout
             end,
         }),
-        IndicatorEntry(unit, {
-            key = "Resting", label = "Resting Indicator", dbKey = "Resting", oUFElements = {"RestingIndicator"},
+        WidgetEntry(unit, {
+            key = "Resting", label = "Resting Indicator", dbKey = "Resting", designerTab = "Indicators", oUFElements = {"RestingIndicator"},
             getRegion = function(previewFrame) return previewFrame.RestingIndicator end,
             update = function(unitFrame) RUF:UpdateUnitRestingIndicator(unitFrame, unit) end, -- Update sets the texture, visibility is state driven
             sample = function(previewFrame) if previewFrame.RestingIndicator then previewFrame.RestingIndicator:Show() end
         end,
         }),
-        IndicatorEntry(unit, {
-            key = "Combat", label = "Combat Indicator", dbKey = "Combat", oUFElements = {"CombatIndicator"},
+        WidgetEntry(unit, {
+            key = "Combat", label = "Combat Indicator", dbKey = "Combat", designerTab = "Indicators", oUFElements = {"CombatIndicator"},
             getRegion = function(previewFrame) return previewFrame.CombatIndicator end,
             update = function(unitFrame) RUF:UpdateUnitCombatIndicator(unitFrame, unit) end,
             sample = function(previewFrame) if previewFrame.CombatIndicator then previewFrame.CombatIndicator:Show() end
         end,
         }),
-        IndicatorEntry(unit, {
-            key = "PvP", label = "PvP Indicator", dbKey = "PvP", oUFElements = {"PvPIndicator"},
+        WidgetEntry(unit, {
+            key = "PvP", label = "PvP Indicator", dbKey = "PvP", designerTab = "Indicators", oUFElements = {"PvPIndicator"},
             getRegion = function(previewFrame) return previewFrame.PvPIndicator end,
             update = function(unitFrame) RUF:UpdateUnitPvPIndicator(unitFrame, unit) end,
             sample = function(previewFrame)
@@ -194,6 +243,47 @@ local function BuildDesignerRegistry(unit)
                 region:Show()
                 if region.Badge then region.Badge:Hide() end
             end,
+        }),
+        WidgetEntry(unit, {
+            key = "Buffs", label = "Buffs", kind = "aura", previewToggle = "Auras", designerTab = "Auras",
+            getDB = function() return RUF:GetUnitDB(nil, unit).Auras.Buffs end,
+            getRegion = function(previewFrame) return previewFrame.BuffContainer end,
+            update = function(unitFrame) RUF:UpdateUnitAuras(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "Debuffs", label = "Debuffs", kind = "aura", previewToggle = "Auras", designerTab = "Auras",
+            getDB = function() return RUF:GetUnitDB(nil, unit).Auras.Debuffs end,
+            getRegion = function(previewFrame) return previewFrame.DebuffContainer end,
+            update = function(unitFrame) RUF:UpdateUnitAuras(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "Custom", label = "Custom Auras", kind = "aura", previewToggle = "Auras", designerTab = "Auras",
+            getDB = function() return RUF:GetUnitDB(nil, unit).Auras.Custom end,
+            getRegion = function(previewFrame) return previewFrame.CustomAuraContainer end,
+            update = function(unitFrame) RUF:UpdateUnitAuras(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "PrivateAuras", label = "Private Auras", kind = "aura", previewToggle = "Auras", designerTab = "Auras",
+            getDB = function() return RUF:GetUnitDB(nil, unit).Auras.PrivateAuras end,
+            getRegion = function(previewFrame) return previewFrame.PrivateAuraContainer end,
+            update = function(unitFrame) RUF:UpdateUnitAuras(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "Portrait", label = "Portrait", kind = "frame", designerTab = "Portrait",
+            getDB = function() return RUF:GetUnitDB(nil, unit).Portrait end,
+            getRegion = function(previewFrame) return previewFrame.Portrait and previewFrame.Portrait.Backdrop end,
+            update = function(unitFrame) RUF:UpdateUnitPortrait(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "CastBar", label = "Cast Bar", kind = "frame", previewToggle = "CastBar", designerTab = "CastBar",
+            getDB = function() return RUF:GetUnitDB(nil, unit).CastBar end,
+            getRegion = function(previewFrame) return previewFrame.Castbar and previewFrame.Castbar:GetParent() end,
+            update = function(unitFrame) RUF:UpdateUnitCastBar(unitFrame, unit) end,
+        }),
+        WidgetEntry(unit, {
+            key = "Totems", label = "Totems", dbKey = "Totems", oUFElements = {"Totems"},
+            getRegion = function(previewFrame) return previewFrame.Totems and previewFrame.Totems[1] end,
+            update = function(unitFrame) RUF:UpdateUnitTotems(unitFrame, unit) end,
         }),
     }
 
@@ -230,7 +320,7 @@ function RUF:ApplyDesignerSampleData()
                 end
                 if entry.sample then entry.sample(previewFrame) end
             end
-        else
+        elseif entry.kind == "tag" then
             local region = entry.getRegion(previewFrame)
             if region and (not db.Tag or db.Tag == "") then region:SetText(entry.label) end
         end
@@ -248,6 +338,7 @@ function RUF:RefreshDesignerWidget(entry)
     RUF:ApplyDesignerSampleData()
     RUF:AnchorDesignerOverlays()
     RUF:UpdateDesignerStatusText()
+    RUF:LiftDesignerPreviewStrata()
 end
 
 -- Overlay region with overlay visuals
@@ -275,7 +366,7 @@ end
 local function ShowDropRejectedMessage()
     if not overLayer then return end
     showingDropMessage = true
-    overLayer.Status:SetText(STYLE.Palette.ErrorText .. "Dropped outside the canvas|r")
+    overLayer.Status:SetText(STYLE.Palette.ErrorText .. "Dropped outside the canvas|r") -- Error shows when widget gets placed outside the previewFrame
     C_Timer.After(STYLE.StatusText.DropMessageSeconds, function()
         showingDropMessage = false
         RUF:UpdateDesignerStatusText()
@@ -363,7 +454,7 @@ end
 
 local function ApplyDecorStyle(key, decor)
     local group = STYLE[key]
-    decor:SetBackdrop(group.Backdrop) -- NOTE: SetBackdrop wipes colors, so tint after
+    decor:SetBackdrop(group.Backdrop) -- NOTE: SetBackdrop wipes colors
     decor:SetBackdropColor(unpack(group.Fill))
     decor:SetBackdropBorderColor(unpack(group.Border))
 end
@@ -402,7 +493,7 @@ function RUF:AnchorDesignerOverlays()
     for index, entry in ipairs(RUF.DESIGNER_WIDGETS) do
         local region = entry.getRegion(previewFrame)
         local db = entry.getDB()
-        local isActive = region and db and (entry.kind == "tag" or db.Enabled)
+        local isActive = region and db and (entry.kind == "tag" or db.Enabled) and (not entry.previewToggle or RUF.DESIGNER_PREVIEW_TOGGLES[entry.previewToggle])
         local overlay = overlays[entry.key]
         if isActive then
             overlay = overlay or CreateOverlay(entry, index)
@@ -433,18 +524,21 @@ function RUF:ResetDesignerInteractionState()
     RUF:SetDesignerSelection(nil)
 end
 
-function RUF:ClearDesignerSelection() -- deselect WITHOUT rebuilding the options panel; for callers about to build it themselves
+function RUF:ClearDesignerSelection()
     selectedEntry = nil
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
 end
 
 function RUF:SetDesignerSelection(entry)
-    if not entry and not selectedEntry then return end -- blank-canvas click with nothing selected: rebuilding would only churn layout
+    if not entry and not selectedEntry then return end
     selectedEntry = entry
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
-    if entry then
+    if entry and entry.designerTab then
+        SaveSubTab(designerUnit, entry.designerTab, entry.key)
+        if RUF.DESIGNER_TAB_GROUP then RUF.DESIGNER_TAB_GROUP:SelectTab(entry.designerTab) end
+    elseif entry then
         RUF:BuildDesignerWidgetOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, entry)
     else
         RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, nil)
