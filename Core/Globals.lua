@@ -280,12 +280,6 @@ function RUF:Capitalize(STR)
     return "|cFF8080FF" .. (STR:gsub("^%l", string.upper)) .. "|r"
 end
 
-function RUF:GetPixelPerfectScale()
-    local _, screenHeight = GetPhysicalScreenSize()
-    local pixelSize = 768 / screenHeight
-    return pixelSize
-end
-
 local function SetupSlashCommands()
     SLASH_RUF1 = "/ruf"
     SLASH_RUF2 = "/RehaltedUnitFrames"
@@ -296,15 +290,6 @@ local function SetupSlashCommands()
     -- RL command
     SLASH_RUFRELOAD1 = "/rl"
     SlashCmdList["RUFRELOAD"] = function() C_UI.Reload() end
-end
-
-function RUF:SetUIScale()
-    local GeneralDB = RUF.db.profile.General
-    if GeneralDB.UIScale.Enabled then
-        UIParent:SetScale(GeneralDB.UIScale.Scale or 0.5333333333333)
-    else
-        return
-    end
 end
 
 function RUF:LoadCustomColours()
@@ -407,7 +392,6 @@ end
 
 function RUF:Init()
     SetupSlashCommands()
-    RUF:SetUIScale()
     RUF:ResolveLSM()
     RUF:LoadCustomColours()
     RUF:SetTagUpdateInterval()

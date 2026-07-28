@@ -13,10 +13,6 @@ local Defaults = {
             Separator = "||",
             ToTSeparator = "»",
             UseCustomAbbreviations = false,
-            UIScale = {
-                Enabled = false,
-                Scale = 1.0,
-            },
             Textures = {
                 Foreground = "Better Blizzard",
                 Background = "Better Blizzard",

@@ -7,6 +7,7 @@ local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
 local designerLastTab = "Frame"
+local generalLastTab = "GlobalToggles"
 local decorFrames = {}
 
 local function GetUnitDB(unit)
@@ -308,14 +309,6 @@ local function GenerateSupportText(parentFrame)
 end
 
 local function BuildMainNavigationTree()
-    local globalSubmenu = {
-		{text = "Toggles", value = "GlobalToggles"},
-        {text = "Fonts", value = "GlobalFonts"},
-		{text = "Textures", value = "GlobalTextures"},
-		{text = "Range", value = "GlobalRange"},
-		{text = "Tag Settings", value = "GlobalTags"},
-		{text = "Cooldown Text", value = "CooldownText"},
-    }
     local unitSubmenu = {
 		{text = "Player", value = "Player"},
 		{text = "Target", value = "Target"},
@@ -333,7 +326,6 @@ local function BuildMainNavigationTree()
     if RUF:IsAugmentationEvoker() then table.insert(unitSubmenu, 5, {text = "Augmentation", value = "Augmentation"}) end
     return {
 		{text = "General", value = "General" },
-		{text = "Global", value = "Global", children = globalSubmenu},
 		{text = "Units", value = "Units", children = unitSubmenu},
 		{text = "Tags", value = "Tags" },
 		{text = "Profiles", value = "Profiles" },
@@ -342,55 +334,6 @@ local function BuildMainNavigationTree()
 	}
 end
 
-local function CreateUIScaleSettings(containerParent)
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
-    GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable UI Scale")
-    Toggle:SetValue(RUF.db.profile.General.UIScale.Enabled)
-    Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.UIScale.Enabled = value RUF:SetUIScale() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
-    Toggle:SetRelativeWidth(0.5)
-    Container:AddChild(Toggle)
-
-    local Slider = AG:Create("Slider")
-    Slider:SetLabel("UI Scale")
-    Slider:SetValue(RUF.db.profile.General.UIScale.Scale)
-    Slider:SetSliderValues(0.3, 1.5, 0.01)
-    Slider:SetFullWidth(true)
-    Slider:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.UIScale.Scale = value RUF:SetUIScale() end)
-    Slider:SetRelativeWidth(0.5)
-    Container:AddChild(Slider)
-
-    GUIWidgets.CreateHeader(Container, "Presets")
-
-    local PixelPerfectButton = AG:Create("Button")
-    PixelPerfectButton:SetText("Pixel Perfect Scale")
-    PixelPerfectButton:SetRelativeWidth(0.33)
-    PixelPerfectButton:SetCallback("OnClick", function() local pixelScale = RUF:GetPixelPerfectScale() RUF.db.profile.General.UIScale.Scale = pixelScale RUF:SetUIScale() Slider:SetValue(pixelScale) end)
-    PixelPerfectButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(PixelPerfectButton.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Recommended UI Scale: |cFF8080FF" .. RUF:GetPixelPerfectScale() .. "|r", 1, 1, 1, false) GameTooltip:Show() end)
-    PixelPerfectButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    Container:AddChild(PixelPerfectButton)
-
-    local TenEighytyPButton = AG:Create("Button")
-    TenEighytyPButton:SetText("1080p Scale")
-    TenEighytyPButton:SetRelativeWidth(0.33)
-    TenEighytyPButton:SetCallback("OnClick", function() RUF.db.profile.General.UIScale.Scale = 0.7111111111111 RUF:SetUIScale() Slider:SetValue(0.7111111111111) end)
-    TenEighytyPButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(TenEighytyPButton.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("UI Scale: |cFF8080FF0.7111111111111|r", 1, 1, 1, false) GameTooltip:Show() end)
-    TenEighytyPButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    Container:AddChild(TenEighytyPButton)
-
-    local FourteenFortyPButton = AG:Create("Button")
-    FourteenFortyPButton:SetText("1440p Scale")
-    FourteenFortyPButton:SetRelativeWidth(0.33)
-    FourteenFortyPButton:SetCallback("OnClick", function() RUF.db.profile.General.UIScale.Scale = 0.5333333333333 RUF:SetUIScale() Slider:SetValue(0.5333333333333) end)
-    FourteenFortyPButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(FourteenFortyPButton.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("UI Scale: |cFF8080FF0.5333333333333|r", 1, 1, 1, false) GameTooltip:Show() end)
-    FourteenFortyPButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    Container:AddChild(FourteenFortyPButton)
-
-    GUIWidgets.DeepDisable(Container, not RUF.db.profile.General.UIScale.Enabled, Toggle)
-end
 
 local function CreateFontSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
@@ -4148,6 +4091,12 @@ end
 local function CreateGlobalToggleSettings(containerParent)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Toggles")
 
+    local ToggleMoversButton = AG:Create("Button")
+    ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+    ToggleMoversButton:SetRelativeWidth(0.33)
+    ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+    ToggleContainer:AddChild(ToggleMoversButton)
+
     local ApplyColours = AG:Create("Button")
     ApplyColours:SetText("Colour Mode")
     ApplyColours:SetRelativeWidth(0.33)
@@ -4514,13 +4463,13 @@ local function CreateProfileSettings(containerParent)
     SelectProfileDropdown = AG:Create("Dropdown")
     SelectProfileDropdown:SetLabel("Select...")
     SelectProfileDropdown:SetRelativeWidth(0.25)
-    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF:SetUIScale() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(SelectProfileDropdown)
 
     CopyFromProfileDropdown = AG:Create("Dropdown")
     CopyFromProfileDropdown:SetLabel("Copy From...")
     CopyFromProfileDropdown:SetRelativeWidth(0.25)
-    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() RUF.db:CopyProfile(value) RUF:SetUIScale() RUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
+    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() RUF.db:CopyProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
     ProfileContainer:AddChild(CopyFromProfileDropdown)
 
     DeleteProfileDropdown = AG:Create("Dropdown")
@@ -4532,7 +4481,7 @@ local function CreateProfileSettings(containerParent)
     ResetProfileButton = AG:Create("Button")
     ResetProfileButton:SetText("Reset |cFF8080FF" .. RUF.db:GetCurrentProfile() .. "|r Profile")
     ResetProfileButton:SetRelativeWidth(0.25)
-    ResetProfileButton:SetCallback("OnClick", function() RUF.db:ResetProfile() RUF:ResolveLSM() RUF:SetUIScale() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    ResetProfileButton:SetCallback("OnClick", function() RUF.db:ResetProfile() RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(ResetProfileButton)
 
     local CreateProfileEditBox = AG:Create("EditBox")
@@ -4546,7 +4495,7 @@ local function CreateProfileSettings(containerParent)
     local CreateProfileButton = AG:Create("Button")
     CreateProfileButton:SetText("Create Profile")
     CreateProfileButton:SetRelativeWidth(0.5)
-    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then RUF.db:SetProfile(profileName) RUF:SetUIScale() RUF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
+    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then RUF.db:SetProfile(profileName) RUF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
     ProfileContainer:AddChild(CreateProfileButton)
 
     local GlobalProfileHeading = AG:Create("Heading")
@@ -4560,7 +4509,7 @@ local function CreateProfileSettings(containerParent)
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
     UseGlobalProfileToggle:SetValue(RUF.db.global.UseGlobalProfile)
     UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() RUF.db.global.UseGlobalProfile = value RUF.db.global.GlobalProfile = (RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default" if value then RUF.db:SetProfile(RUF.db.global.GlobalProfile) RUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() RUF.db.global.UseGlobalProfile = value RUF.db.global.GlobalProfile = (RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default" if value then RUF.db:SetProfile(RUF.db.global.GlobalProfile) end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end RUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(UseGlobalProfileToggle)
 
     GlobalProfileDropdown = AG:Create("Dropdown")
@@ -4568,7 +4517,7 @@ local function CreateProfileSettings(containerParent)
     GlobalProfileDropdown:SetRelativeWidth(0.5)
     GlobalProfileDropdown:SetList(profileKeys)
     GlobalProfileDropdown:SetValue((RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default")
-    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF.db.global.GlobalProfile = value RUF:SetUIScale() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF.db.global.GlobalProfile = value RUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(GlobalProfileDropdown)
 
     local SpecProfileContainer = GUIWidgets.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
@@ -4713,7 +4662,6 @@ function RUF:CreateGUI()
 
     local function SelectTab(GUIContainer, _, MainTab)
 		MainTab = MainTab:match("[^\001]+$")
-		if MainTab == "Global" then GUIContainer:SelectByValue("Global\001GlobalToggles") return end
 		if MainTab == "Units" then GUIContainer:SelectByValue("Units\001Player") return end
 		GUIContainer:ReleaseChildren()
 		RUF:ForEachUnitDB(function(_, unit) DisableAurasTestMode(unit) end)
@@ -4728,7 +4676,34 @@ function RUF:CreateGUI()
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
-            CreateUIScaleSettings(ScrollFrame)
+            local function SelectGlobalTab(GlobalTabContainer, _, GlobalTab)
+                generalLastTab = GlobalTab
+                GlobalTabContainer:ReleaseChildren()
+                if GlobalTab == "GlobalToggles" then CreateGlobalToggleSettings(GlobalTabContainer)
+                elseif GlobalTab == "GlobalFonts" then CreateFontSettings(GlobalTabContainer)
+                elseif GlobalTab == "GlobalTextures" then CreateTextureSettings(GlobalTabContainer)
+                elseif GlobalTab == "GlobalRange" then CreateRangeSettings(GlobalTabContainer)
+                elseif GlobalTab == "GlobalTags" then CreateGlobalTagSettings(GlobalTabContainer)
+                elseif GlobalTab == "CooldownText" then CreateCooldownTextSettings(GlobalTabContainer)
+                end
+                ScrollFrame:DoLayout()
+            end
+
+            local GlobalTabGroup = AG:Create("TabGroup")
+            GlobalTabGroup:SetLayout("Flow")
+            GlobalTabGroup:SetFullWidth(true)
+            GlobalTabGroup:SetTabs({
+                { text = "Toggles", value = "GlobalToggles" },
+                { text = "Fonts", value = "GlobalFonts" },
+                { text = "Textures", value = "GlobalTextures" },
+                { text = "Range", value = "GlobalRange" },
+                { text = "Tag Settings", value = "GlobalTags" },
+                { text = "Cooldown Text", value = "CooldownText" },
+            })
+            GlobalTabGroup:SetCallback("OnGroupSelected", SelectGlobalTab)
+            GlobalTabGroup:SelectTab(generalLastTab)
+            ScrollFrame:AddChild(GlobalTabGroup)
+
             CreateColourSettings(ScrollFrame)
 
             local SupportMeContainer = AG:Create("InlineGroup")
@@ -4766,42 +4741,6 @@ function RUF:CreateGUI()
             GithubInteractive:SetCallback("OnEnter", function() GithubInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFFFFFFFFGithub|r") end)
             GithubInteractive:SetCallback("OnLeave", function() GithubInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r") end)
             SupportMeContainer:AddChild(GithubInteractive)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "GlobalToggles" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateGlobalToggleSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "GlobalFonts" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateFontSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "GlobalTextures" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateTextureSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "GlobalRange" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateRangeSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "GlobalTags" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateGlobalTagSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "CooldownText" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateCooldownTextSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
@@ -4902,11 +4841,6 @@ function RUF:CreateGUI()
             DesignerSettingsContainer:SetFullWidth(true)
             DesignerSettingsContainer:SetLayout("Flow")
             DesignerOptionsScroll:AddChild(DesignerSettingsContainer)
-
-            local ToggleMoversButton = AG:Create("Button")
-            ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
-            ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
-            DesignerSettingsContainer:AddChild(ToggleMoversButton)
 
             local designerUnit = RUF:GetDesignerUnit()
             local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil

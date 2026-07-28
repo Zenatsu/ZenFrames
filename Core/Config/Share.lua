@@ -112,9 +112,6 @@ local function ApplyImportedProfileToCurrent(profile)
     MergeInto(RUF.db.profile, profile)
 
     RUFG.RefreshProfiles()
-    local general = RUF.db.profile and RUF.db.profile.General
-    local uiScale = general and general.UIScale
-    UIParent:SetScale((uiScale and uiScale.Scale) or 1)
     RUF:UpdateAllUnitFrames()
 end
 
