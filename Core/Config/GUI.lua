@@ -4552,7 +4552,6 @@ function RUF:CreateGUI()
                 elseif GlobalTab == "CooldownText" then CreateCooldownTextSettings(GlobalTabContainer)
                 end
                 ScrollFrame:DoLayout()
-                ScrollFrame:DoLayout()
             end
 
             local GlobalTabGroup = AG:Create("TabGroup")
