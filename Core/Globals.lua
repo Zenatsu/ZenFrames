@@ -193,6 +193,7 @@ function RUF:FetchFrameName(unit)
         ["focus"] = "RUF_Focus",
         ["focustarget"] = "RUF_FocusTarget",
         ["pet"] = "RUF_Pet",
+        ["augmentation"] = "RUF_Augmentation",
         ["boss"] = "RUF_Boss",
         ["party"] = "RUF_Party",
         ["partyplayer"] = "RUF_PartyPlayer",
@@ -202,7 +203,7 @@ function RUF:FetchFrameName(unit)
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "RUF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "RUF_Party" .. unitID end
     if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "RUF_Raid" .. unitID end
-    if unit == "player" and RUF.DESIGNER_PREVIEW_ACTIVE then return "RUF_PlayerDesignerPreview" end
+    if RUF.DESIGNER_PREVIEW_ACTIVE and UnitToFrame[unit] then return UnitToFrame[unit] .. "DesignerPreview" end
     return UnitToFrame[unit]
 end
 

@@ -1,5 +1,6 @@
 local _, RUF = ...
 local oUF = RUF.oUF
+local OVERLAY_FRAME_LEVEL = 1500
 local overlays = {} 
 local overLayer
 local selectedEntry
@@ -7,35 +8,48 @@ local showingDropMessage = false
 local designerUnit = "player"
 local STYLE = RUF.DesignerStyle
 local decorFrames = {}
-local previewStyleRegistered
+local previewStylesRegistered = {}
+RUF.DESIGNER_PREVIEW_FRAMES = {}
 
 function RUF:CreateDesignerPreviewFrame() -- Set up the preview frame of the designer
-    if RUF.DESIGNER_PREVIEW_FRAME then return RUF.DESIGNER_PREVIEW_FRAME end
+    if RUF.DESIGNER_PREVIEW_FRAMES[designerUnit] then
+        RUF.DESIGNER_PREVIEW_FRAME = RUF.DESIGNER_PREVIEW_FRAMES[designerUnit]
+        return RUF.DESIGNER_PREVIEW_FRAME
+    end
+
+    local baseName = RUF:FetchFrameName(designerUnit)
+    local previewStyleName = baseName .. "DesignerPreviewStyle"
+    local GroupPreviewMember = { party = "party1", raid = "raid1", boss = "boss1", augmentation = "raid1" }
+    local buildUnit = designerUnit == "augmentation" and "raid99" or designerUnit
 
     local activeStyle = oUF:GetActiveStyle()
-    if not previewStyleRegistered then
-        oUF:RegisterStyle("RUF_PlayerDesignerPreviewStyle", function(unitFrame)
+    if not previewStylesRegistered[designerUnit] then
+        oUF:RegisterStyle(previewStyleName, function(unitFrame)
             RUF.DESIGNER_PREVIEW_ACTIVE=true
-            RUF:CreateUnitFrame(unitFrame, "player")
+            if designerUnit == "augmentation" then unitFrame.isAugmentationRaidFrame = true end
+            RUF:CreateUnitFrame(unitFrame, buildUnit)
             RUF.DESIGNER_PREVIEW_ACTIVE=false
         end)
-        previewStyleRegistered = true
+        previewStylesRegistered[designerUnit] = true
     end
-    oUF:SetActiveStyle("RUF_PlayerDesignerPreviewStyle")
+    oUF:SetActiveStyle(previewStyleName)
 
-    local previewFrame = oUF:Spawn("Player", "RUF_PlayerDesignerPreview_frame") -- spawn the preview frame of the player
+    local previewFrame = oUF:Spawn(GroupPreviewMember[designerUnit] or designerUnit, baseName .. "DesignerPreview_frame") -- spawn the preview frame of the designed unit
     previewFrame.isDesignerPreview=true
-    
+
     previewFrame:SetAttribute("unit",nil)
     UnregisterUnitWatch(previewFrame)
+    previewFrame:UnregisterAllEvents()
     if previewFrame:IsElementEnabled("Auras") then previewFrame:DisableElement("Auras") end
     if previewFrame:IsElementEnabled("CustomAuras") then previewFrame:DisableElement("CustomAuras") end
     previewFrame:EnableMouse(false)
 
     if activeStyle then oUF:SetActiveStyle(activeStyle) end
-    
+
     previewFrame:Hide()
+    RUF.DESIGNER_PREVIEW_FRAMES[designerUnit] = previewFrame
     RUF.DESIGNER_PREVIEW_FRAME = previewFrame
+
     return previewFrame
 end
 
@@ -57,7 +71,7 @@ end
 function RUF:ApplyDesignerHealPredictionPreview()
     local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
     if not previewFrame or not previewFrame.HealthPrediction then return end
-    local HealPredictionDB = RUF:GetUnitDB(previewFrame, "player").HealPrediction
+    local HealPredictionDB = RUF:GetUnitDB(previewFrame, designerUnit).HealPrediction
     local on = RUF.DESIGNER_PREVIEW_TOGGLES.HealPrediction
 
     RUF:SetTestPredictionBar(previewFrame.HealthPrediction.damageAbsorb, STYLE.Preview.SampleAbsorb, 100, on and HealPredictionDB.Absorbs.Enabled)
@@ -86,10 +100,12 @@ end
 
 function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     local previewFrame = RUF:CreateDesignerPreviewFrame()
-    local fDB = RUF.db.profile.Units.player.Frame
+    local fDB = RUF:GetUnitDB(nil, designerUnit).Frame
+    previewFrame:UnregisterAllEvents()
 
+    local buildUnit = designerUnit == "augmentation" and "raid99" or designerUnit
     RUF.DESIGNER_PREVIEW_ACTIVE = true
-    RUF:UpdateUnitFrame(previewFrame, "player")
+    RUF:UpdateUnitFrame(previewFrame, buildUnit)
     RUF.DESIGNER_PREVIEW_ACTIVE = false
     
     if previewFrame:IsElementEnabled("Auras") then previewFrame:DisableElement("Auras") end
@@ -153,8 +169,16 @@ local function TagEntry(unit, tagKey, label)
             RUF.DESIGNER_PREVIEW_ACTIVE = false
         end,
         refreshLive = function()
-            local liveFrame = GetLiveFrame(unit)
-            if liveFrame then RUF:UpdateUnitTag(liveFrame, unit, tagKey) end
+            if unit == "party" or unit == "raid" then
+                RUF:UpdateGroupFrame(unit)
+            elseif unit == "boss" then
+                RUF:UpdateBossFrame(unit)
+            elseif unit == "augmentation" then
+                RUF:UpdateAugmentationRaidFrames()
+            else
+                local liveFrame = GetLiveFrame(unit)
+                if liveFrame then RUF:UpdateUnitTag(liveFrame, unit, tagKey) end
+            end
         end,
     }
 end
@@ -169,8 +193,16 @@ local function WidgetEntry(unit, entry)
         RUF.DESIGNER_PREVIEW_ACTIVE = false
    end
    entry.refreshLive = entry.refreshLive or function()
-        local liveFrame = GetLiveFrame(unit)
-        if liveFrame then entry.update(liveFrame) end
+        if unit == "party" or unit == "raid" then
+            RUF:UpdateGroupFrame(unit)
+        elseif unit == "boss" then
+            RUF:UpdateBossFrame(unit)
+        elseif unit == "augmentation" then
+            RUF:UpdateAugmentationRaidFrames()
+        else
+            local liveFrame = GetLiveFrame(unit)
+            if liveFrame then entry.update(liveFrame) end
+        end
     end
     return entry
 end
@@ -204,6 +236,33 @@ local function BuildDesignerRegistry(unit)
                 region:SetTexCoord(0,1,0,1)
                 region:Show()
                 if previewFrame.AssistantIndicator then previewFrame.AssistantIndicator:Hide() end -- Leader and Assistant share one DB Layout
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "ReadyCheckIndicator", label = "Ready Check Indicator", dbKey = "ReadyCheckIndicator", designerTab = "Indicators", oUFElements = {"ReadyCheckIndicator"},
+            getRegion = function(previewFrame) return previewFrame.ReadyCheckIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitReadyCheckIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.ReadyCheckIndicator if not region then return end
+                if region.readyTexture then region:SetTexture(region.readyTexture) else region:SetAtlas("UI-LFG-ReadyMark-Raid") end
+                region:Show()
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "ResurrectIndicator", label = "Resurrect Indicator", dbKey = "ResurrectIndicator", designerTab = "Indicators", oUFElements = {"ResurrectIndicator"},
+            getRegion = function(previewFrame) return previewFrame.ResurrectIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitResurrectIndicator(unitFrame, unit) end,
+            sample = function(previewFrame) if previewFrame.ResurrectIndicator then previewFrame.ResurrectIndicator:Show() end
+        end,
+        }),
+        WidgetEntry(unit, {
+            key = "Summon", label = "Summon Indicator", dbKey = "Summon", designerTab = "Indicators", oUFElements = {"SummonIndicator"},
+            getRegion = function(previewFrame) return previewFrame.SummonIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitSummonIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.SummonIndicator if not region then return end
+                region:SetAtlas("RaidFrame-Icon-SummonPending")
+                region:Show()
             end,
         }),
         WidgetEntry(unit, {
@@ -292,6 +351,7 @@ function RUF:GetDesignerUnit() return designerUnit end
 function RUF:SetDesignerUnit(unit)
     if unit == designerUnit then return end
     RUF:SetDesignerSelection(nil)
+    if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
     designerUnit = unit
     RUF.DESIGNER_WIDGETS = BuildDesignerRegistry(unit)
 end
@@ -311,9 +371,10 @@ function RUF:ApplyDesignerSampleData()
             end
         elseif entry.kind == "tag" then
             local region = entry.getRegion(previewFrame)
-            if region and (not db.Tag or db.Tag == "") then region:SetText(entry.label) end
+            if region then region:SetText(entry.label) end
         end
     end
+    
     if previewFrame.Totems then
         for _, totem in ipairs(previewFrame.Totems) do totem:EnableMouse(false) end
     end
@@ -377,7 +438,7 @@ local function GetOverLayer()
     overLayer = CreateFrame("Frame", "RUF_DesignerOverLayer", previewFrame)
     overLayer:SetAllPoints(previewFrame)
     overLayer:SetFrameStrata("FULLSCREEN_DIALOG")
-    overLayer:SetFrameLevel(1000)
+    overLayer:SetFrameLevel(OVERLAY_FRAME_LEVEL)
     overLayer:EnableMouse(true)
     overLayer:SetScript("OnMouseDown", function() RUF:SetDesignerSelection(nil) end)
     overLayer.Status = overLayer:CreateFontString(nil, "OVERLAY")
@@ -468,6 +529,11 @@ function RUF:AnchorDesignerOverlays()
     local previewFrame = RUF.DESIGNER_PREVIEW_FRAME
     if not previewFrame then return end
     GetOverLayer()
+    overLayer:SetParent(previewFrame)
+    overLayer:ClearAllPoints()
+    overLayer:SetAllPoints(previewFrame)
+    overLayer:SetFrameStrata("FULLSCREEN_DIALOG")
+    overLayer:SetFrameLevel(OVERLAY_FRAME_LEVEL)
 
     local canvas = RUF.DESIGNER_CANVAS_FRAME
     if canvas then
@@ -485,6 +551,7 @@ function RUF:AnchorDesignerOverlays()
         local overlay = overlays[entry.key]
         if isActive then
             overlay = overlay or CreateOverlay(entry, index)
+            overlay:SetFrameLevel(overLayer:GetFrameLevel() + 10 + index)
             local w, h = region:GetWidth(), region:GetHeight()
             if RUF:IsSecretValue(w) or RUF:IsSecretValue(h) then
                 local fontSize = (entry.kind == "tag" and db.FontSize) or STYLE.Preview.FallbackFontSize
@@ -511,6 +578,8 @@ function RUF:ResetDesignerInteractionState()
     if overLayer and overLayer.Status then overLayer.Status:ClearAllPoints() end
     RUF:SetDesignerSelection(nil)
 end
+
+function RUF:GetDesignerSelectedEntry() return selectedEntry end
 
 function RUF:ClearDesignerSelection()
     selectedEntry = nil

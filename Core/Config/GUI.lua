@@ -6,7 +6,7 @@ local RUFGUI = {}
 local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
-local designerLastTab = "Frame"
+local designerLastTab = {}
 local generalLastTab = "GlobalToggles"
 local decorFrames = {}
 
@@ -28,10 +28,6 @@ local function GetSavedSubTab(unit, tabName, defaultValue)
     return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].subTabs and lastSelectedUnitTabs[unit].subTabs[tabName] or defaultValue
 end
 
-local function GetSavedMainTab(unit, defaultValue)
-    return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].mainTab or defaultValue
-end
-
 RUF.DESIGNER_PREVIEW_TOGGLES = { Auras = false, DispelHighlight = false, HealPrediction = false, CastBar = false }
 
 local function CreateDesignerPreviewToggle(containerParent, key, updateCallback)
@@ -49,7 +45,7 @@ local function UpdateUnitSettings(unit, updateCallback, element)
 	if unit == "boss" and RUF.BOSS_TEST_MODE or unit == "party" and RUF.PARTY_TEST_MODE or unit == "raid" and RUF.RAID_TEST_MODE then
 		RUF:UpdateTestEnvironment(unit, element or "all")
 	elseif unit == "boss" then
-		RUF:UpdateBossFrames()
+		RUF:UpdateBossFrame()
 	elseif unit == "party" then
 		RUF:UpdateGroupFrame("party")
 	elseif unit == "raid" then
@@ -289,25 +285,37 @@ local function GenerateSupportText(parentFrame)
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
 
+local DesignerUnitTabs = {
+	DesignerPlayer = "player",
+	DesignerTarget = "target",
+	DesignerTargetTarget = "targettarget",
+	DesignerPet = "pet",
+	DesignerFocus = "focus",
+	DesignerFocusTarget = "focustarget",
+    DesignerParty = "party",
+    DesignerRaid = "raid",
+    DesignerBoss = "boss",
+    DesignerAug = "augmentation",
+}
+
 local function BuildMainNavigationTree()
-    local unitSubmenu = {
-		{text = "Player", value = "Player"},
-		{text = "Target", value = "Target"},
-		{text = "Target of Target", value = "TargetTarget"},
-		{text = "Pet", value = "Pet"},
-		{text = "Focus", value = "Focus"},
-		{text = "Focus Target", value = "FocusTarget"},
-		{text = "Party", value = "Party"},
-		{text = "Raid", value = "Raid"},
-        {text = "Boss", value = "Boss"},
-	}
-    if RUF:IsAugmentationEvoker() then table.insert(unitSubmenu, 5, {text = "Augmentation", value = "Augmentation"}) end
+    local designerUnitSubmenu = {
+        {text = "Player", value = "DesignerPlayer"},
+        {text = "Target", value = "DesignerTarget"},
+        {text = "Target of Target", value = "DesignerTargetTarget"},
+        {text = "Pet", value = "DesignerPet"},
+        {text = "Focus", value = "DesignerFocus"},
+        {text = "Focus Target", value = "DesignerFocusTarget"},
+        {text = "Party", value = "DesignerParty"},
+        {text = "Raid", value = "DesignerRaid"},
+        {text = "Boss", value = "DesignerBoss"},
+    }
+    if RUF:IsAugmentationEvoker() then table.insert(designerUnitSubmenu, 2, {text = "Augmentation", value = "DesignerAug"}) end
     return {
 		{text = "General", value = "General" },
-		{text = "Units", value = "Units", children = unitSubmenu},
+        {text = "Unit Designer", value = "Designer", children = designerUnitSubmenu},
 		{text = "Tags", value = "Tags" },
 		{text = "Profiles", value = "Profiles" },
-        {text = "Designer", value = "Designer" },
 	}
 end
 
@@ -3303,9 +3311,9 @@ end
 function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
     if not (container and container.frame) then return end
     if tabValue then
-        designerLastTab = tabValue
+        designerLastTab[unit] = tabValue
     else
-        tabValue = designerLastTab
+        tabValue = designerLastTab[unit] or "Frame"
     end
     container:ReleaseChildren()
 
@@ -3325,9 +3333,9 @@ function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
         CreateAuraSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras") end)
     elseif tabValue == "PowerBar" then
         CreatePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar") end)
-    elseif tabValue == "SecondaryPowerBar" and playerHasSecondaryPower then
+    elseif tabValue == "SecondaryPowerBar" and unit == "player" and playerHasSecondaryPower then
         CreateSecondaryPowerBarSettings(container, unit, function() RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit) RefreshDesignerPreview() end)
-    elseif tabValue == "AlternativePowerBar" and RUF:RequiresAlternativePowerBar() then
+    elseif tabValue == "AlternativePowerBar" and unit == "player" and RUF:RequiresAlternativePowerBar() then
         CreateAlternativePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end) end)
     elseif tabValue == "CastBar" then
         CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitCastBar(RUF[unit:upper()], unit) end, "CastBar") end)
@@ -3338,6 +3346,8 @@ function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
         CreateIndicatorSettings(container, unit)
     elseif tabValue == "Tags" then
         CreateTagsSettings(container, unit)
+    elseif tabValue == "Players" then
+        CreateAugmentationFrameSettings(container)
     end
 
     container:DoLayout()
@@ -4135,7 +4145,7 @@ local function CreateGlobalTagSettings(containerParent)
     TagContainer:AddChild(ToTSeparatorDropdown)
 end
 
-local function CreateUnitSettings(containerParent, unit)
+local function CreateUnitEnableToggles(containerParent, unit)
     local EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFF8080FF"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(GetUnitDB(unit).Enabled)
@@ -4178,129 +4188,6 @@ local function CreateUnitSettings(containerParent, unit)
 		HideBlizzardToggle:SetDisabled(GetUnitDB(unit).Enabled)
 		containerParent:AddChild(HideBlizzardToggle)
 	end
-
-	local ToggleMoversButton = AG:Create("Button")
-	ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
-	ToggleMoversButton:SetRelativeWidth(unit == "augmentation" and 0.5 or 0.33)
-	ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
-	containerParent:AddChild(ToggleMoversButton)
-
-    local SettingsContainer = AG:Create("SimpleGroup")
-    SettingsContainer:SetFullWidth(true)
-    SettingsContainer:SetLayout("Flow")
-    containerParent:AddChild(SettingsContainer)
-
-    local playerClass = UnitClassBase("player")
-    local playerHasSecondaryPower = playerClass == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
-
-    local function SelectUnitTab(SubContainer, _, UnitTab)
-        if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
-        lastSelectedUnitTabs[unit].mainTab = UnitTab
-        SubContainer:ReleaseChildren()
-        if UnitTab == "Frame" then
-            CreateFrameSettings(SubContainer, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element) UpdateUnitSettings(unit, function() RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end, element) end)
-		elseif UnitTab == "Players" and unit == "augmentation" then
-			CreateAugmentationFrameSettings(SubContainer)
-        elseif UnitTab == "HealPrediction" then
-            CreateHealPredictionSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
-        elseif UnitTab == "Auras" then
-            CreateAuraSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras") end)
-        elseif UnitTab == "PowerBar" then
-            CreatePowerBarSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar") end)
-        elseif UnitTab == "SecondaryPowerBar" and unit == "player" and playerHasSecondaryPower then
-            CreateSecondaryPowerBarSettings(SubContainer, unit, function() RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit) end)
-        elseif UnitTab == "AlternativePowerBar" then
-            CreateAlternativePowerBarSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end) end)
-        elseif UnitTab == "CastBar" then
-            CreateCastBarSettings(SubContainer, unit)
-        elseif UnitTab == "Portrait" then
-            CreatePortraitSettings(SubContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPortrait(RUF[unit:upper()], unit) end, "Portrait") end)
-        elseif UnitTab == "Indicators" then
-            CreateIndicatorSettings(SubContainer, unit)
-        elseif UnitTab == "Tags" then
-            CreateTagsSettings(SubContainer, unit)
-        end
-        if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
-		if unit == "party" and RUF.PARTY_TEST_MODE or unit == "raid" and RUF.RAID_TEST_MODE then RUF:UpdateTestEnvironment(unit, "all") end
-        containerParent:DoLayout()
-    end
-
-    local SubContainerTabGroup = AG:Create("TabGroup")
-    SubContainerTabGroup:SetLayout("Flow")
-    SubContainerTabGroup:SetFullWidth(true)
-
-    if unit == "player" then
-        local playerTabs = {
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Auras", value = "Auras"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Cast Bar", value = "CastBar"},
-            { text = "Portrait", value = "Portrait"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        }
-
-        local nextPowerTabIndex = 5
-        if playerHasSecondaryPower then
-            table.insert(playerTabs, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
-            nextPowerTabIndex = nextPowerTabIndex + 1
-        end
-        if RUF:RequiresAlternativePowerBar() then
-            table.insert(playerTabs, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
-        end
-
-        SubContainerTabGroup:SetTabs(playerTabs)
-    elseif unit == "party" then
-        SubContainerTabGroup:SetTabs({
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Auras", value = "Auras"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        })
-	elseif unit == "raid" or unit == "augmentation" then
-		local raidTabs = {
-			{ text = "Frame", value = "Frame"},
-			{ text = "Heal Prediction", value = "HealPrediction"},
-			{ text = "Auras", value = "Auras"},
-			{ text = "Power Bar", value = "PowerBar"},
-			{ text = "Indicators", value = "Indicators"},
-			{ text = "Tags", value = "Tags"},
-		}
-		if unit == "augmentation" then table.insert(raidTabs, { text = "Players", value = "Players"}) end
-		SubContainerTabGroup:SetTabs(raidTabs)
-    elseif unit ~= "targettarget" and unit ~= "focustarget" then
-        SubContainerTabGroup:SetTabs({
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Auras", value = "Auras"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Cast Bar", value = "CastBar"},
-            { text = "Portrait", value = "Portrait"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        })
-    else
-        SubContainerTabGroup:SetTabs({
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Auras", value = "Auras"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        })
-    end
-    SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
-	local selectedTab = GetSavedMainTab(unit, "Frame")
-    if selectedTab == "SecondaryPowerBar" and not playerHasSecondaryPower then selectedTab = "Frame" end
-    SubContainerTabGroup:SelectTab(selectedTab)
-    SettingsContainer:AddChild(SubContainerTabGroup)
-
-    GUIWidgets.DeepDisable(SettingsContainer, not GetUnitDB(unit).Enabled)
-
-    containerParent:DoLayout()
 end
 
 local function CreateTagSettings(containerParent)
@@ -4584,9 +4471,18 @@ function RUF:CreateGUI()
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
 
+    local designerPreviewRequestToken = 0
+
     local function SelectTab(GUIContainer, _, MainTab)
 		MainTab = MainTab:match("[^\001]+$")
-		if MainTab == "Units" then GUIContainer:SelectByValue("Units\001Player") return end
+		if MainTab == "Designer" then
+			RUFGUI.MainNavigationStatus.groups["Designer"] = true
+			RUFGUI.MainNavigationStatus.selected = "Designer\001DesignerPlayer"
+			GUIContainer:RefreshTree(true)
+			MainTab = "DesignerPlayer"
+		end
+		if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
+		if RUF.DESIGNER_DISABLED_LABEL then RUF.DESIGNER_DISABLED_LABEL:Hide() end
 		GUIContainer:ReleaseChildren()
 		RUF:ForEachUnitDB(function(_, unit) DisableAurasTestMode(unit) end)
 
@@ -4667,66 +4563,6 @@ function RUF:CreateGUI()
             SupportMeContainer:AddChild(GithubInteractive)
 
             ScrollFrame:DoLayout()
-        elseif MainTab == "Player" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "player")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Target" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "target")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "TargetTarget" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "targettarget")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Pet" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "pet")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Focus" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "focus")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "FocusTarget" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "focustarget")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Party" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "party")
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Raid" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "raid")
-
-            ScrollFrame:DoLayout()
-		elseif MainTab == "Augmentation" and RUF:IsAugmentationEvoker() then
-			local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-			CreateUnitSettings(ScrollFrame, "augmentation")
-
-			ScrollFrame:DoLayout()
-        elseif MainTab == "Boss" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateUnitSettings(ScrollFrame, "boss")
-
-            ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
             CreateTagSettings(ScrollFrame)
@@ -4737,7 +4573,8 @@ function RUF:CreateGUI()
             CreateProfileSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
-        elseif MainTab == "Designer" then
+        elseif DesignerUnitTabs[MainTab] then
+            local unit = DesignerUnitTabs[MainTab]
             Wrapper:SetLayout("List")
 
             PreviewContainer = AG:Create("SimpleGroup")
@@ -4766,25 +4603,46 @@ function RUF:CreateGUI()
             DesignerSettingsContainer:SetLayout("Flow")
             DesignerOptionsScroll:AddChild(DesignerSettingsContainer)
 
-            local designerUnit = RUF:GetDesignerUnit()
-            local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
-            local designerTab ={
+            CreateUnitEnableToggles(DesignerSettingsContainer, unit)
+            
+            local ToggleMoversButton = AG:Create("Button")
+            ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+            ToggleMoversButton:SetRelativeWidth(0.33)
+            ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+            DesignerSettingsContainer:AddChild(ToggleMoversButton)
+
+            local hasCastBarPortrait = unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "party" and unit ~= "raid" and unit ~= "Augmentation"
+            local playerHasSecondaryPower = unit == "player" and (UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil)
+            local requiresAlternativePowerBar = unit == "player" and RUF:RequiresAlternativePowerBar()
+            local designerTab = {
                 { text = "Frame", value = "Frame" },
                 { text = "Heal Prediction", value = "HealPrediction" },
                 { text = "Auras", value = "Auras" },
                 { text = "Power Bar", value = "PowerBar" },
-                { text = "Cast Bar", value = "CastBar" },
-                { text = "Portrait", value = "Portrait" },
-                { text = "Indicators", value = "Indicators" },
-                { text = "Tags", value = "Tags" },
             }
+            if hasCastBarPortrait then
+                designerTab[#designerTab + 1] = { text = "Cast Bar", value = "CastBar" }
+                designerTab[#designerTab + 1] = { text = "Portrait", value = "Portrait" }
+            end
+            designerTab[#designerTab + 1] = { text = "Indicators", value = "Indicators" }
+            designerTab[#designerTab + 1] = { text = "Tags", value = "Tags" }
+
+            if unit == "augmentation" then
+                designerTab[#designerTab + 1] = { text = "Players", value = "Players"}
+            end
+
             local nextPowerTabIndex = 4
             if playerHasSecondaryPower then
                 table.insert(designerTab, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
                 nextPowerTabIndex = nextPowerTabIndex +1
             end
-            if RUF:RequiresAlternativePowerBar() then
+            if requiresAlternativePowerBar then
                 table.insert(designerTab, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
+            end
+
+            local tabStripHeight = RUF.DesignerStyle.Layout.TabStripHeight
+            if playerHasSecondaryPower or requiresAlternativePowerBar then
+                tabStripHeight = tabStripHeight + RUF.DesignerStyle.Layout.TabStripHeightSecondRow
             end
 
             DesignerTabGroup = AG:Create("TabGroup")
@@ -4792,28 +4650,49 @@ function RUF:CreateGUI()
             DesignerTabGroup:SetFullWidth(true)
             DesignerTabGroup:SetTabs(designerTab)
             DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
-                RUF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
-                RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, DesignerTab) end)
+                local selected = RUF:GetDesignerSelectedEntry()
+                if not (selected and selected.designerTab == DesignerTab) then
+                    RUF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
+                end
+                RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, unit, DesignerTab) end)
 
             DesignerTabContentScroll = GUIWidgets.CreateScrollFrame(DesignerTabGroup)
-            DesignerTabContentScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight - RUF.DesignerStyle.Layout.TabStripHeight)
+            DesignerTabContentScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight - tabStripHeight)
             RUF.DESIGNER_OPTIONS_CONTAINER = DesignerTabContentScroll
-            local startTab = designerLastTab
-            if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
-            if startTab == "AlternativePowerBar" and not RUF:RequiresAlternativePowerBar() then startTab = "Frame" end
-            DesignerTabGroup:SelectTab(startTab)
             RUF.DESIGNER_TAB_GROUP = DesignerTabGroup
             DesignerSettingsContainer:AddChild(DesignerTabGroup)
+            local startTab = designerLastTab[unit] or "Frame"
+            if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
+            if startTab == "AlternativePowerBar" and not requiresAlternativePowerBar then startTab = "Frame" end
+            if (startTab == "CastBar" or startTab == "Portrait") and not hasCastBarPortrait then startTab = "Frame" end
+            DesignerTabGroup:SelectTab(startTab)
         end
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
-        if MainTab == "Designer" then
+        if DesignerUnitTabs[MainTab] then
+            local unit = DesignerUnitTabs[MainTab]
             local canvasFrame = PreviewContainer.frame
-            C_Timer.After(0, function() -- fresh script-execution budget: entry UI build + preview rebuild together trip the "script ran too long" watchdog
-                if canvasFrame:IsShown() then RUF:ShowDesignerPreview(canvasFrame, "player", DesignerTabContentScroll) end
-            end)
+            designerPreviewRequestToken = designerPreviewRequestToken + 1
+            local requestToken = designerPreviewRequestToken
+            if GetUnitDB(unit).Enabled then
+                C_Timer.After(0, function()
+                    if requestToken ~= designerPreviewRequestToken then return end
+                    if canvasFrame:IsShown() then RUF:ShowDesignerPreview(canvasFrame, unit, DesignerTabContentScroll) end
+                end)
+            else
+                RUF:HideDesignerPreview()
+                if not RUF.DESIGNER_DISABLED_LABEL then
+                    RUF.DESIGNER_DISABLED_LABEL = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+                end
+                RUF.DESIGNER_DISABLED_LABEL:SetParent(canvasFrame)
+                RUF.DESIGNER_DISABLED_LABEL:ClearAllPoints()
+                RUF.DESIGNER_DISABLED_LABEL:SetPoint("CENTER", canvasFrame, "CENTER", 0, 0)
+                RUF.DESIGNER_DISABLED_LABEL:SetText("Unit Frame Disabled")
+                RUF.DESIGNER_DISABLED_LABEL:Show()
+            end
         else
+            designerPreviewRequestToken = designerPreviewRequestToken + 1
             RUF:HideDesignerPreview()
         end
         GenerateSupportText(Container)
@@ -4849,10 +4728,8 @@ end
 function RUF:OpenGUIToUnit(unit)
     if InCombatLockdown() then return end
 	if unit == "augmentation" and not RUF:IsAugmentationEvoker() then return end
-	if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
-	lastSelectedUnitTabs[unit].mainTab = "Frame"
     RUF:CreateGUI()
-	if RUFGUI.MainNavigation then RUFGUI.MainNavigation:SelectByValue("Units\001" .. (unit == "augmentation" and "Augmentation" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
+	if RUFGUI.MainNavigation then RUFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
 end
 
 function RUFG:OpenRUFGUI()

@@ -232,7 +232,7 @@ function RUF:UpdateUnitFrame(unitFrame, unit)
     if not unitFrame.isDesignerPreview then unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata) end -- preview strata is designer-managed (FULLSCREEN_DIALOG)
 end
 
-function RUF:UpdateBossFrames()
+function RUF:UpdateBossFrame()
     for i in pairs(RUF.BOSS_FRAMES) do
         RUF:UpdateUnitFrame(RUF["BOSS"..i], "boss"..i)
     end
@@ -244,7 +244,7 @@ function RUF:UpdateAllUnitFrames()
 	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
 		if RUF[unit:upper()] then RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end
 	end
-	RUF:UpdateBossFrames()
+	RUF:UpdateBossFrame()
 	RUF:UpdateGroupFrame("party")
 	RUF:UpdateGroupFrame("raid")
 	RUF:UpdateAugmentationRaidFrames()
