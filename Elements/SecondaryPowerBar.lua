@@ -85,7 +85,7 @@ function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     secondaryPower.PowerBarBorder:SetHeight(1)
 
     secondaryPower.PostUpdateColor = function(element)
-        if secondaryPowerDB.ColourByType then return end
+        if secondaryPowerDB.ColorByType then return end
 
         for index = 1, #element do
             element[index]:SetStatusBarColor(
@@ -99,7 +99,7 @@ function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
 
     if isDeathKnight then
         secondaryPower.sortOrder = "asc"
-        secondaryPower.colorSpec = secondaryPowerDB.ColourByType
+        secondaryPower.colorSpec = secondaryPowerDB.ColorByType
         unitFrame.Runes = secondaryPower
     else
         unitFrame.ClassPower = secondaryPower
@@ -207,7 +207,7 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     if isDeathKnight then
-        secondaryPower.colorSpec = secondaryPowerDB.ColourByType
+        secondaryPower.colorSpec = secondaryPowerDB.ColorByType
     end
 
     secondaryPower:PostUpdateColor()

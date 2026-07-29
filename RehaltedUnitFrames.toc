@@ -6,6 +6,7 @@
 ## Category: |cFF990007Rehalted|r Development
 ## IconTexture: Interface\AddOns\RehaltedUnitFrames\Media\Textures\Logo.tga
 ## SavedVariables: UUFDB
+## SavedVariables: RUFDB
 
 # Load Libraries
 Libraries/Init.xml

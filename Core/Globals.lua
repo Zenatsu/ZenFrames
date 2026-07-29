@@ -109,10 +109,10 @@ RUF.RoleTextures = {
         ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
         ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
     },
-    ["Colour"] = {
-        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga",
+    ["Color"] = {
+        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\DPS.tga",
     },
     ["White"] = {
         ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.png",
@@ -269,7 +269,7 @@ function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     textRegion:ClearAllPoints()
     textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
     if FontsDB.Shadow.Enabled then
-        textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+        textRegion:SetShadowColor(FontsDB.Shadow.Color[1], FontsDB.Shadow.Color[2], FontsDB.Shadow.Color[3], FontsDB.Shadow.Color[4])
         textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
     else
         textRegion:SetShadowColor(0, 0, 0, 0)
@@ -297,7 +297,7 @@ local function SetupSlashCommands()
     SlashCmdList["RUFRELOAD"] = function() C_UI.Reload() end
 end
 
-function RUF:LoadCustomColours()
+function RUF:LoadCustomColors()
     local General = RUF.db.profile.General
 
     -- Map power type enums to their string names
@@ -322,7 +322,7 @@ function RUF:LoadCustomColours()
         [Enum.PowerType.Essence or 19] = "ESSENCE",
     }
 
-    for powerType, color in pairs(General.Colours.Power) do
+    for powerType, color in pairs(General.Colors.Power) do
         local powerTypeString = PowerTypesToString[powerType]
         if powerTypeString then
             oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
@@ -330,7 +330,7 @@ function RUF:LoadCustomColours()
         end
     end
 
-    for powerType, color in pairs(General.Colours.SecondaryPower) do
+    for powerType, color in pairs(General.Colors.SecondaryPower) do
         local powerTypeString = PowerTypesToString[powerType]
         if powerTypeString then
             oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
@@ -338,27 +338,27 @@ function RUF:LoadCustomColours()
         end
     end
 
-    for reaction, color in pairs(General.Colours.Reaction) do
+    for reaction, color in pairs(General.Colors.Reaction) do
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
-    local DefaultStatusColours = RUF:GetDefaultDB().profile.General.Colours.Status
-    local StatusColours = General.Colours.Status or DefaultStatusColours
-    local tappedColor = StatusColours.Tapped or DefaultStatusColours.Tapped
-    local disconnectedColor = StatusColours.Disconnected or DefaultStatusColours.Disconnected
-    local deadBackdropColor = StatusColours.DeadBackdrop or DefaultStatusColours.DeadBackdrop
+    local DefaultStatusColors = RUF:GetDefaultDB().profile.General.Colors.Status
+    local StatusColors = General.Colors.Status or DefaultStatusColors
+    local tappedColor = StatusColors.Tapped or DefaultStatusColors.Tapped
+    local disconnectedColor = StatusColors.Disconnected or DefaultStatusColors.Disconnected
+    local deadBackdropColor = StatusColors.DeadBackdrop or DefaultStatusColors.DeadBackdrop
     oUF.colors.tapped = oUF:CreateColor(tappedColor[1], tappedColor[2], tappedColor[3])
     oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
     oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
 
-    local DefaultThreatColours = RUF:GetDefaultDB().profile.General.Colours.Threat
-    local ThreatColours = General.Colours.Threat or DefaultThreatColours
-    for threatStatus, defaultColor in pairs(DefaultThreatColours) do
-        local color = ThreatColours[threatStatus] or defaultColor
+    local DefaultThreatColors = RUF:GetDefaultDB().profile.General.Colors.Threat
+    local ThreatColors = General.Colors.Threat or DefaultThreatColors
+    for threatStatus, defaultColor in pairs(DefaultThreatColors) do
+        local color = ThreatColors[threatStatus] or defaultColor
         oUF.colors.threat[threatStatus] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
-    if General.Colours.Dispel then
+    if General.Colors.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,
             Curse = oUF.Enum.DispelType.Curse,
@@ -367,7 +367,7 @@ function RUF:LoadCustomColours()
             Bleed = oUF.Enum.DispelType.Bleed,
         }
         for dispelType, index in pairs(dispelMap) do
-            local color = General.Colours.Dispel[dispelType]
+            local color = General.Colors.Dispel[dispelType]
             if color then
                 oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
             end
@@ -386,9 +386,9 @@ local function AddAnchorsToBCDM()
     if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
     if select(4, GetBuildInfo()) >= 121000 then return end
     local RUF_Anchors = {
-        ["RUF_Player"] = "|cFF8080FFRehalted|rUnitFrames: Player Frame",
-        ["RUF_Target"] = "|cFF8080FFRehalted|rUnitFrames: Target Frame",
-        ["RUF_Pet"] = "|cFF8080FFRehalted|rUnitFrames: Pet Frame",
+        ["RUF_Player"] = "|cFFFFD100Rehalted|rUnitFrames: Player Frame",
+        ["RUF_Target"] = "|cFFFFD100Rehalted|rUnitFrames: Target Frame",
+        ["RUF_Pet"] = "|cFFFFD100Rehalted|rUnitFrames: Pet Frame",
     }
     if BCDMG then
         BCDMG:AddAnchors("RehaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, RUF_Anchors)
@@ -398,7 +398,7 @@ end
 function RUF:Init()
     SetupSlashCommands()
     RUF:ResolveLSM()
-    RUF:LoadCustomColours()
+    RUF:LoadCustomColors()
     RUF:SetTagUpdateInterval()
     AddAnchorsToBCDM()
 end
@@ -424,25 +424,25 @@ function RUF:SetJustification(anchorFrom)
     end
 end
 
-function RUF:GetUnitColour(unit)
+function RUF:GetUnitColor(unit)
     if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
         local _, class = UnitClass(unit)
-        local classColour = class and RAID_CLASS_COLORS[class]
-        if classColour then return classColour.r, classColour.g, classColour.b end
+        local classColor = class and RAID_CLASS_COLORS[class]
+        if classColor then return classColor.r, classColor.g, classColor.b end
     end
     local reaction = UnitReaction(unit, "player")
-    if reaction and RUF.db.profile.General.Colours.Reaction[reaction] then
-        local r, g, b = unpack(RUF.db.profile.General.Colours.Reaction[reaction])
+    if reaction and RUF.db.profile.General.Colors.Reaction[reaction] then
+        local r, g, b = unpack(RUF.db.profile.General.Colors.Reaction[reaction])
         return r, g, b
     end
     return 1, 1, 1
 end
 
-function RUF:GetClassColour(unitFrame)
+function RUF:GetClassColor(unitFrame)
     local _, class = UnitClass(unitFrame.unit)
-    local classColour = RAID_CLASS_COLORS[class]
-    if classColour then
-        return {classColour.r, classColour.g, classColour.b, 1}
+    local classColor = RAID_CLASS_COLORS[class]
+    if classColor then
+        return {classColor.r, classColor.g, classColor.b, 1}
     end
 end
 
@@ -695,41 +695,41 @@ end
 
 RUF.AURA_FILTERS = {
     Buffs = {
-        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the |cFF8080FFplayer|r."},
-        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the |cFF8080FFplayer|r or their vehicle."},
-        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by the |cFF8080FFplayer|r."},
-        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by the |cFF8080FFplayer|r."},
-        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by the |cFF8080FFplayer|r."},
-        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFplayer|r-cast buffs marked for raid frames while in combat."},
+        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the |cFFFFD100player|r."},
+        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the |cFFFFD100player|r or their vehicle."},
+        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by the |cFFFFD100player|r."},
+        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by the |cFFFFD100player|r."},
+        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by the |cFFFFD100player|r."},
+        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFFFFD100player|r-cast buffs marked for raid frames while in combat."},
         {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by the player."},
         {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by the player."},
         {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show player-cast buffs marked for raid frames."},
-        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by |cFF8080FFother|r units."},
-        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by |cFF8080FFother|r units."},
-        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by |cFF8080FFother|r units."},
-        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFother|r-cast buffs marked for raid frames while in combat."},
-        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by |cFF8080FFother|r units."},
-        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by |cFF8080FFother|r units."},
-        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFF8080FFother|r-cast buffs marked for raid frames."},
+        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by |cFFFFD100other|r units."},
+        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by |cFFFFD100other|r units."},
+        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by |cFFFFD100other|r units."},
+        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFFFFD100other|r-cast buffs marked for raid frames while in combat."},
+        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by |cFFFFD100other|r units."},
+        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by |cFFFFD100other|r units."},
+        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFFFFD100other|r-cast buffs marked for raid frames."},
     },
     Debuffs = {
         {Key = "Typed", Group = "General", Title = "Typed", Desc = "Show debuffs with a debuff type, such as |cFF3296FFMagic|r, |cFF9600FFCurse|r, |cFF966400Disease|r, |cFF009600Poison|r, or |cFFC80000Bleed|r."},
-        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the |cFF8080FFplayer|r."},
-        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every debuff applied by the |cFF8080FFplayer|r or their vehicle."},
-        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by the |cFF8080FFplayer|r."},
-        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by the |cFF8080FFplayer|r."},
-        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by the |cFF8080FFplayer|r."},
-        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFplayer|r-cast debuffs marked for raid frames while in combat."},
-        {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by the |cFF8080FFplayer|r."},
-        {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by the |cFF8080FFplayer|r."},
-        {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show |cFF8080FFplayer|r-cast debuffs marked for raid frames."},
-        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by |cFF8080FFother|r units."},
-        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by |cFF8080FFother|r units."},
-        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by |cFF8080FFother|r units."},
-        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFother|r-cast debuffs marked for raid frames while in combat."},
-        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by |cFF8080FFother|r units."},
-        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by |cFF8080FFother|r units."},
-        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFF8080FFother|r-cast debuffs marked for raid frames."},
+        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the |cFFFFD100player|r."},
+        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every debuff applied by the |cFFFFD100player|r or their vehicle."},
+        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by the |cFFFFD100player|r."},
+        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by the |cFFFFD100player|r."},
+        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by the |cFFFFD100player|r."},
+        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFFFFD100player|r-cast debuffs marked for raid frames while in combat."},
+        {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by the |cFFFFD100player|r."},
+        {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by the |cFFFFD100player|r."},
+        {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show |cFFFFD100player|r-cast debuffs marked for raid frames."},
+        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by |cFFFFD100other|r units."},
+        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by |cFFFFD100other|r units."},
+        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by |cFFFFD100other|r units."},
+        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFFFFD100other|r-cast debuffs marked for raid frames while in combat."},
+        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by |cFFFFD100other|r units."},
+        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by |cFFFFD100other|r units."},
+        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFFFFD100other|r-cast debuffs marked for raid frames."},
     }
 }
 
@@ -785,7 +785,50 @@ RUF.SCMAnchors = {
 
 function RUF:RefreshProfiles()
 	RUF:ResolveLSM()
-	RUF:LoadCustomColours()
+	RUF:LoadCustomColors()
 	RUF:UpdateAllUnitFrames()
 	RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
+end
+
+local function MergeMatchingKeys(source, target)
+	for key, sourceValue in pairs(source) do
+		local targetValue = target[key]
+		if targetValue ~= nil then
+			if type(sourceValue) == "table" and type(targetValue) == "table" then
+				MergeMatchingKeys(sourceValue, targetValue)
+			else
+				target[key] = sourceValue
+			end
+		end
+	end
+end
+
+-- Overwrites current select unit with target unit's settings. Non-reverseable.
+function RUF:CopyUnitSettings(sourceUnit, targetUnit)
+	local sourceDB = RUF:GetUnitDB(nil, sourceUnit)
+	local targetDB = RUF:GetUnitDB(nil, targetUnit)
+	if sourceDB == targetDB then return end
+
+	local preservedX, preservedY = targetDB.Frame.Layout[3], targetDB.Frame.Layout[4]
+	MergeMatchingKeys(sourceDB, targetDB)
+	targetDB.Frame.Layout[3], targetDB.Frame.Layout[4] = preservedX, preservedY
+
+	if targetUnit == "boss" and RUF.BOSS_TEST_MODE or targetUnit == "party" and RUF.PARTY_TEST_MODE or targetUnit == "raid" and RUF.RAID_TEST_MODE then
+		RUF:UpdateTestEnvironment(targetUnit, "all")
+	elseif targetUnit == "party" or targetUnit == "raid" then
+		RUF:UpdateGroupFrame(targetUnit)
+	elseif targetUnit == "boss" then
+		RUF:UpdateBossFrame()
+	elseif targetUnit == "augmentation" then
+		RUF:UpdateAugmentationRaidFrames()
+	else
+		local liveFrame = RUF[targetUnit:upper()]
+		if liveFrame then RUF:UpdateUnitFrame(liveFrame, targetUnit) end
+	end
+	RUF:UpdateUnitTags(targetUnit)
+
+	if RUF.DESIGNER_OPTIONS_CONTAINER and RUF:GetDesignerUnit() == targetUnit then
+		RUF:UpdateDesignerPreviewFrame()
+		RUF:AnchorDesignerOverlays()
+	end
 end

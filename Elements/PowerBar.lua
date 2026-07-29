@@ -12,7 +12,7 @@ end
 local function CreatePowerBarPostUpdateColor(unitFrame, unit)
     return function(element, _, color, altR, altG, altB)
         local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
-        if not PowerBarDB.ColourBackgroundByType then return end
+        if not PowerBarDB.ColorBackgroundByType then return end
         if not element.Background then return end
 
         local mult = PowerBarDB.BackgroundMultiplier or 0.75
@@ -76,8 +76,8 @@ function RUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar:SetStatusBarTexture(RUF.Media.Foreground)
     PowerBar:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
     PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
-    PowerBar.colorPower = PowerBarDB.ColourByType
-    PowerBar.colorClass = PowerBarDB.ColourByClass
+    PowerBar.colorPower = PowerBarDB.ColorByType
+    PowerBar.colorClass = PowerBarDB.ColorByClass
     PowerBar.frequentUpdates = PowerBarDB.Smooth
     PowerBar.PostUpdateColor = CreatePowerBarPostUpdateColor(unitFrame, unit)
 	unitFrame.PowerBar = PowerBar
@@ -134,8 +134,8 @@ function RUF:UpdateUnitPowerBar(unitFrame, unit)
             LayoutUnitPowerBar(unitFrame, unit, unitFrame:GetWidth())
             unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
             unitFrame.Power:SetStatusBarTexture(RUF.Media.Foreground)
-            unitFrame.Power.colorPower = PowerBarDB.ColourByType
-            unitFrame.Power.colorClass = PowerBarDB.ColourByClass
+            unitFrame.Power.colorPower = PowerBarDB.ColorByType
+            unitFrame.Power.colorClass = PowerBarDB.ColorByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
             if PowerBarDB.Inverse then
                 unitFrame.Power:SetReverseFill(true)

@@ -1,74 +1,10 @@
-## V12.1.1
+## V1.0.0
+- Major refactor of the origional UUF addon.
 - Modified the import function to handle missing data.
-- Added Designer feature for nameplates
-- Designer: widgets can now be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
-- Designer: the preview is now a bounded canvas that rejects and snaps back drops made outside its bounds.
-- Designer: selecting a widget now shows its settings inline below the preview instead of requiring the Units tab.
-## V12.1.0
-- Add Party / Raid Frames.
-- Add Dedicated Augmentation Raid Frames.
-  - Define rendered frames by Unit Name.
-  - All Settings from Raid Frames are supported yet separated.
-- Indicators:
-  - Added: Ready Check.
-  - Added: Resurrect.
-  - Added: Threat.
-  - Added: Phase.
-  - Added: Role.
-  - Added: Summon.
-  - Fixed: Highlight / Target Overlays breaking when making changes.
-- Tags
-  - Healer Mana & Healer Mana with Sign.
-  - `perhp` tag has been redefined to support statuses.
-  - Move to localised `DEAD`.
-- Power Bar has `Only Show Healer Mana` option.
-- Test Environment Rework.
-- Dead & Offline Backdrop Colour.
-- Heal Absorbs will reverse grow when selecting `Attach to Missing Health`.
-- Added `Unhalted Unit Frames` to Main Menu.
-- Added `Interrupt on Cooldown` Colour for Cast Bars.
-- Auras: Added an option to anchor auras to `Unit Frame` or `Health Bar`.
-## V12.0.25
-- Fix Font Shadows.
-## V12.0.24
-- Fixed `Classification` Textures not appearing.
-- File Restructure.
-- Added support for `Coolinator` as an anchor point.
-## V12.0.23
-- Added `Interrupt Success` Colour for Cast Bars.
-- Added `Smooth Updates` for Health Bars.
-- Added `reactioncolour` tag.
-- Added Custom Aura Container for `Player`, `Target`, `Focus`, `Pet` and `Boss`.
-- Removed `IMPORTANT` filter flag.
-- Fixed Auras in the Test Environment.
-- Fixed the `HealPrediction` error.
-- Added 3D Portraits back (for now).
-- Added 2D Portrait as a fallback for 3D Portraits that are secret.
-- Added Sorting for Auras - `Blizzard`, `Blizzard Reversed`, `Duration` & `Duration Reversed`.
-- Added `Typed` Filter. This will show all debuffs that are `Magic`, `Poison`, `Curse`, `Bleed` or `Disease`.
-- Added `Custom` Aura Container. This allows you to create an additional container per unit which can be used as either `Buffs` or `Debuffs`.
-
-## V12.0.22
-- Added `OUTLINE, SLUG` to the Font Selection.
-- Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
-- Added Totems back.
-- Private Auras for Player.
-- Improved on the Filters for Auras. This includes blacklisting what Blizzard allows.
-- Added `Display Login Message` toggle (Thanks Femxiii).
-- Added `Colour By Class` for Player/Pet CastBars (Thanks Lichie567).
-- Added new tags for percent health. You can now specify `decimals` to show (Thanks Rodrigodias4).
-- 3D Portraits are removed as they are now secret inside instances.
-- Bumped Interface Version.
-- Added Incoming Heals for all frames.
-- Added `Movers` for all frames.
-- Added `Show Target` and `Hold Time` for CastBars.
-- Added PVP Badge / Indicator.
-- Tidied up code.
-- Fixed Test Environment errors.
-- Improved upon the `SecondaryPowerBar` logic & code.
-- Added Quest Indicator.
-- Added Classification Indicator (Rare/Rare Elite/Elite).
-- Added Custom Quest Texture.
-- Added Cooldown Break Points. This might reset some of your options with regards to the Cooldown Text.
-- GUI Rework with the new options.
-- Added `Show Over Absorb` toggle for Absorbs. This should now show you an absorb when at full health, this is only enabled when you select `Attach to Missing Health`.
+- Saved Var's of old UUFDB should import into RUFDB without friction
+- Added Designer feature for nameplates, inspiried by platynator.
+  - Old Units nav group merged into Designer.
+  - Various indicators turned into widgets that can be moved around
+  - Designer: widgets can now be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
+  - Designer: the preview is now a bounded canvas that rejects and snaps back drops made outside its bounds.
+  - Designer: selecting a widget now shows its settings inline below the preview instead of requiring the Units tab.

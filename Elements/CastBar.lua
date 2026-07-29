@@ -1,8 +1,8 @@
 local _, RUF = ...
 
-local function SetCastBarColour(castBar, unit, CastBarDB)
+local function SetCastBarColor(castBar, unit, CastBarDB)
 	local r, g, b, a
-	if CastBarDB.ColourByClass then
+	if CastBarDB.ColorByClass then
 		local unitForClass = unit == "pet" and "player" or unit
 		local unitClass = select(2, UnitClass(unitForClass))
 		local unitColor = RAID_CLASS_COLORS[unitClass]
@@ -10,7 +10,7 @@ local function SetCastBarColour(castBar, unit, CastBarDB)
 	end
 	if not r then r, g, b, a = unpack(CastBarDB.Foreground) end
 	if RUF.IsInterruptOnCooldown and C_CurveUtil.EvaluateColorValueFromBoolean and (castBar.casting or castBar.channeling or castBar.empowering) and castBar.notInterruptible ~= nil and UnitCanAttack("player", unit) and RUF:IsInterruptOnCooldown() then
-		local CDR, CDG, CDB, CDA = unpack(CastBarDB.InterruptCooldownColour or CastBarDB.InterruptOnCooldownColour)
+		local CDR, CDG, CDB, CDA = unpack(CastBarDB.InterruptCooldownColor or CastBarDB.InterruptOnCooldownColor)
 		r = C_CurveUtil.EvaluateColorValueFromBoolean(castBar.notInterruptible, r, CDR)
 		g = C_CurveUtil.EvaluateColorValueFromBoolean(castBar.notInterruptible, g, CDG)
 		b = C_CurveUtil.EvaluateColorValueFromBoolean(castBar.notInterruptible, b, CDB)
@@ -44,7 +44,7 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
     CastBar.timeToHold = CastBarDB.HoldTime
-    SetCastBarColour(CastBar, unit, CastBarDB)
+    SetCastBarColor(CastBar, unit, CastBarDB)
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
@@ -55,7 +55,7 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     CastBar.NotInterruptibleOverlay:SetPoint("TOPLEFT", CastBar:GetStatusBarTexture(), "TOPLEFT")
     CastBar.NotInterruptibleOverlay:SetPoint("BOTTOMRIGHT", CastBar:GetStatusBarTexture(), "BOTTOMRIGHT")
     CastBar.NotInterruptibleOverlay:SetTexture(RUF.Media.Foreground)
-    CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColour))
+    CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
     CastBar.NotInterruptibleOverlay:SetAlpha(0)
 
     CastBar.Icon = CastBar:CreateTexture(RUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
@@ -83,9 +83,9 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     SpellNameText:ClearAllPoints()
     SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
     SpellNameText:SetFont(RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag)
-    SpellNameText:SetTextColor(unpack(SpellNameDB.Colour))
+    SpellNameText:SetTextColor(unpack(SpellNameDB.Color))
     if GeneralDB.Fonts.Shadow.Enabled then
-        SpellNameText:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+        SpellNameText:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
         SpellNameText:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
     else
         SpellNameText:SetShadowColor(0, 0, 0, 0)
@@ -97,9 +97,9 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     DurationText:ClearAllPoints()
     DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
     DurationText:SetFont(RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag)
-    DurationText:SetTextColor(unpack(DurationDB.Colour))
+    DurationText:SetTextColor(unpack(DurationDB.Color))
     if GeneralDB.Fonts.Shadow.Enabled then
-        DurationText:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+        DurationText:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
         DurationText:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
     else
         DurationText:SetShadowColor(0, 0, 0, 0)
@@ -124,7 +124,7 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
 			local currentCastBarDB = RUF:GetUnitDB(unitFrame, unit).CastBar
 			local currentSpellNameDB = currentCastBarDB.Text.SpellName
-			SetCastBarColour(frameCastBar, unit, currentCastBarDB)
+			SetCastBarColor(frameCastBar, unit, currentCastBarDB)
 
             local spellInfo = C_Spell.GetSpellInfo(frameCastBar.spellID)
             local spellName = spellInfo and spellInfo.name
@@ -146,10 +146,10 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
 
         unitFrame.Castbar.PostCastInterruptible = function(frameCastBar)
             if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0) end
-			SetCastBarColour(frameCastBar, unit, RUF:GetUnitDB(unitFrame, unit).CastBar)
+			SetCastBarColor(frameCastBar, unit, RUF:GetUnitDB(unitFrame, unit).CastBar)
         end
         unitFrame.Castbar.PostCastFail = function(frameCastBar)
-			frameCastBar:SetStatusBarColor(unpack(RUF:GetUnitDB(unitFrame, unit).CastBar.InterruptedFailedColour))
+			frameCastBar:SetStatusBarColor(unpack(RUF:GetUnitDB(unitFrame, unit).CastBar.InterruptedFailedColor))
             if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
         end
         unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
@@ -198,12 +198,12 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
             unitFrame.Castbar:SetStatusBarTexture(RUF.Media.Foreground)
             unitFrame.Castbar.timeToHold = CastBarDB.HoldTime
             unitFrame.Castbar.Background:SetTexture(RUF.Media.Background)
-            SetCastBarColour(unitFrame.Castbar, unit, CastBarDB)
+            SetCastBarColor(unitFrame.Castbar, unit, CastBarDB)
             unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(RUF.Media.Foreground)
-                unitFrame.Castbar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColour))
+                unitFrame.Castbar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
             end
 
             if CastBarDB.Inverse then
@@ -247,9 +247,9 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
                 unitFrame.Castbar.Text:SetFont(RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag)
-                unitFrame.Castbar.Text:SetTextColor(unpack(SpellNameDB.Colour))
+                unitFrame.Castbar.Text:SetTextColor(unpack(SpellNameDB.Color))
                 if GeneralDB.Fonts.Shadow.Enabled then
-                    unitFrame.Castbar.Text:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+                    unitFrame.Castbar.Text:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
                     unitFrame.Castbar.Text:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
                 else
                     unitFrame.Castbar.Text:SetShadowColor(0, 0, 0, 0)
@@ -264,9 +264,9 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
                 unitFrame.Castbar.Time:SetFont(RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag)
-                unitFrame.Castbar.Time:SetTextColor(unpack(DurationDB.Colour))
+                unitFrame.Castbar.Time:SetTextColor(unpack(DurationDB.Color))
                 if GeneralDB.Fonts.Shadow.Enabled then
-                    unitFrame.Castbar.Time:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+                    unitFrame.Castbar.Time:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
                     unitFrame.Castbar.Time:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
                 else
                     unitFrame.Castbar.Time:SetShadowColor(0, 0, 0, 0)
@@ -309,7 +309,7 @@ function RUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar.Time:SetText("2.5")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
             unitFrame.Castbar:SetValue(500)
-            SetCastBarColour(unitFrame.Castbar, unit, CastBarDB)
+            SetCastBarColor(unitFrame.Castbar, unit, CastBarDB)
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
             end
@@ -340,6 +340,6 @@ InterruptCooldownFrame:SetScript("OnEvent", function()
 		local castBar = unitFrame and unitFrame.Castbar
 		local unit = unitFrame and unitFrame.unit
 		local UnitDB = unit and RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)]
-		if castBar and castBar:IsShown() and (castBar.casting or castBar.channeling or castBar.empowering) and UnitDB and UnitDB.CastBar then SetCastBarColour(castBar, unit, UnitDB.CastBar) end
+		if castBar and castBar:IsShown() and (castBar.casting or castBar.channeling or castBar.empowering) and UnitDB and UnitDB.CastBar then SetCastBarColor(castBar, unit, UnitDB.CastBar) end
 	end
 end)

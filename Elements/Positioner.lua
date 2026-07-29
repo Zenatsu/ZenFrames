@@ -16,6 +16,6 @@ function RUF:CreatePositionController()
         CDMAnchor:SetAllPoints(ECDM)
         CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
     else
-        RUF:PrettyPrint("|cFF8080FFAnchor Point|r was not found.")
+        RUF:PrettyPrint("|cFFFFD100Anchor Point|r was not found.")
     end
 end

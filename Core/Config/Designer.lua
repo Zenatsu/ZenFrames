@@ -116,6 +116,13 @@ function RUF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     if previewFrame.Health then
         previewFrame.Health:SetMinMaxValues(0,100)
          previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
+        -- Health:SetValue is a raw StatusBar call, not a real oUF health event, so the
+        -- Health.PostUpdate hook that normally drives HealthBackground's own fill never
+        -- fires here -- set it directly or the background never shows in the preview.
+        if previewFrame.HealthBackground then
+            previewFrame.HealthBackground:SetMinMaxValues(0, 100)
+            previewFrame.HealthBackground:SetValue(100 - STYLE.Preview.SampleHealth)
+        end
     end
     if previewFrame.Power then
         previewFrame.Power:SetMinMaxValues(0,100)
@@ -290,6 +297,35 @@ local function BuildDesignerRegistry(unit)
                 region:SetTexCoord(0, 0.65625, 0, 0.65625)
                 region:Show()
                 if region.Badge then region.Badge:Hide() end
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "Classification", label = "Classification Indicator", dbKey = "Classification", designerTab = "Indicators", oUFElements = {"ClassificationIndicator"},
+            getRegion = function(previewFrame) return previewFrame.ClassificationIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitClassificationIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.ClassificationIndicator if not region then return end
+                local db = RUF.db.profile.Units.target.Indicators.Classification
+                local textures = RUF.ClassificationTextures[db.Texture]
+                if textures and textures["elite"] then
+                    if db.Texture == "CLASSIFICATION0" or db.Texture == "CLASSIFICATION1" then
+                        region:SetAtlas(textures["elite"], false)
+                    else
+                        region:SetTexture(textures["elite"])
+                    end
+                end
+                region:Show()
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "Quest", label = "Quest Indicator", dbKey = "Quest", designerTab = "Indicators", oUFElements = {"QuestUnitIndicator"},
+            getRegion = function(previewFrame) return previewFrame.QuestUnitIndicator end,
+            update = function(unitFrame) RUF:UpdateUnitQuestIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.QuestUnitIndicator if not region then return end
+                local db = RUF.db.profile.Units.target.Indicators.Quest
+                region:SetTexture(RUF.QuestTextures[db.Texture] or RUF.QuestTextures.DEFAULT)
+                region:Show()
             end,
         }),
         WidgetEntry(unit, {

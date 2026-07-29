@@ -35,9 +35,9 @@ function RUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     AlternativePowerBar.Status:SetStatusBarTexture(RUF.Media.Foreground)
     AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
-    if AlternativePowerBarDB.ColourByType then
-        local powerColour = RUFDB.General.Colours.Power[0]
-        if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
+    if AlternativePowerBarDB.ColorByType then
+        local powerColor = RUFDB.General.Colors.Power[0]
+        if powerColor then AlternativePowerBar.Status:SetStatusBarColor(powerColor[1], powerColor[2], powerColor[3], powerColor[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
     end
@@ -81,9 +81,9 @@ function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
     AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    if AlternativePowerBarDB.ColourByType then
-        local powerColour = RUFDB.General.Colours.Power[0]
-        if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
+    if AlternativePowerBarDB.ColorByType then
+        local powerColor = RUFDB.General.Colors.Power[0]
+        if powerColor then AlternativePowerBar.Status:SetStatusBarColor(powerColor[1], powerColor[2], powerColor[3], powerColor[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
     end

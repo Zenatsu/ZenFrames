@@ -191,7 +191,7 @@ local StatusTextures = {
 local RoleTextures = {
 	["Default"] = "|A:UI-LFG-RoleIcon-Tank-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-Healer-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-DPS-Micro-Raid:18:18|a",
 	["Blizzard"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t",
-	["Colour"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga:18:18|t",
+	["Color"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\DPS.tga:18:18|t",
 	["White"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.png:18:18|t",
 	["ElvUI"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t",
 	["Square"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t",
@@ -323,7 +323,7 @@ end
 local function CreateFontSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
 
-    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFF8080FFSharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFD100SharedMedia|r.")
 
     local FontDropdown = AG:Create("LSM30_Font")
     FontDropdown:SetList(LSM:HashTable("font"))
@@ -357,10 +357,10 @@ local function CreateFontSettings(containerParent)
     SimpleGroup:AddChild(Toggle)
 
     local ColorPicker = AG:Create("ColorPicker")
-    ColorPicker:SetLabel("Colour")
-    ColorPicker:SetColor(unpack(RUF.db.profile.General.Fonts.Shadow.Colour))
+    ColorPicker:SetLabel("Color")
+    ColorPicker:SetColor(unpack(RUF.db.profile.General.Fonts.Shadow.Color))
     ColorPicker:SetFullWidth(true)
-	ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF.db.profile.General.Fonts.Shadow.Colour = {r, g, b, a} RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
+	ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF.db.profile.General.Fonts.Shadow.Color = {r, g, b, a} RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
     ColorPicker:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(ColorPicker)
 
@@ -388,7 +388,7 @@ end
 local function CreateTextureSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Textures")
 
-    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFF8080FFSharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFD100SharedMedia|r.")
 
     local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
     ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
@@ -412,7 +412,7 @@ local function CreateTextureSettings(containerParent)
     MouseoverStyleDropdown:SetValue("SELECT")
     MouseoverStyleDropdown:SetRelativeWidth(0.5)
     MouseoverStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.Style = value end end) RUF:UpdateAllUnitFrames() MouseoverStyleDropdown:SetValue("SELECT") end)
-    MouseoverStyleDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(MouseoverStyleDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("Set |cFF8080FFMouseover Highlight Style|r for all units. |cFF8080FFColour|r & |cFF8080FFAlpha|r can be adjusted per unit.", 1, 1, 1) GameTooltip:Show() end)
+    MouseoverStyleDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(MouseoverStyleDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("Set |cFFFFD100Mouseover Highlight Style|r for all units. |cFFFFD100Color|r & |cFFFFD100Alpha|r can be adjusted per unit.", 1, 1, 1) GameTooltip:Show() end)
     MouseoverStyleDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     Container:AddChild(MouseoverStyleDropdown)
 
@@ -425,13 +425,13 @@ local function CreateTextureSettings(containerParent)
     MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end) RUF:UpdateAllUnitFrames() end)
     Container:AddChild(MouseoverHighlightSlider)
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground Color")
     local R, G, B = 8/255, 8/255, 8/255
-    ForegroundColourPicker:SetColor(R, G, B)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Foreground = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(ForegroundColourPicker)
+    ForegroundColorPicker:SetColor(R, G, B)
+    ForegroundColorPicker:SetRelativeWidth(0.5)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Foreground = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
+    Container:AddChild(ForegroundColorPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -442,13 +442,13 @@ local function CreateTextureSettings(containerParent)
     ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.ForegroundOpacity = value end) RUF:UpdateAllUnitFrames() end)
     Container:AddChild(ForegroundOpacitySlider)
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background Color")
     local R2, G2, B2 = 8/255, 8/255, 8/255
-    BackgroundColourPicker:SetColor(R2, G2, B2)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Background = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(BackgroundColourPicker)
+    BackgroundColorPicker:SetColor(R2, G2, B2)
+    BackgroundColorPicker:SetRelativeWidth(0.5)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Background = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
+    Container:AddChild(BackgroundColorPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
@@ -461,37 +461,37 @@ local function CreateTextureSettings(containerParent)
 
     local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
 
-    local CastBarForegroundColourPicker = AG:Create("ColorPicker")
-    CastBarForegroundColourPicker:SetLabel("Foreground Colour")
+    local CastBarForegroundColorPicker = AG:Create("ColorPicker")
+    CastBarForegroundColorPicker:SetLabel("Foreground Color")
     local CR, CG, CB = 128/255, 128/255, 255/255
-    CastBarForegroundColourPicker:SetColor(CR, CG, CB)
-    CastBarForegroundColourPicker:SetRelativeWidth(0.25)
-    CastBarForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarForegroundColourPicker)
+    CastBarForegroundColorPicker:SetColor(CR, CG, CB)
+    CastBarForegroundColorPicker:SetRelativeWidth(0.25)
+    CastBarForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarForegroundColorPicker)
 
-    local CastBarBackgroundColourPicker = AG:Create("ColorPicker")
-    CastBarBackgroundColourPicker:SetLabel("Background Colour")
+    local CastBarBackgroundColorPicker = AG:Create("ColorPicker")
+    CastBarBackgroundColorPicker:SetLabel("Background Color")
     local CR2, CG2, CB2 = 34/255, 34/255, 34/255
-    CastBarBackgroundColourPicker:SetColor(CR2, CG2, CB2)
-    CastBarBackgroundColourPicker:SetRelativeWidth(0.25)
-    CastBarBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarBackgroundColourPicker)
+    CastBarBackgroundColorPicker:SetColor(CR2, CG2, CB2)
+    CastBarBackgroundColorPicker:SetRelativeWidth(0.25)
+    CastBarBackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarBackgroundColorPicker)
 
-    local CastBarNotInterruptibleColourPicker = AG:Create("ColorPicker")
-    CastBarNotInterruptibleColourPicker:SetLabel("Not Interruptible Colour")
+    local CastBarNotInterruptibleColorPicker = AG:Create("ColorPicker")
+    CastBarNotInterruptibleColorPicker:SetLabel("Not Interruptible Color")
     local CR3, CG3, CB3 = 255/255, 64/255, 64/255
-    CastBarNotInterruptibleColourPicker:SetColor(CR3, CG3, CB3)
-    CastBarNotInterruptibleColourPicker:SetRelativeWidth(0.25)
-    CastBarNotInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColour = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarNotInterruptibleColourPicker)
+    CastBarNotInterruptibleColorPicker:SetColor(CR3, CG3, CB3)
+    CastBarNotInterruptibleColorPicker:SetRelativeWidth(0.25)
+    CastBarNotInterruptibleColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColor = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarNotInterruptibleColorPicker)
 
-    local CastBarInterruptCooldownColourPicker = AG:Create("ColorPicker")
-    CastBarInterruptCooldownColourPicker:SetLabel("Interrupt on Cooldown Colour")
+    local CastBarInterruptCooldownColorPicker = AG:Create("ColorPicker")
+    CastBarInterruptCooldownColorPicker:SetLabel("Interrupt on Cooldown Color")
     local CR4, CG4, CB4 = 204/255, 204/255, 204/255
-    CastBarInterruptCooldownColourPicker:SetColor(CR4, CG4, CB4)
-    CastBarInterruptCooldownColourPicker:SetRelativeWidth(0.25)
-    CastBarInterruptCooldownColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.InterruptCooldownColour = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarInterruptCooldownColourPicker)
+    CastBarInterruptCooldownColorPicker:SetColor(CR4, CG4, CB4)
+    CastBarInterruptCooldownColorPicker:SetRelativeWidth(0.25)
+    CastBarInterruptCooldownColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.InterruptCooldownColor = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarInterruptCooldownColorPicker)
 end
 
 local function CreateRangeSettings(containerParent)
@@ -529,75 +529,75 @@ local function CreateRangeSettings(containerParent)
     GUIWidgets.DeepDisable(Container, not RangeDB.Enabled, Toggle)
 end
 
-local function CreateColourSettings(containerParent)
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colours")
-    RUF.db.profile.General.Colours.Status = RUF.db.profile.General.Colours.Status or {}
-    for statusType, color in pairs(RUF:GetDefaultDB().profile.General.Colours.Status) do
-        RUF.db.profile.General.Colours.Status[statusType] = RUF.db.profile.General.Colours.Status[statusType] or {color[1], color[2], color[3]}
+local function CreateColorSettings(containerParent)
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colors")
+    RUF.db.profile.General.Colors.Status = RUF.db.profile.General.Colors.Status or {}
+    for statusType, color in pairs(RUF:GetDefaultDB().profile.General.Colors.Status) do
+        RUF.db.profile.General.Colors.Status[statusType] = RUF.db.profile.General.Colors.Status[statusType] or {color[1], color[2], color[3]}
     end
-    RUF.db.profile.General.Colours.Threat = RUF.db.profile.General.Colours.Threat or {}
-    for threatStatus, color in pairs(RUF:GetDefaultDB().profile.General.Colours.Threat) do
-        RUF.db.profile.General.Colours.Threat[threatStatus] = RUF.db.profile.General.Colours.Threat[threatStatus] or {color[1], color[2], color[3]}
+    RUF.db.profile.General.Colors.Threat = RUF.db.profile.General.Colors.Threat or {}
+    for threatStatus, color in pairs(RUF:GetDefaultDB().profile.General.Colors.Threat) do
+        RUF.db.profile.General.Colors.Threat[threatStatus] = RUF.db.profile.General.Colors.Threat[threatStatus] or {color[1], color[2], color[3]}
     end
 
-    GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colours to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
+    GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colors to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
 
-    local ResetAllColoursButton = AG:Create("Button")
-    ResetAllColoursButton:SetText("All Colours")
-    ResetAllColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours, RUF.db.profile.General.Colours) RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetAllColoursButton:SetRelativeWidth(1)
-    Container:AddChild(ResetAllColoursButton)
+    local ResetAllColorsButton = AG:Create("Button")
+    ResetAllColorsButton:SetText("All Colors")
+    ResetAllColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors, RUF.db.profile.General.Colors) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetAllColorsButton:SetRelativeWidth(1)
+    Container:AddChild(ResetAllColorsButton)
 
-    local ResetPowerColoursButton = AG:Create("Button")
-    ResetPowerColoursButton:SetText("Power Colours")
-    ResetPowerColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.Power, RUF.db.profile.General.Colours.Power) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetPowerColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetPowerColoursButton)
+    local ResetPowerColorsButton = AG:Create("Button")
+    ResetPowerColorsButton:SetText("Power Colors")
+    ResetPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Power, RUF.db.profile.General.Colors.Power) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetPowerColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetPowerColorsButton)
 
-    local ResetSecondaryPowerColoursButton = AG:Create("Button")
-    ResetSecondaryPowerColoursButton:SetText("Secondary Power Colours")
-    ResetSecondaryPowerColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.SecondaryPower, RUF.db.profile.General.Colours.SecondaryPower) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetSecondaryPowerColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetSecondaryPowerColoursButton)
+    local ResetSecondaryPowerColorsButton = AG:Create("Button")
+    ResetSecondaryPowerColorsButton:SetText("Secondary Power Colors")
+    ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.SecondaryPower, RUF.db.profile.General.Colors.SecondaryPower) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetSecondaryPowerColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetSecondaryPowerColorsButton)
 
-    local ResetReactionColoursButton = AG:Create("Button")
-    ResetReactionColoursButton:SetText("Reaction Colours")
-    ResetReactionColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.Reaction, RUF.db.profile.General.Colours.Reaction) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetReactionColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetReactionColoursButton)
+    local ResetReactionColorsButton = AG:Create("Button")
+    ResetReactionColorsButton:SetText("Reaction Colors")
+    ResetReactionColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Reaction, RUF.db.profile.General.Colors.Reaction) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetReactionColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetReactionColorsButton)
 
-    local ResetDispelColoursButton = AG:Create("Button")
-    ResetDispelColoursButton:SetText("Dispel Colours")
-    ResetDispelColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.Dispel, RUF.db.profile.General.Colours.Dispel) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetDispelColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetDispelColoursButton)
+    local ResetDispelColorsButton = AG:Create("Button")
+    ResetDispelColorsButton:SetText("Dispel Colors")
+    ResetDispelColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Dispel, RUF.db.profile.General.Colors.Dispel) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetDispelColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetDispelColorsButton)
 
-    local ResetStatusColoursButton = AG:Create("Button")
-    ResetStatusColoursButton:SetText("Status Colours")
-    ResetStatusColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.Status, RUF.db.profile.General.Colours.Status) RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetStatusColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetStatusColoursButton)
+    local ResetStatusColorsButton = AG:Create("Button")
+    ResetStatusColorsButton:SetText("Status Colors")
+    ResetStatusColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Status, RUF.db.profile.General.Colors.Status) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetStatusColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetStatusColorsButton)
 
-    local ResetThreatColoursButton = AG:Create("Button")
-    ResetThreatColoursButton:SetText("Threat Colours")
-    ResetThreatColoursButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colours.Threat, RUF.db.profile.General.Colours.Threat) RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetThreatColoursButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetThreatColoursButton)
+    local ResetThreatColorsButton = AG:Create("Button")
+    ResetThreatColorsButton:SetText("Threat Colors")
+    ResetThreatColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Threat, RUF.db.profile.General.Colors.Threat) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetThreatColorsButton:SetRelativeWidth(0.33)
+    Container:AddChild(ResetThreatColorsButton)
 
     GUIWidgets.CreateHeader(Container, "Power")
 
     local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
     for _, powerType in ipairs(PowerOrder) do
-        local powerColour = RUF.db.profile.General.Colours.Power[powerType]
-        local PowerColourPicker = AG:Create("ColorPicker")
-        PowerColourPicker:SetLabel(Power[powerType])
-        local R, G, B = unpack(powerColour)
-        PowerColourPicker:SetColor(R, G, B)
-        PowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.Power[powerType] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-        PowerColourPicker:SetHasAlpha(false)
-        PowerColourPicker:SetRelativeWidth(0.19)
-        Container:AddChild(PowerColourPicker)
+        local powerColor = RUF.db.profile.General.Colors.Power[powerType]
+        local PowerColorPicker = AG:Create("ColorPicker")
+        PowerColorPicker:SetLabel(Power[powerType])
+        local R, G, B = unpack(powerColor)
+        PowerColorPicker:SetColor(R, G, B)
+        PowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Power[powerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+        PowerColorPicker:SetHasAlpha(false)
+        PowerColorPicker:SetRelativeWidth(0.19)
+        Container:AddChild(PowerColorPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Secondary Power")
@@ -605,16 +605,16 @@ local function CreateColourSettings(containerParent)
     local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
 
     for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
-        local secondaryPowerColour = RUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType]
-        if secondaryPowerColour then
-            local SecondaryPowerColourPicker = AG:Create("ColorPicker")
-            SecondaryPowerColourPicker:SetLabel(Power[secondaryPowerType])
-            local R, G, B = unpack(secondaryPowerColour)
-            SecondaryPowerColourPicker:SetColor(R, G, B)
-            SecondaryPowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-            SecondaryPowerColourPicker:SetHasAlpha(false)
-            SecondaryPowerColourPicker:SetRelativeWidth(0.2)
-            Container:AddChild(SecondaryPowerColourPicker)
+        local secondaryPowerColor = RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType]
+        if secondaryPowerColor then
+            local SecondaryPowerColorPicker = AG:Create("ColorPicker")
+            SecondaryPowerColorPicker:SetLabel(Power[secondaryPowerType])
+            local R, G, B = unpack(secondaryPowerColor)
+            SecondaryPowerColorPicker:SetColor(R, G, B)
+            SecondaryPowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            SecondaryPowerColorPicker:SetHasAlpha(false)
+            SecondaryPowerColorPicker:SetRelativeWidth(0.2)
+            Container:AddChild(SecondaryPowerColorPicker)
         end
     end
 
@@ -623,14 +623,14 @@ local function CreateColourSettings(containerParent)
     local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
 
     for _, reactionType in ipairs(ReactionOrder) do
-        local ReactionColourPicker = AG:Create("ColorPicker")
-        ReactionColourPicker:SetLabel(Reaction[reactionType])
-        local R, G, B = unpack(RUF.db.profile.General.Colours.Reaction[reactionType])
-        ReactionColourPicker:SetColor(R, G, B)
-        ReactionColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.Reaction[reactionType] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-        ReactionColourPicker:SetHasAlpha(false)
-        ReactionColourPicker:SetRelativeWidth(0.25)
-        Container:AddChild(ReactionColourPicker)
+        local ReactionColorPicker = AG:Create("ColorPicker")
+        ReactionColorPicker:SetLabel(Reaction[reactionType])
+        local R, G, B = unpack(RUF.db.profile.General.Colors.Reaction[reactionType])
+        ReactionColorPicker:SetColor(R, G, B)
+        ReactionColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Reaction[reactionType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+        ReactionColorPicker:SetHasAlpha(false)
+        ReactionColorPicker:SetRelativeWidth(0.25)
+        Container:AddChild(ReactionColorPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Status")
@@ -638,14 +638,14 @@ local function CreateColourSettings(containerParent)
     local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
 
     for _, statusType in ipairs(StatusOrder) do
-        local StatusColourPicker = AG:Create("ColorPicker")
-        StatusColourPicker:SetLabel(Status[statusType])
-        local R, G, B = unpack(RUF.db.profile.General.Colours.Status[statusType])
-        StatusColourPicker:SetColor(R, G, B)
-        StatusColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.Status[statusType] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-        StatusColourPicker:SetHasAlpha(false)
-        StatusColourPicker:SetRelativeWidth(0.25)
-        Container:AddChild(StatusColourPicker)
+        local StatusColorPicker = AG:Create("ColorPicker")
+        StatusColorPicker:SetLabel(Status[statusType])
+        local R, G, B = unpack(RUF.db.profile.General.Colors.Status[statusType])
+        StatusColorPicker:SetColor(R, G, B)
+        StatusColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Status[statusType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+        StatusColorPicker:SetHasAlpha(false)
+        StatusColorPicker:SetRelativeWidth(0.25)
+        Container:AddChild(StatusColorPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Threat")
@@ -653,14 +653,14 @@ local function CreateColourSettings(containerParent)
     local ThreatOrder = {0, 1, 2, 3}
 
     for _, threatStatus in ipairs(ThreatOrder) do
-        local ThreatColourPicker = AG:Create("ColorPicker")
-        ThreatColourPicker:SetLabel(Threat[threatStatus])
-        local R, G, B = unpack(RUF.db.profile.General.Colours.Threat[threatStatus])
-        ThreatColourPicker:SetColor(R, G, B)
-        ThreatColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.Threat[threatStatus] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-        ThreatColourPicker:SetHasAlpha(false)
-        ThreatColourPicker:SetRelativeWidth(0.25)
-        Container:AddChild(ThreatColourPicker)
+        local ThreatColorPicker = AG:Create("ColorPicker")
+        ThreatColorPicker:SetLabel(Threat[threatStatus])
+        local R, G, B = unpack(RUF.db.profile.General.Colors.Threat[threatStatus])
+        ThreatColorPicker:SetColor(R, G, B)
+        ThreatColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Threat[threatStatus] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+        ThreatColorPicker:SetHasAlpha(false)
+        ThreatColorPicker:SetRelativeWidth(0.25)
+        Container:AddChild(ThreatColorPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Dispel Types")
@@ -668,14 +668,14 @@ local function CreateColourSettings(containerParent)
     local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
 
     for _, dispelType in ipairs(DispelTypes) do
-        local DispelColourPicker = AG:Create("ColorPicker")
-        DispelColourPicker:SetLabel(dispelType)
-        local R, G, B = unpack(RUF.db.profile.General.Colours.Dispel[dispelType])
-        DispelColourPicker:SetColor(R, G, B)
-        DispelColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colours.Dispel[dispelType] = {r, g, b} RUF:LoadCustomColours() RUF:UpdateAllUnitFrames() end)
-        DispelColourPicker:SetHasAlpha(false)
-        DispelColourPicker:SetRelativeWidth(0.2)
-        Container:AddChild(DispelColourPicker)
+        local DispelColorPicker = AG:Create("ColorPicker")
+        DispelColorPicker:SetLabel(dispelType)
+        local R, G, B = unpack(RUF.db.profile.General.Colors.Dispel[dispelType])
+        DispelColorPicker:SetColor(R, G, B)
+        DispelColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Dispel[dispelType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+        DispelColorPicker:SetHasAlpha(false)
+        DispelColorPicker:SetRelativeWidth(0.2)
+        Container:AddChild(DispelColorPicker)
     end
 end
 
@@ -765,7 +765,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         AutoAdjustGroupsToggle:SetLabel("Groups Per Difficulty")
         AutoAdjustGroupsToggle:SetValue(FrameDB.AutoAdjustGroups)
         AutoAdjustGroupsToggle:SetRelativeWidth(0.33)
-        AutoAdjustGroupsToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AutoAdjustGroupsToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Automatically adjusts visible raid groups for the current difficulty.\n\n|cFF8080FFNormal / Heroic:|r Groups 1 - 6\n|cFF8080FFMythic:|r Groups 1 - 4\n|cFF8080FFMythic Flex:|r Groups 1 - 5", 1, 1, 1, true) GameTooltip:Show() end)
+        AutoAdjustGroupsToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AutoAdjustGroupsToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Automatically adjusts visible raid groups for the current difficulty.\n\n|cFFFFD100Normal / Heroic:|r Groups 1 - 6\n|cFFFFD100Mythic:|r Groups 1 - 4\n|cFFFFD100Mythic Flex:|r Groups 1 - 5", 1, 1, 1, true) GameTooltip:Show() end)
         AutoAdjustGroupsToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
         LayoutContainer:AddChild(AutoAdjustGroupsToggle)
 
@@ -848,7 +848,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback("Frame") end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
     local healthToggleWidth = (unit == "player" or unit == "target") and 0.25 or 0.33
 	local primaryToggleWidth = (unit == "party" or unit == "raid" or unit == "augmentation") and 0.33 or healthToggleWidth
 	local secondaryToggleWidth = (unit == "raid" or unit == "augmentation") and 0.33 or primaryToggleWidth
@@ -872,7 +872,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             }
             StaticPopup_Show("RUF_RELOAD_UI")
         end)
-        ColourContainer:AddChild(ShowPlayerToggle)
+        ColorContainer:AddChild(ShowPlayerToggle)
     end
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
@@ -880,29 +880,29 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     SmoothUpdatesToggle:SetValue(HealthBarDB.Smooth ~= false)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Smooth = value updateCallback("HealthBar") end)
     SmoothUpdatesToggle:SetRelativeWidth(primaryToggleWidth)
-    ColourContainer:AddChild(SmoothUpdatesToggle)
+    ColorContainer:AddChild(SmoothUpdatesToggle)
 
-    local ColourWhenTappedToggle = AG:Create("CheckBox")
-    ColourWhenTappedToggle:SetLabel("Colour When Tapped")
-    ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
-    ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback("HealthBar") end)
-    ColourWhenTappedToggle:SetRelativeWidth(primaryToggleWidth)
-    ColourContainer:AddChild(ColourWhenTappedToggle)
+    local ColorWhenTappedToggle = AG:Create("CheckBox")
+    ColorWhenTappedToggle:SetLabel("Color When Tapped")
+    ColorWhenTappedToggle:SetValue(HealthBarDB.ColorWhenTapped)
+    ColorWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorWhenTapped = value updateCallback("HealthBar") end)
+    ColorWhenTappedToggle:SetRelativeWidth(primaryToggleWidth)
+    ColorContainer:AddChild(ColorWhenTappedToggle)
 
-    local ColourWhenDisconnectedToggle = AG:Create("CheckBox")
-    ColourWhenDisconnectedToggle:SetLabel("Colour When Disconnected")
-    ColourWhenDisconnectedToggle:SetValue(HealthBarDB.ColourWhenDisconnected)
-    ColourWhenDisconnectedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenDisconnected = value updateCallback("HealthBar") end)
-    ColourWhenDisconnectedToggle:SetRelativeWidth(secondaryToggleWidth)
-    ColourContainer:AddChild(ColourWhenDisconnectedToggle)
+    local ColorWhenDisconnectedToggle = AG:Create("CheckBox")
+    ColorWhenDisconnectedToggle:SetLabel("Color When Disconnected")
+    ColorWhenDisconnectedToggle:SetValue(HealthBarDB.ColorWhenDisconnected)
+    ColorWhenDisconnectedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorWhenDisconnected = value updateCallback("HealthBar") end)
+    ColorWhenDisconnectedToggle:SetRelativeWidth(secondaryToggleWidth)
+    ColorContainer:AddChild(ColorWhenDisconnectedToggle)
 
 	if unit == "party" or unit == "raid" or unit == "augmentation" then
-        local ColourBackdropWhenDeadToggle = AG:Create("CheckBox")
-        ColourBackdropWhenDeadToggle:SetLabel("Colour Backdrop When Dead")
-        ColourBackdropWhenDeadToggle:SetValue(HealthBarDB.ColourBackdropWhenDead)
-        ColourBackdropWhenDeadToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourBackdropWhenDead = value updateCallback("HealthBar") end)
-        ColourBackdropWhenDeadToggle:SetRelativeWidth(secondaryToggleWidth)
-        ColourContainer:AddChild(ColourBackdropWhenDeadToggle)
+        local ColorBackdropWhenDeadToggle = AG:Create("CheckBox")
+        ColorBackdropWhenDeadToggle:SetLabel("Color Backdrop When Dead")
+        ColorBackdropWhenDeadToggle:SetValue(HealthBarDB.ColorBackdropWhenDead)
+        ColorBackdropWhenDeadToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorBackdropWhenDead = value updateCallback("HealthBar") end)
+        ColorBackdropWhenDeadToggle:SetRelativeWidth(secondaryToggleWidth)
+        ColorContainer:AddChild(ColorBackdropWhenDeadToggle)
     end
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
@@ -910,7 +910,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback("HealthBar") end)
     InverseGrowthDirectionToggle:SetRelativeWidth(secondaryToggleWidth)
-    ColourContainer:AddChild(InverseGrowthDirectionToggle)
+    ColorContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
@@ -951,31 +951,31 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             end
             updateCallback("Frame")
         end)
-        AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
+        AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFFFFD100Essential|r Cooldown Viewer. Toggling this will overwrite existing |cFFFFD100Layout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
         AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
         AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
-        ColourContainer:AddChild(AnchorToCooldownViewerToggle)
+        ColorContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
-    GUIWidgets.CreateInformationTag(ColourContainer, "Foreground & Background Opacity can be set using the sliders.")
+    GUIWidgets.CreateInformationTag(ColorContainer, "Foreground & Background Opacity can be set using the sliders.")
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground Color")
     local R, G, B = unpack(HealthBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback("HealthBar") end)
-    ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.25)
-    ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass)
-    ColourContainer:AddChild(ForegroundColourPicker)
-    RUFGUI.FrameFGColourPicker = ForegroundColourPicker
+    ForegroundColorPicker:SetColor(R, G, B)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback("HealthBar") end)
+    ForegroundColorPicker:SetHasAlpha(false)
+    ForegroundColorPicker:SetRelativeWidth(0.25)
+    ForegroundColorPicker:SetDisabled(HealthBarDB.ColorByClass)
+    ColorContainer:AddChild(ForegroundColorPicker)
+    RUFGUI.FrameFGColorPicker = ForegroundColorPicker
 
-    local ForegroundColourByClassToggle = AG:Create("CheckBox")
-    ForegroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
-    ForegroundColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
-    ForegroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value RUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback("HealthBar") end)
-    ForegroundColourByClassToggle:SetRelativeWidth(0.25)
-    ColourContainer:AddChild(ForegroundColourByClassToggle)
+    local ForegroundColorByClassToggle = AG:Create("CheckBox")
+    ForegroundColorByClassToggle:SetLabel("Color by Class / Reaction")
+    ForegroundColorByClassToggle:SetValue(HealthBarDB.ColorByClass)
+    ForegroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorByClass = value RUFGUI.FrameFGColorPicker:SetDisabled(HealthBarDB.ColorByClass) updateCallback("HealthBar") end)
+    ForegroundColorByClassToggle:SetRelativeWidth(0.25)
+    ColorContainer:AddChild(ForegroundColorByClassToggle)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -984,25 +984,25 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ForegroundOpacitySlider:SetRelativeWidth(0.5)
     ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ForegroundOpacity = value updateCallback("HealthBar") end)
     ForegroundOpacitySlider:SetIsPercent(true)
-    ColourContainer:AddChild(ForegroundOpacitySlider)
+    ColorContainer:AddChild(ForegroundOpacitySlider)
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background Color")
     local R2, G2, B2 = unpack(HealthBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback("HealthBar") end)
-    BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.25)
-    BackgroundColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass)
-    ColourContainer:AddChild(BackgroundColourPicker)
-    RUFGUI.FrameBGColourPicker = BackgroundColourPicker
+    BackgroundColorPicker:SetColor(R2, G2, B2)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback("HealthBar") end)
+    BackgroundColorPicker:SetHasAlpha(false)
+    BackgroundColorPicker:SetRelativeWidth(0.25)
+    BackgroundColorPicker:SetDisabled(HealthBarDB.ColorBackgroundByClass)
+    ColorContainer:AddChild(BackgroundColorPicker)
+    RUFGUI.FrameBGColorPicker = BackgroundColorPicker
 
-    local BackgroundColourByClassToggle = AG:Create("CheckBox")
-    BackgroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
-    BackgroundColourByClassToggle:SetValue(HealthBarDB.ColourBackgroundByClass)
-    BackgroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourBackgroundByClass = value RUFGUI.FrameBGColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass) updateCallback("HealthBar") end)
-    BackgroundColourByClassToggle:SetRelativeWidth(0.25)
-    ColourContainer:AddChild(BackgroundColourByClassToggle)
+    local BackgroundColorByClassToggle = AG:Create("CheckBox")
+    BackgroundColorByClassToggle:SetLabel("Color by Class / Reaction")
+    BackgroundColorByClassToggle:SetValue(HealthBarDB.ColorBackgroundByClass)
+    BackgroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorBackgroundByClass = value RUFGUI.FrameBGColorPicker:SetDisabled(HealthBarDB.ColorBackgroundByClass) updateCallback("HealthBar") end)
+    BackgroundColorByClassToggle:SetRelativeWidth(0.25)
+    ColorContainer:AddChild(BackgroundColorByClassToggle)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
@@ -1011,7 +1011,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetRelativeWidth(0.5)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback("HealthBar") end)
     BackgroundOpacitySlider:SetIsPercent(true)
-    ColourContainer:AddChild(BackgroundOpacitySlider)
+    ColorContainer:AddChild(BackgroundOpacitySlider)
 
 	if unit == "player" or unit == "target" or unit == "focus" or unit == "party" or unit == "raid" or unit == "augmentation" then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
@@ -1032,12 +1032,57 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         DispelHighlightStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.DispelHighlight.Style = value updateCallback("HealthBar") end)
         DispelHighlightContainer:AddChild(DispelHighlightStyleDropdown)
     end
+
+    local CopyContainer = GUIWidgets.CreateInlineGroup(containerParent, "Copy Settings From Another Unit")
+    GUIWidgets.CreateInformationTag(CopyContainer, "Copies every setting from the selected unit onto |cFFFFD100" .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r, except its screen position (set via the mover).")
+
+    local copySourceUnit
+    local CopySourceDropdown = AG:Create("Dropdown")
+    do
+        local values, order = {}, {}
+        for _, otherUnit in ipairs({"player", "target", "targettarget", "pet", "focus", "focustarget", "party", "raid", "boss", "augmentation"}) do
+            if otherUnit ~= unit and (otherUnit ~= "augmentation" or RUF:IsAugmentationEvoker()) then
+                values[otherUnit] = UnitDBToUnitPrettyName[otherUnit]
+                order[#order + 1] = otherUnit
+            end
+        end
+        CopySourceDropdown:SetList(values, order)
+    end
+    CopySourceDropdown:SetLabel("Copy From")
+    CopySourceDropdown:SetValue(nil)
+    CopySourceDropdown:SetRelativeWidth(0.66)
+    CopySourceDropdown:SetCallback("OnValueChanged", function(_, _, value) copySourceUnit = value end)
+    CopyContainer:AddChild(CopySourceDropdown)
+
+    local CopyButton = AG:Create("Button")
+    CopyButton:SetText("Copy Settings")
+    CopyButton:SetRelativeWidth(0.34)
+    CopyButton:SetCallback("OnClick", function()
+        if not copySourceUnit then return end
+        local sourceLabel = UnitDBToUnitPrettyName[copySourceUnit] or copySourceUnit
+        local targetLabel = UnitDBToUnitPrettyName[unit] or unit
+        StaticPopupDialogs["RUF_COPY_UNIT_SETTINGS"] = {
+            text = ("This will overwrite ALL of |cFFFFD100%s|r's settings with |cFFFFD100%s|r's (screen position kept as-is). This cannot be undone. Continue?"):format(targetLabel, sourceLabel),
+            button1 = "Copy",
+            button2 = "Cancel",
+            showAlert = true,
+            OnAccept = function()
+                RUF:CopyUnitSettings(copySourceUnit, unit)
+                RUF:BuildDesignerSectionOptions(containerParent, unit, "Frame")
+            end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+        }
+        StaticPopup_Show("RUF_COPY_UNIT_SETTINGS")
+    end)
+    CopyContainer:AddChild(CopyButton)
 end
 
 local function CreateAugmentationFrameSettings(containerParent)
 	local AugmentationDB = RUF.db.profile.Units.raid.augmentation
 	local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Player Filter")
-	GUIWidgets.CreateInformationTag(GeneralContainer, "|cFF8080FFListed|r Raid Members are the only players that will be shown.")
+	GUIWidgets.CreateInformationTag(GeneralContainer, "|cFFFFD100Listed|r Raid Members are the only players that will be shown.")
 
 	local NamesEditBox = AG:Create("MultiLineEditBox")
 	NamesEditBox:SetLabel("Player Names (Comma Delimited)")
@@ -1074,14 +1119,14 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightToggle:SetRelativeWidth(0.33)
     IncomingHealSettings:AddChild(MatchParentHeightToggle)
 
-    local IncomingHealColourPicker = AG:Create("ColorPicker")
-    IncomingHealColourPicker:SetLabel("Incoming Heal Colour")
-    local R, G, B, A = unpack(HealPredictionDB.IncomingHeal.Colour)
-    IncomingHealColourPicker:SetColor(R, G, B, A)
-    IncomingHealColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeal.Colour = {r, g, b, a} updateCallback() end)
-    IncomingHealColourPicker:SetHasAlpha(true)
-    IncomingHealColourPicker:SetRelativeWidth(0.33)
-    IncomingHealSettings:AddChild(IncomingHealColourPicker)
+    local IncomingHealColorPicker = AG:Create("ColorPicker")
+    IncomingHealColorPicker:SetLabel("Incoming Heal Color")
+    local R, G, B, A = unpack(HealPredictionDB.IncomingHeal.Color)
+    IncomingHealColorPicker:SetColor(R, G, B, A)
+    IncomingHealColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeal.Color = {r, g, b, a} updateCallback() end)
+    IncomingHealColorPicker:SetHasAlpha(true)
+    IncomingHealColorPicker:SetRelativeWidth(0.33)
+    IncomingHealSettings:AddChild(IncomingHealColorPicker)
 
     local IncomingHealHeightSlider = AG:Create("Slider")
     IncomingHealHeightSlider:SetLabel("Height")
@@ -1113,7 +1158,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     ShowOverAbsorbToggle:SetLabel("Show Over Absorb")
     ShowOverAbsorbToggle:SetValue(HealPredictionDB.Absorbs.ShowOverAbsorb or false)
     ShowOverAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.ShowOverAbsorb = HealPredictionDB.Absorbs.Position == "ATTACH" and value or false updateCallback() RefreshHealPredictionSettings() end)
-    ShowOverAbsorbToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(ShowOverAbsorbToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("This will add an overlay of your current absorbs when at maximum health.\nThis will only work when the |cFF8080FFPosition|r is set to |cFF8080FFAttach To Missing Health|r.", 1, 1, 1, false) GameTooltip:Show() end)
+    ShowOverAbsorbToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(ShowOverAbsorbToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("This will add an overlay of your current absorbs when at maximum health.\nThis will only work when the |cFFFFD100Position|r is set to |cFFFFD100Attach To Missing Health|r.", 1, 1, 1, false) GameTooltip:Show() end)
     ShowOverAbsorbToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     ShowOverAbsorbToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(ShowOverAbsorbToggle)
@@ -1132,14 +1177,14 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(MatchParentHeightToggle)
 
-    local AbsorbColourPicker = AG:Create("ColorPicker")
-    AbsorbColourPicker:SetLabel("Absorb Colour")
-    local R, G, B, A = unpack(HealPredictionDB.Absorbs.Colour)
-    AbsorbColourPicker:SetColor(R, G, B, A)
-    AbsorbColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.Absorbs.Colour = {r, g, b, a} updateCallback() end)
-    AbsorbColourPicker:SetHasAlpha(true)
-    AbsorbColourPicker:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(AbsorbColourPicker)
+    local AbsorbColorPicker = AG:Create("ColorPicker")
+    AbsorbColorPicker:SetLabel("Absorb Color")
+    local R, G, B, A = unpack(HealPredictionDB.Absorbs.Color)
+    AbsorbColorPicker:SetColor(R, G, B, A)
+    AbsorbColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.Absorbs.Color = {r, g, b, a} updateCallback() end)
+    AbsorbColorPicker:SetHasAlpha(true)
+    AbsorbColorPicker:SetRelativeWidth(0.33)
+    AbsorbSettings:AddChild(AbsorbColorPicker)
 
     local AbsorbHeightSlider = AG:Create("Slider")
     AbsorbHeightSlider:SetLabel("Height")
@@ -1180,14 +1225,14 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightHealAbsorbToggle:SetRelativeWidth(0.33)
     HealAbsorbSettings:AddChild(MatchParentHeightHealAbsorbToggle)
 
-    local HealAbsorbColourPicker = AG:Create("ColorPicker")
-    HealAbsorbColourPicker:SetLabel("Heal Absorb Colour")
-    local R2, G2, B2, A2 = unpack(HealPredictionDB.HealAbsorbs.Colour)
-    HealAbsorbColourPicker:SetColor(R2, G2, B2, A2)
-    HealAbsorbColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.HealAbsorbs.Colour = {r, g, b, a} updateCallback() end)
-    HealAbsorbColourPicker:SetHasAlpha(true)
-    HealAbsorbColourPicker:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(HealAbsorbColourPicker)
+    local HealAbsorbColorPicker = AG:Create("ColorPicker")
+    HealAbsorbColorPicker:SetLabel("Heal Absorb Color")
+    local R2, G2, B2, A2 = unpack(HealPredictionDB.HealAbsorbs.Color)
+    HealAbsorbColorPicker:SetColor(R2, G2, B2, A2)
+    HealAbsorbColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.HealAbsorbs.Color = {r, g, b, a} updateCallback() end)
+    HealAbsorbColorPicker:SetHasAlpha(true)
+    HealAbsorbColorPicker:SetRelativeWidth(0.33)
+    HealAbsorbSettings:AddChild(HealAbsorbColorPicker)
 
     local HealAbsorbHeightSlider = AG:Create("Slider")
     HealAbsorbHeightSlider:SetLabel("Height")
@@ -1223,13 +1268,13 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local FrameDB = GetUnitDB(unit).Frame
     local CastBarDB = GetUnitDB(unit).CastBar
     local DefaultCastBarDB = GetDefaultUnitDB(unit).CastBar
-    if not CastBarDB.InterruptCooldownColour then CastBarDB.InterruptCooldownColour = {unpack(DefaultCastBarDB.InterruptCooldownColour)} end
+    if not CastBarDB.InterruptCooldownColor then CastBarDB.InterruptCooldownColor = {unpack(DefaultCastBarDB.InterruptCooldownColor)} end
     local isPlayerorPet = unit == "player" or unit == "pet"
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cast Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFCast Bar|r")
+    Toggle:SetLabel("Enable |cFFFFD100Cast Bar|r")
     Toggle:SetValue(CastBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value updateCallback() RefreshCastBarBarSettings() end)
     Toggle:SetRelativeWidth(0.33)
@@ -1313,64 +1358,64 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
 
     if isPlayerorPet then
-        local ClassColourToggle = AG:Create("CheckBox")
-        ClassColourToggle:SetLabel("Foreground: Colour by Class")
-        ClassColourToggle:SetValue(CastBarDB.ColourByClass)
-        ClassColourToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColourByClass = value RUFGUI.ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass) updateCallback() end)
-        ClassColourToggle:SetRelativeWidth(0.5)
-        ColourContainer:AddChild(ClassColourToggle)
-        RUFGUI.ClassColourToggle = ClassColourToggle
+        local ClassColorToggle = AG:Create("CheckBox")
+        ClassColorToggle:SetLabel("Foreground: Color by Class")
+        ClassColorToggle:SetValue(CastBarDB.ColorByClass)
+        ClassColorToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColorByClass = value RUFGUI.ForegroundColorPicker:SetDisabled(CastBarDB.ColorByClass) updateCallback() end)
+        ClassColorToggle:SetRelativeWidth(0.5)
+        ColorContainer:AddChild(ClassColorToggle)
+        RUFGUI.ClassColorToggle = ClassColorToggle
     end
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground")
     local R, G, B, A = unpack(CastBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B, A)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColourPicker:SetHasAlpha(true)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
-    ColourContainer:AddChild(ForegroundColourPicker)
+    ForegroundColorPicker:SetColor(R, G, B, A)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Foreground = {r, g, b, a} updateCallback() end)
+    ForegroundColorPicker:SetHasAlpha(true)
+    ForegroundColorPicker:SetRelativeWidth(0.5)
+    ColorContainer:AddChild(ForegroundColorPicker)
 
-    RUFGUI.ForegroundColourPicker = ForegroundColourPicker
+    RUFGUI.ForegroundColorPicker = ForegroundColorPicker
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background")
     local R2, G2, B2, A2 = unpack(CastBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColourPicker:SetHasAlpha(true)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
-    ColourContainer:AddChild(BackgroundColourPicker)
+    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Background = {r, g, b, a} updateCallback() end)
+    BackgroundColorPicker:SetHasAlpha(true)
+    BackgroundColorPicker:SetRelativeWidth(0.5)
+    ColorContainer:AddChild(BackgroundColorPicker)
 
-    local NotInterruptibleColourPicker = AG:Create("ColorPicker")
-    NotInterruptibleColourPicker:SetLabel("Not Interruptible")
-    local R3, G3, B3 = unpack(CastBarDB.NotInterruptibleColour)
-    NotInterruptibleColourPicker:SetColor(R3, G3, B3)
-    NotInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.NotInterruptibleColour = {r, g, b, a} updateCallback() end)
-    NotInterruptibleColourPicker:SetHasAlpha(true)
-    NotInterruptibleColourPicker:SetRelativeWidth(0.5)
-    ColourContainer:AddChild(NotInterruptibleColourPicker)
+    local NotInterruptibleColorPicker = AG:Create("ColorPicker")
+    NotInterruptibleColorPicker:SetLabel("Not Interruptible")
+    local R3, G3, B3 = unpack(CastBarDB.NotInterruptibleColor)
+    NotInterruptibleColorPicker:SetColor(R3, G3, B3)
+    NotInterruptibleColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.NotInterruptibleColor = {r, g, b, a} updateCallback() end)
+    NotInterruptibleColorPicker:SetHasAlpha(true)
+    NotInterruptibleColorPicker:SetRelativeWidth(0.5)
+    ColorContainer:AddChild(NotInterruptibleColorPicker)
 
-    local InterruptCooldownColourPicker = AG:Create("ColorPicker")
-    InterruptCooldownColourPicker:SetLabel("Interrupt on Cooldown")
-    local R4, G4, B4 = unpack(CastBarDB.InterruptCooldownColour)
-    InterruptCooldownColourPicker:SetColor(R4, G4, B4)
-    InterruptCooldownColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptCooldownColour = {r, g, b, a} updateCallback() end)
-    InterruptCooldownColourPicker:SetHasAlpha(true)
-    InterruptCooldownColourPicker:SetRelativeWidth(0.5)
-    ColourContainer:AddChild(InterruptCooldownColourPicker)
+    local InterruptCooldownColorPicker = AG:Create("ColorPicker")
+    InterruptCooldownColorPicker:SetLabel("Interrupt on Cooldown")
+    local R4, G4, B4 = unpack(CastBarDB.InterruptCooldownColor)
+    InterruptCooldownColorPicker:SetColor(R4, G4, B4)
+    InterruptCooldownColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptCooldownColor = {r, g, b, a} updateCallback() end)
+    InterruptCooldownColorPicker:SetHasAlpha(true)
+    InterruptCooldownColorPicker:SetRelativeWidth(0.5)
+    ColorContainer:AddChild(InterruptCooldownColorPicker)
 
-    local InterruptedFailedColourPicker = AG:Create("ColorPicker")
-    InterruptedFailedColourPicker:SetLabel("Interrupted / Failed")
-    local R5, G5, B5 = unpack(CastBarDB.InterruptedFailedColour)
-    InterruptedFailedColourPicker:SetColor(R5, G5, B5)
-    InterruptedFailedColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptedFailedColour = {r, g, b, a} updateCallback() end)
-    InterruptedFailedColourPicker:SetHasAlpha(true)
-    InterruptedFailedColourPicker:SetRelativeWidth(isPlayerorPet and 0.2 or 0.2)
-    ColourContainer:AddChild(InterruptedFailedColourPicker)
+    local InterruptedFailedColorPicker = AG:Create("ColorPicker")
+    InterruptedFailedColorPicker:SetLabel("Interrupted / Failed")
+    local R5, G5, B5 = unpack(CastBarDB.InterruptedFailedColor)
+    InterruptedFailedColorPicker:SetColor(R5, G5, B5)
+    InterruptedFailedColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptedFailedColor = {r, g, b, a} updateCallback() end)
+    InterruptedFailedColorPicker:SetHasAlpha(true)
+    InterruptedFailedColorPicker:SetRelativeWidth(isPlayerorPet and 0.2 or 0.2)
+    ColorContainer:AddChild(InterruptedFailedColorPicker)
 
     function RefreshCastBarBarSettings()
         if CastBarDB.Enabled then
@@ -1382,12 +1427,12 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             AnchorToDropdown:SetDisabled(false)
             XPosSlider:SetDisabled(false)
             YPosSlider:SetDisabled(false)
-            ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass)
-            BackgroundColourPicker:SetDisabled(false)
-            NotInterruptibleColourPicker:SetDisabled(false)
-            InterruptCooldownColourPicker:SetDisabled(false)
-            InterruptedFailedColourPicker:SetDisabled(false)
-            if isPlayerorPet then RUFGUI.ClassColourToggle:SetDisabled(false) end
+            ForegroundColorPicker:SetDisabled(CastBarDB.ColorByClass)
+            BackgroundColorPicker:SetDisabled(false)
+            NotInterruptibleColorPicker:SetDisabled(false)
+            InterruptCooldownColorPicker:SetDisabled(false)
+            InterruptedFailedColorPicker:SetDisabled(false)
+            if isPlayerorPet then RUFGUI.ClassColorToggle:SetDisabled(false) end
         else
             MatchParentWidthToggle:SetDisabled(true)
             WidthSlider:SetDisabled(true)
@@ -1397,12 +1442,12 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             AnchorToDropdown:SetDisabled(true)
             XPosSlider:SetDisabled(true)
             YPosSlider:SetDisabled(true)
-            ForegroundColourPicker:SetDisabled(true)
-            BackgroundColourPicker:SetDisabled(true)
-            NotInterruptibleColourPicker:SetDisabled(true)
-            InterruptCooldownColourPicker:SetDisabled(true)
-            InterruptedFailedColourPicker:SetDisabled(true)
-            if isPlayerorPet then RUFGUI.ClassColourToggle:SetDisabled(true) end
+            ForegroundColorPicker:SetDisabled(true)
+            BackgroundColorPicker:SetDisabled(true)
+            NotInterruptibleColorPicker:SetDisabled(true)
+            InterruptCooldownColorPicker:SetDisabled(true)
+            InterruptedFailedColorPicker:SetDisabled(true)
+            if isPlayerorPet then RUFGUI.ClassColorToggle:SetDisabled(true) end
         end
     end
 
@@ -1414,7 +1459,7 @@ local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Icon Settings")
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFCast Bar Icon|r")
+    Toggle:SetLabel("Enable |cFFFFD100Cast Bar Icon|r")
     Toggle:SetValue(CastBarIconDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarIconDB.Enabled = value updateCallback() RefreshCastBarIconSettings() end)
     Toggle:SetRelativeWidth(0.5)
@@ -1447,7 +1492,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     local SpellNameContainer = GUIWidgets.CreateInlineGroup(containerParent, "Spell Name Settings")
 
     local SpellNameToggle = AG:Create("CheckBox")
-    SpellNameToggle:SetLabel("Enable |cFF8080FFSpell Name Text|r")
+    SpellNameToggle:SetLabel("Enable |cFFFFD100Spell Name Text|r")
     SpellNameToggle:SetValue(SpellNameTextDB.Enabled)
     SpellNameToggle:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Enabled = value updateCallback() RefreshCastBarSpellNameSettings() end)
     SpellNameToggle:SetRelativeWidth(0.33)
@@ -1460,14 +1505,14 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     ShowTargetToggle:SetRelativeWidth(0.33)
     SpellNameContainer:AddChild(ShowTargetToggle)
 
-    local SpellNameColourPicker = AG:Create("ColorPicker")
-    SpellNameColourPicker:SetLabel("Colour")
-    local R, G, B = unpack(SpellNameTextDB.Colour)
-    SpellNameColourPicker:SetColor(R, G, B)
-    SpellNameColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) SpellNameTextDB.Colour = {r, g, b} updateCallback() end)
-    SpellNameColourPicker:SetHasAlpha(false)
-    SpellNameColourPicker:SetRelativeWidth(0.33)
-    SpellNameContainer:AddChild(SpellNameColourPicker)
+    local SpellNameColorPicker = AG:Create("ColorPicker")
+    SpellNameColorPicker:SetLabel("Color")
+    local R, G, B = unpack(SpellNameTextDB.Color)
+    SpellNameColorPicker:SetColor(R, G, B)
+    SpellNameColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) SpellNameTextDB.Color = {r, g, b} updateCallback() end)
+    SpellNameColorPicker:SetHasAlpha(false)
+    SpellNameColorPicker:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameColorPicker)
 
     local SpellNameLayoutContainer = GUIWidgets.CreateInlineGroup(SpellNameContainer, "Layout")
     local SpellNameAnchorFromDropdown = AG:Create("Dropdown")
@@ -1525,7 +1570,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameXPosSlider:SetDisabled(false)
             SpellNameYPosSlider:SetDisabled(false)
             SpellNameFontSizeSlider:SetDisabled(false)
-            SpellNameColourPicker:SetDisabled(false)
+            SpellNameColorPicker:SetDisabled(false)
             ShowTargetToggle:SetDisabled(false)
             MaxCharsSlider:SetDisabled(false)
         else
@@ -1534,7 +1579,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameXPosSlider:SetDisabled(true)
             SpellNameYPosSlider:SetDisabled(true)
             SpellNameFontSizeSlider:SetDisabled(true)
-            SpellNameColourPicker:SetDisabled(true)
+            SpellNameColorPicker:SetDisabled(true)
             ShowTargetToggle:SetDisabled(true)
             MaxCharsSlider:SetDisabled(true)
         end
@@ -1550,20 +1595,20 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
      local DurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Settings")
 
     local DurationToggle = AG:Create("CheckBox")
-    DurationToggle:SetLabel("Enable |cFF8080FFDuration Text|r")
+    DurationToggle:SetLabel("Enable |cFFFFD100Duration Text|r")
     DurationToggle:SetValue(DurationTextDB.Enabled)
     DurationToggle:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Enabled = value updateCallback() RefreshCastBarDurationSettings() end)
     DurationToggle:SetRelativeWidth(0.5)
     DurationContainer:AddChild(DurationToggle)
 
-    local DurationColourPicker = AG:Create("ColorPicker")
-    DurationColourPicker:SetLabel("Colour")
-    local R, G, B = unpack(DurationTextDB.Colour)
-    DurationColourPicker:SetColor(R, G, B)
-    DurationColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) DurationTextDB.Colour = {r, g, b} updateCallback() end)
-    DurationColourPicker:SetHasAlpha(false)
-    DurationColourPicker:SetRelativeWidth(0.5)
-    DurationContainer:AddChild(DurationColourPicker)
+    local DurationColorPicker = AG:Create("ColorPicker")
+    DurationColorPicker:SetLabel("Color")
+    local R, G, B = unpack(DurationTextDB.Color)
+    DurationColorPicker:SetColor(R, G, B)
+    DurationColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) DurationTextDB.Color = {r, g, b} updateCallback() end)
+    DurationColorPicker:SetHasAlpha(false)
+    DurationColorPicker:SetRelativeWidth(0.5)
+    DurationContainer:AddChild(DurationColorPicker)
 
     local DurationLayoutContainer = GUIWidgets.CreateInlineGroup(DurationContainer, "Layout")
     local DurationAnchorFromDropdown = AG:Create("Dropdown")
@@ -1613,14 +1658,14 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
             DurationXPosSlider:SetDisabled(false)
             DurationYPosSlider:SetDisabled(false)
             DurationFontSizeSlider:SetDisabled(false)
-            DurationColourPicker:SetDisabled(false)
+            DurationColorPicker:SetDisabled(false)
         else
             DurationAnchorFromDropdown:SetDisabled(true)
             DurationAnchorToDropdown:SetDisabled(true)
             DurationXPosSlider:SetDisabled(true)
             DurationYPosSlider:SetDisabled(true)
             DurationFontSizeSlider:SetDisabled(true)
-            DurationColourPicker:SetDisabled(true)
+            DurationColorPicker:SetDisabled(true)
         end
     end
 
@@ -1674,7 +1719,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFPower Bar|r")
+    Toggle:SetLabel("Enable |cFFFFD100Power Bar|r")
     Toggle:SetValue(PowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
     Toggle:SetRelativeWidth(0.25)
@@ -1703,36 +1748,36 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value UpdatePowerBarSettings() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(PowerBarDB.Smooth)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Smooth = value UpdatePowerBarSettings() end)
     SmoothUpdatesToggle:SetRelativeWidth(toggleRelativeWidth)
-    ColourContainer:AddChild(SmoothUpdatesToggle)
+    ColorContainer:AddChild(SmoothUpdatesToggle)
 
-    local ColourByTypeToggle = AG:Create("CheckBox")
-    ColourByTypeToggle:SetLabel("Colour By Type")
-    ColourByTypeToggle:SetValue(PowerBarDB.ColourByType)
-    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
-    ColourContainer:AddChild(ColourByTypeToggle)
+    local ColorByTypeToggle = AG:Create("CheckBox")
+    ColorByTypeToggle:SetLabel("Color By Type")
+    ColorByTypeToggle:SetValue(PowerBarDB.ColorByType)
+    ColorByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
+    ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ColourByClassToggle = AG:Create("CheckBox")
-    ColourByClassToggle:SetLabel("Colour By Class")
-    ColourByClassToggle:SetValue(PowerBarDB.ColourByClass)
-    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByClass = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourByClassToggle:SetRelativeWidth(toggleRelativeWidth)
-    ColourContainer:AddChild(ColourByClassToggle)
+    local ColorByClassToggle = AG:Create("CheckBox")
+    ColorByClassToggle:SetLabel("Color By Class")
+    ColorByClassToggle:SetValue(PowerBarDB.ColorByClass)
+    ColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorByClass = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorByClassToggle:SetRelativeWidth(toggleRelativeWidth)
+    ColorContainer:AddChild(ColorByClassToggle)
 
-    local ColourBackgroundByTypeToggle = AG:Create("CheckBox")
-    ColourBackgroundByTypeToggle:SetLabel("Colour Background By Power Type")
-    ColourBackgroundByTypeToggle:SetValue(PowerBarDB.ColourBackgroundByType)
-    ColourBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourBackgroundByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
-    ColourBackgroundByTypeToggle:SetDisabled(true)
-    ColourContainer:AddChild(ColourBackgroundByTypeToggle)
+    local ColorBackgroundByTypeToggle = AG:Create("CheckBox")
+    ColorBackgroundByTypeToggle:SetLabel("Color Background By Power Type")
+    ColorBackgroundByTypeToggle:SetValue(PowerBarDB.ColorBackgroundByType)
+    ColorBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorBackgroundByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorBackgroundByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
+    ColorBackgroundByTypeToggle:SetDisabled(true)
+    ColorContainer:AddChild(ColorBackgroundByTypeToggle)
 
     local OnlyShowHealersToggle
     if isGroupPowerBar then
@@ -1741,33 +1786,33 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
         OnlyShowHealersToggle:SetValue(PowerBarDB.OnlyShowHealers or false)
         OnlyShowHealersToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.OnlyShowHealers = value UpdatePowerBarSettings() end)
         OnlyShowHealersToggle:SetRelativeWidth(toggleRelativeWidth)
-        ColourContainer:AddChild(OnlyShowHealersToggle)
+        ColorContainer:AddChild(OnlyShowHealersToggle)
 
-        local ColourRowBreak = AG:Create("Label")
-        ColourRowBreak:SetText("")
-        ColourRowBreak:SetFullWidth(true)
-        ColourContainer:AddChild(ColourRowBreak)
+        local ColorRowBreak = AG:Create("Label")
+        ColorRowBreak:SetText("")
+        ColorRowBreak:SetFullWidth(true)
+        ColorContainer:AddChild(ColorRowBreak)
     end
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground Color")
     local R, G, B, A = unpack(PowerBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B, A)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Foreground = {r, g, b, a} UpdatePowerBarSettings() end)
-    ForegroundColourPicker:SetHasAlpha(true)
-    ForegroundColourPicker:SetRelativeWidth(0.33)
-    ForegroundColourPicker:SetDisabled(PowerBarDB.ColourByClass or PowerBarDB.ColourByType)
-    ColourContainer:AddChild(ForegroundColourPicker)
+    ForegroundColorPicker:SetColor(R, G, B, A)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Foreground = {r, g, b, a} UpdatePowerBarSettings() end)
+    ForegroundColorPicker:SetHasAlpha(true)
+    ForegroundColorPicker:SetRelativeWidth(0.33)
+    ForegroundColorPicker:SetDisabled(PowerBarDB.ColorByClass or PowerBarDB.ColorByType)
+    ColorContainer:AddChild(ForegroundColorPicker)
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background Color")
     local R2, G2, B2, A2 = unpack(PowerBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} UpdatePowerBarSettings() end)
-    BackgroundColourPicker:SetHasAlpha(true)
-    BackgroundColourPicker:SetRelativeWidth(0.33)
-    BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
-    ColourContainer:AddChild(BackgroundColourPicker)
+    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} UpdatePowerBarSettings() end)
+    BackgroundColorPicker:SetHasAlpha(true)
+    BackgroundColorPicker:SetRelativeWidth(0.33)
+    BackgroundColorPicker:SetDisabled(PowerBarDB.ColorBackgroundByType)
+    ColorContainer:AddChild(BackgroundColorPicker)
 
     local BackgroundMultiplierSlider = AG:Create("Slider")
     BackgroundMultiplierSlider:SetLabel("Background Multiplier")
@@ -1776,24 +1821,24 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundMultiplierSlider:SetRelativeWidth(0.33)
     BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BackgroundMultiplier = value UpdatePowerBarSettings() end)
     BackgroundMultiplierSlider:SetIsPercent(true)
-    BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
-    ColourContainer:AddChild(BackgroundMultiplierSlider)
+    BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColorBackgroundByType)
+    ColorContainer:AddChild(BackgroundMultiplierSlider)
 
     function RefreshPowerBarGUI()
         if PowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
-            if PowerBarDB.ColourByClass or PowerBarDB.ColourByType then
-                ForegroundColourPicker:SetDisabled(true)
+            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
+            if PowerBarDB.ColorByClass or PowerBarDB.ColorByType then
+                ForegroundColorPicker:SetDisabled(true)
             else
-                ForegroundColourPicker:SetDisabled(false)
+                ForegroundColorPicker:SetDisabled(false)
             end
-            BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
-            BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
+            BackgroundColorPicker:SetDisabled(PowerBarDB.ColorBackgroundByType)
+            BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColorBackgroundByType)
             if OnlyShowHealersToggle then OnlyShowHealersToggle:SetDisabled(false) end
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
         end
     end
 
@@ -1807,7 +1852,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFSecondary Power Bar|r")
+    Toggle:SetLabel("Enable |cFFFFD100Secondary Power Bar|r")
     Toggle:SetValue(SecondaryPowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
     Toggle:SetRelativeWidth(0.33)
@@ -1829,47 +1874,47 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
 
-    local ColourByTypeToggle = AG:Create("CheckBox")
-    ColourByTypeToggle:SetLabel("Colour By Type")
-    ColourByTypeToggle:SetValue(SecondaryPowerBarDB.ColourByType)
-    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.ColourByType = value updateCallback() RefreshSecondaryPowerBarGUI() end)
-    ColourByTypeToggle:SetRelativeWidth(1)
-    ColourContainer:AddChild(ColourByTypeToggle)
+    local ColorByTypeToggle = AG:Create("CheckBox")
+    ColorByTypeToggle:SetLabel("Color By Type")
+    ColorByTypeToggle:SetValue(SecondaryPowerBarDB.ColorByType)
+    ColorByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.ColorByType = value updateCallback() RefreshSecondaryPowerBarGUI() end)
+    ColorByTypeToggle:SetRelativeWidth(1)
+    ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground Color")
     local R, G, B, A = unpack(SecondaryPowerBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B, A)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColourPicker:SetHasAlpha(true)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
-    ForegroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourByClass or SecondaryPowerBarDB.ColourByType)
-    ColourContainer:AddChild(ForegroundColourPicker)
+    ForegroundColorPicker:SetColor(R, G, B, A)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
+    ForegroundColorPicker:SetHasAlpha(true)
+    ForegroundColorPicker:SetRelativeWidth(0.5)
+    ForegroundColorPicker:SetDisabled(SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType)
+    ColorContainer:AddChild(ForegroundColorPicker)
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background Color")
     local R2, G2, B2, A2 = unpack(SecondaryPowerBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColourPicker:SetHasAlpha(true)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourBackgroundByType)
-    ColourContainer:AddChild(BackgroundColourPicker)
+    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
+    BackgroundColorPicker:SetHasAlpha(true)
+    BackgroundColorPicker:SetRelativeWidth(0.5)
+    BackgroundColorPicker:SetDisabled(SecondaryPowerBarDB.ColorBackgroundByType)
+    ColorContainer:AddChild(BackgroundColorPicker)
 
     function RefreshSecondaryPowerBarGUI()
         if SecondaryPowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
-            if SecondaryPowerBarDB.ColourByClass or SecondaryPowerBarDB.ColourByType then
-                ForegroundColourPicker:SetDisabled(true)
+            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
+            if SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType then
+                ForegroundColorPicker:SetDisabled(true)
             else
-                ForegroundColourPicker:SetDisabled(false)
+                ForegroundColorPicker:SetDisabled(false)
             end
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
         end
     end
 
@@ -1879,12 +1924,12 @@ end
 local function CreateAlternativePowerBarSettings(containerParent, unit, updateCallback)
     local AlternativePowerBarDB = GetUnitDB(unit).AlternativePowerBar
 
-    GUIWidgets.CreateInformationTag(containerParent, "The |cFF8080FFAlternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
+    GUIWidgets.CreateInformationTag(containerParent, "The |cFFFFD100Alternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
 
     local AlternativePowerBarSettings = GUIWidgets.CreateInlineGroup(containerParent, "Alternative Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFAlternative Power Bar|r")
+    Toggle:SetLabel("Enable |cFFFFD100Alternative Power Bar|r")
     Toggle:SetValue(AlternativePowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
     Toggle:SetRelativeWidth(0.5)
@@ -1947,46 +1992,46 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
 
-    local ColourByTypeToggle = AG:Create("CheckBox")
-    ColourByTypeToggle:SetLabel("Colour By Type")
-    ColourByTypeToggle:SetValue(AlternativePowerBarDB.ColourByType)
-    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.ColourByType = value updateCallback() RefreshAlternativePowerBarGUI() end)
-    ColourByTypeToggle:SetRelativeWidth(0.33)
-    ColourContainer:AddChild(ColourByTypeToggle)
+    local ColorByTypeToggle = AG:Create("CheckBox")
+    ColorByTypeToggle:SetLabel("Color By Type")
+    ColorByTypeToggle:SetValue(AlternativePowerBarDB.ColorByType)
+    ColorByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.ColorByType = value updateCallback() RefreshAlternativePowerBarGUI() end)
+    ColorByTypeToggle:SetRelativeWidth(0.33)
+    ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local ForegroundColorPicker = AG:Create("ColorPicker")
+    ForegroundColorPicker:SetLabel("Foreground Color")
     local R, G, B, A = unpack(AlternativePowerBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B, A)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColourPicker:SetHasAlpha(true)
-    ForegroundColourPicker:SetRelativeWidth(0.33)
-    ForegroundColourPicker:SetDisabled(AlternativePowerBarDB.ColourByType)
-    ColourContainer:AddChild(ForegroundColourPicker)
+    ForegroundColorPicker:SetColor(R, G, B, A)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
+    ForegroundColorPicker:SetHasAlpha(true)
+    ForegroundColorPicker:SetRelativeWidth(0.33)
+    ForegroundColorPicker:SetDisabled(AlternativePowerBarDB.ColorByType)
+    ColorContainer:AddChild(ForegroundColorPicker)
 
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
+    local BackgroundColorPicker = AG:Create("ColorPicker")
+    BackgroundColorPicker:SetLabel("Background Color")
     local R2, G2, B2, A2 = unpack(AlternativePowerBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColourPicker:SetHasAlpha(true)
-    BackgroundColourPicker:SetRelativeWidth(0.33)
-    ColourContainer:AddChild(BackgroundColourPicker)
+    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Background = {r, g, b, a} updateCallback() end)
+    BackgroundColorPicker:SetHasAlpha(true)
+    BackgroundColorPicker:SetRelativeWidth(0.33)
+    ColorContainer:AddChild(BackgroundColorPicker)
 
     function RefreshAlternativePowerBarGUI()
         if AlternativePowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
-            if AlternativePowerBarDB.ColourByType then
-                ForegroundColourPicker:SetDisabled(true)
+            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
+            if AlternativePowerBarDB.ColorByType then
+                ForegroundColorPicker:SetDisabled(true)
             else
-                ForegroundColourPicker:SetDisabled(false)
+                ForegroundColorPicker:SetDisabled(false)
             end
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
         end
         InverseGrowthDirectionToggle:SetDisabled(not AlternativePowerBarDB.Enabled)
     end
@@ -2000,10 +2045,10 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
 
-    GUIWidgets.CreateInformationTag(ToggleContainer, "|cFF8080FF3D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret. |cFF8080FF2D Portraits|r will be used as a fallback if this is the case.")
+    GUIWidgets.CreateInformationTag(ToggleContainer, "|cFFFFD1003D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret. |cFFFFD1002D Portraits|r will be used as a fallback if this is the case.")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
+    Toggle:SetLabel("Enable |cFFFFD100Portrait|r")
     Toggle:SetValue(PortraitDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
     Toggle:SetRelativeWidth(0.33)
@@ -2104,7 +2149,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Target Marker Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFRaid Target Marker|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Raid Target Marker|r Indicator")
     Toggle:SetValue(RaidTargetMarkerDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Enabled = value updateCallback() RefreshStatusGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -2170,7 +2215,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	ReadyCheckDB.Texture = ReadyCheckDB.Texture or "Default"
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
 	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFF8080FFReady Check|r Indicator")
+	Toggle:SetLabel("Enable |cFFFFD100Ready Check|r Indicator")
 	Toggle:SetValue(ReadyCheckDB.Enabled)
 	Toggle:SetRelativeWidth(0.5)
 	ToggleContainer:AddChild(Toggle)
@@ -2237,7 +2282,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
 	local ResurrectDB = GetUnitDB(unit).Indicators.ResurrectIndicator
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrect Indicator Settings")
 	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFF8080FFResurrect|r Indicator")
+	Toggle:SetLabel("Enable |cFFFFD100Resurrect|r Indicator")
 	Toggle:SetValue(ResurrectDB.Enabled)
 	Toggle:SetRelativeWidth(1)
 	ToggleContainer:AddChild(Toggle)
@@ -2297,7 +2342,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Summon Indicator Settings")
 	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFF8080FFSummon|r Indicator")
+	Toggle:SetLabel("Enable |cFFFFD100Summon|r Indicator")
 	Toggle:SetValue(SummonDB.Enabled)
 	Toggle:SetRelativeWidth(1)
 	ToggleContainer:AddChild(Toggle)
@@ -2353,7 +2398,7 @@ local function CreateAssistantSettings(containerParent, unit, updateCallback)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFLeader|r & |cFF8080FFAssistant|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Leader|r & |cFFFFD100Assistant|r Indicator")
     Toggle:SetValue(LeaderAssistantDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Enabled = value updateCallback() RefreshStatusGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -2429,14 +2474,14 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFRole|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Role|r Indicator")
     Toggle:SetValue(RoleDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Enabled = value updateCallback() RefreshRoleGUI() end)
     Toggle:SetRelativeWidth(0.5)
     ToggleContainer:AddChild(Toggle)
 
     local TextureDropdown = AG:Create("Dropdown")
-	TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Colour", "White", "ElvUI", "Square"})
+	TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Color", "White", "ElvUI", "Square"})
     TextureDropdown:SetLabel("Role Texture")
     TextureDropdown:SetValue(RoleDB.Texture)
     TextureDropdown:SetRelativeWidth(0.5)
@@ -2532,7 +2577,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Phase Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFPhase|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Phase|r Indicator")
     Toggle:SetValue(PhaseDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Enabled = value updateCallback() RefreshPhaseGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -2599,7 +2644,7 @@ local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "PvP Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFPvP|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100PvP|r Indicator")
     Toggle:SetValue(PvPIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Enabled = value updateCallback() RefreshPvPIndicatorGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -2666,7 +2711,7 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Quest Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFQuest|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Quest|r Indicator")
     Toggle:SetValue(QuestIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Enabled = value updateCallback() RefreshQuestIndicatorGUI() end)
     Toggle:SetRelativeWidth(0.5)
@@ -2745,7 +2790,7 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Classification Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFClassification|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Classification|r Indicator")
     Toggle:SetValue(ClassificationIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Enabled = value updateCallback() RefreshClassificationIndicatorGUI() end)
     Toggle:SetRelativeWidth(0.5)
@@ -2825,7 +2870,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     end
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FF"..statusDB.."|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100"..statusDB.."|r Indicator")
     Toggle:SetValue(StatusDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Enabled = value updateCallback() RefreshStatusGUI() end)
     Toggle:SetRelativeWidth(0.5)
@@ -2900,19 +2945,19 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Mouseover Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFMouseover|r Highlight")
+    Toggle:SetLabel("Enable |cFFFFD100Mouseover|r Highlight")
     Toggle:SetValue(MouseoverDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Enabled = value updateCallback() RefreshMouseoverGUI() end)
     Toggle:SetRelativeWidth(1)
     ToggleContainer:AddChild(Toggle)
 
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Highlight Colour")
-    ColourPicker:SetColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3])
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) MouseoverDB.Colour = {r, g, b} updateCallback() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(ColourPicker)
+    local ColorPicker = AG:Create("ColorPicker")
+    ColorPicker:SetLabel("Highlight Color")
+    ColorPicker:SetColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3])
+    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) MouseoverDB.Color = {r, g, b} updateCallback() end)
+    ColorPicker:SetHasAlpha(false)
+    ColorPicker:SetRelativeWidth(0.33)
+    ToggleContainer:AddChild(ColorPicker)
 
     local OpacitySlider = AG:Create("Slider")
     OpacitySlider:SetLabel("Highlight Opacity")
@@ -2949,19 +2994,19 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Target Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFTarget Indicator|r")
+    Toggle:SetLabel("Enable |cFFFFD100Target Indicator|r")
     Toggle:SetValue(TargetIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Enabled = value updateCallback() RefreshTargetIndicatorGUI() end)
     Toggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(Toggle)
 
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Indicator Colour")
-    ColourPicker:SetColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3])
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TargetIndicatorDB.Colour = {r, g, b} updateCallback() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(ColourPicker)
+    local ColorPicker = AG:Create("ColorPicker")
+    ColorPicker:SetLabel("Indicator Color")
+    ColorPicker:SetColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3])
+    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TargetIndicatorDB.Color = {r, g, b} updateCallback() end)
+    ColorPicker:SetHasAlpha(false)
+    ColorPicker:SetRelativeWidth(0.33)
+    ToggleContainer:AddChild(ColorPicker)
 
     local StyleDropdown = AG:Create("Dropdown")
     StyleDropdown:SetList({["Glow"] = "Glow", ["Border"] = "Border"}, {"Glow", "Border"})
@@ -2993,7 +3038,7 @@ local function CreateThreatIndicatorSettings(containerParent, unit, updateCallba
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Threat Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFThreat|r Indicator")
+    Toggle:SetLabel("Enable |cFFFFD100Threat|r Indicator")
     Toggle:SetValue(ThreatIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) ThreatIndicatorDB.Enabled = value updateCallback() RefreshThreatIndicatorGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -3012,7 +3057,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFTotems|r")
+    Toggle:SetLabel("Enable |cFFFFD100Totems|r")
     Toggle:SetValue(TotemsIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end)
     Toggle:SetRelativeWidth(1)
@@ -3205,14 +3250,14 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) UpdateTag() end)
     TagContainer:AddChild(EditBox)
 
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Colour")
-    ColourPicker:SetColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
-    ColourPicker:SetFullWidth(true)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} UpdateTag() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.5)
-    TagContainer:AddChild(ColourPicker)
+    local ColorPicker = AG:Create("ColorPicker")
+    ColorPicker:SetLabel("Color")
+    ColorPicker:SetColor(TagDB.Color[1], TagDB.Color[2], TagDB.Color[3], 1)
+    ColorPicker:SetFullWidth(true)
+    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Color = {r, g, b} UpdateTag() end)
+    ColorPicker:SetHasAlpha(false)
+    ColorPicker:SetRelativeWidth(0.5)
+    TagContainer:AddChild(ColorPicker)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -3257,7 +3302,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     LayoutContainer:AddChild(FontSizeSlider)
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
-    GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFF8080FFPrefix|r indicates that this should be added to the start of the tag string.")
+    GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFFFFD100Prefix|r indicates that this should be added to the start of the tag string.")
 
     local HealthTagDropdown = AG:Create("Dropdown")
     HealthTagDropdown:SetList(RUF:FetchTagData("Health")[1], RUF:FetchTagData("Health")[2])
@@ -3392,7 +3437,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Settings")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
+    Toggle:SetLabel("Enable |cFFFFD100"..auraDB.."|r")
     Toggle:SetValue(AuraDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UpdateAuras() RefreshAuraGUI() end)
     Toggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
@@ -3419,7 +3464,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     OnlyShowPlayerToggle:SetLabel("Only Show Player " .. auraTitle)
     OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
     OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value UpdateAuras() RefreshAuraGUI() end)
-    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraTitle:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
+    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFFFFD100" .. auraTitle:lower() .. "|r advanced filters. If |cFFFFD100Blacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
     OnlyShowPlayerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     OnlyShowPlayerToggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(OnlyShowPlayerToggle)
@@ -3457,7 +3502,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
         end
     end
 
-    GUIWidgets.CreateInformationTag(FilterContainer, "Dropdowns support |cFF8080FFmultiple selections|r. |cFFFFCC00Player|r is specifically you, where |cFFFFCC00Others|r are all other players/units.")
+    GUIWidgets.CreateInformationTag(FilterContainer, "Dropdowns support |cFFFFD100multiple selections|r. |cFFFFCC00Player|r is specifically you, where |cFFFFCC00Others|r are all other players/units.")
 
     for _, filterGroup in ipairs({"Player (You)", "Others (Not You)"}) do
         local filterList = {}
@@ -3529,8 +3574,8 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
         local value = dropdownItem.userdata and dropdownItem.userdata.value
         local desc = value == "BLIZZARD" and "|cFF00B4FFBlizzard|r's Default Ordering."
             or value == "BLIZZARD_REVERSED" and "|cFF00B4FFBlizzard|r's Default Ordering in Reverse."
-            or value == "DURATION" and "|cFF8080FFDuration-Based|r Ordering.\nAuras with the shortest remaining duration will be displayed first."
-            or value == "DURATION_REVERSED" and "|cFF8080FFDuration-Based|r Ordering in Reverse.\nAuras with the longest remaining duration will be displayed first."
+            or value == "DURATION" and "|cFFFFD100Duration-Based|r Ordering.\nAuras with the shortest remaining duration will be displayed first."
+            or value == "DURATION_REVERSED" and "|cFFFFD100Duration-Based|r Ordering in Reverse.\nAuras with the longest remaining duration will be displayed first."
         if desc then
             dropdownItem:SetCallback("OnEnter", function() GameTooltip:SetOwner(dropdownItem.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetFrameStrata("TOOLTIP") GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) GameTooltip:SetToplevel(true) GameTooltip:AddLine(desc, 1, 1, 1, false) GameTooltip:Show() GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) end)
             dropdownItem:SetCallback("OnLeave", function() GameTooltip:Hide() end)
@@ -3606,13 +3651,13 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
 
     local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
 
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Colour")
-    ColourPicker:SetColor(AuraDB.Count.Colour[1], AuraDB.Count.Colour[2], AuraDB.Count.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Colour = {r, g, b} UpdateAuras() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.5)
-    CountContainer:AddChild(ColourPicker)
+    local ColorPicker = AG:Create("ColorPicker")
+    ColorPicker:SetLabel("Color")
+    ColorPicker:SetColor(AuraDB.Count.Color[1], AuraDB.Count.Color[2], AuraDB.Count.Color[3], 1)
+    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Color = {r, g, b} UpdateAuras() end)
+    ColorPicker:SetHasAlpha(false)
+    ColorPicker:SetRelativeWidth(0.5)
+    CountContainer:AddChild(ColorPicker)
 
     local HideStacksToggle = AG:Create("CheckBox")
     HideStacksToggle:SetLabel("Hide Stacks")
@@ -3694,7 +3739,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local SizeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Size & Spacing")
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFPrivate Auras|r")
+    Toggle:SetLabel("Enable |cFFFFD100Private Auras|r")
     Toggle:SetValue(PrivateAurasDB.Enabled)
     Toggle:SetRelativeWidth(0.33)
     Toggle:SetCallback("OnValueChanged", function(_, _, value)
@@ -4031,13 +4076,13 @@ local function CreateCooldownTextSettings(containerParent)
         end)
         BreakpointTabContainer:AddChild(DisplayStyle)
 
-        local ColourPicker = AG:Create("ColorPicker")
-        ColourPicker:SetLabel("Colour")
-        ColourPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
-        ColourPicker:SetHasAlpha(false)
-        ColourPicker:SetRelativeWidth(0.33)
-        ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) RUF:UpdateAllUnitFrames() end)
-        BreakpointTabContainer:AddChild(ColourPicker)
+        local ColorPicker = AG:Create("ColorPicker")
+        ColorPicker:SetLabel("Color")
+        ColorPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
+        ColorPicker:SetHasAlpha(false)
+        ColorPicker:SetRelativeWidth(0.33)
+        ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) RUF:UpdateAllUnitFrames() end)
+        BreakpointTabContainer:AddChild(ColorPicker)
     end
 
     local BreakpointTabs = AG:Create("TabGroup")
@@ -4064,31 +4109,31 @@ local function CreateGlobalToggleSettings(containerParent)
     ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
     ToggleContainer:AddChild(ToggleMoversButton)
 
-    local ApplyColours = AG:Create("Button")
-    ApplyColours:SetText("Colour Mode")
-    ApplyColours:SetRelativeWidth(0.33)
-    ApplyColours:SetCallback("OnClick", function()
+    local ApplyColors = AG:Create("Button")
+    ApplyColors:SetText("Enable Class Color")
+    ApplyColors:SetRelativeWidth(0.33)
+    ApplyColors:SetCallback("OnClick", function()
         RUF:ForEachUnitDB(function(unitDB)
-            unitDB.HealthBar.ColourByClass = true
-            unitDB.HealthBar.ColourWhenTapped = true
-            unitDB.HealthBar.ColourBackgroundByClass = false
+            unitDB.HealthBar.ColorByClass = true
+            unitDB.HealthBar.ColorWhenTapped = true
+            unitDB.HealthBar.ColorBackgroundByClass = false
         end)
         RUF:UpdateAllUnitFrames()
     end)
-    ToggleContainer:AddChild(ApplyColours)
+    ToggleContainer:AddChild(ApplyColors)
 
-    local RemoveColours = AG:Create("Button")
-    RemoveColours:SetText("Dark Mode")
-    RemoveColours:SetRelativeWidth(0.33)
-    RemoveColours:SetCallback("OnClick", function()
+    local RemoveColors = AG:Create("Button")
+    RemoveColors:SetText("Disable Class Color")
+    RemoveColors:SetRelativeWidth(0.33)
+    RemoveColors:SetCallback("OnClick", function()
         RUF:ForEachUnitDB(function(unitDB)
-            unitDB.HealthBar.ColourByClass = false
-            unitDB.HealthBar.ColourWhenTapped = false
-            unitDB.HealthBar.ColourBackgroundByClass = false
+            unitDB.HealthBar.ColorByClass = false
+            unitDB.HealthBar.ColorWhenTapped = false
+            unitDB.HealthBar.ColorBackgroundByClass = false
         end)
         RUF:UpdateAllUnitFrames()
     end)
-    ToggleContainer:AddChild(RemoveColours)
+    ToggleContainer:AddChild(RemoveColors)
 
     local DisplayLoginMessageToggle = AG:Create("CheckBox")
     DisplayLoginMessageToggle:SetLabel("Display Login Message")
@@ -4122,7 +4167,7 @@ local function CreateGlobalTagSettings(containerParent)
     SeparatorDropdown:SetValue(RUF.db.profile.General.Separator)
     SeparatorDropdown:SetRelativeWidth(0.25)
     SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.Separator = value RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
+    SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFFFFD100[curhpperhp]|r or |cFFFFD100[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
@@ -4138,7 +4183,7 @@ local function CreateGlobalTagSettings(containerParent)
     end)
     ToTSeparatorDropdown:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
-        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r on your target frame.", 1, 1, 1)
+        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFFFFD100[name:target]|r on your target frame.", 1, 1, 1)
         GameTooltip:Show()
     end)
     ToTSeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
@@ -4147,7 +4192,7 @@ end
 
 local function CreateUnitEnableToggles(containerParent, unit)
     local EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Enable |cFF8080FF"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    EnableUnitFrameToggle:SetLabel("Enable |cFFFFD100"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(GetUnitDB(unit).Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
         StaticPopupDialogs["RUF_RELOAD_UI"] = {
@@ -4168,7 +4213,7 @@ local function CreateUnitEnableToggles(containerParent, unit)
 
 	if unit ~= "augmentation" then
 		local HideBlizzardToggle = AG:Create("CheckBox")
-		HideBlizzardToggle:SetLabel("Hide Blizzard |cFF8080FF"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+		HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFD100"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
 		HideBlizzardToggle:SetValue(GetUnitDB(unit).ForceHideBlizzard)
 		HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
 				StaticPopupDialogs["RUF_RELOAD_UI"] = {
@@ -4282,9 +4327,9 @@ local function CreateProfileSettings(containerParent)
         else
             DeleteProfileDropdown:SetDisabled(false)
         end
-        ResetProfileButton:SetText("Reset |cFF8080FF" .. RUF.db:GetCurrentProfile() .. "|r Profile")
+        ResetProfileButton:SetText("Reset |cFFFFD100" .. RUF.db:GetCurrentProfile() .. "|r Profile")
         local isUsingGlobal = RUF.db.global.UseGlobalProfile
-        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. RUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFF8080FFGlobal|r)" or "") .. "|r" )
+        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. RUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFD100Global|r)" or "") .. "|r" )
         if RUF.db:IsDualSpecEnabled() then
             SelectProfileDropdown:SetDisabled(true)
             CopyFromProfileDropdown:SetDisabled(true)
@@ -4313,17 +4358,17 @@ local function CreateProfileSettings(containerParent)
     CopyFromProfileDropdown = AG:Create("Dropdown")
     CopyFromProfileDropdown:SetLabel("Copy From...")
     CopyFromProfileDropdown:SetRelativeWidth(0.25)
-    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() RUF.db:CopyProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
+    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFFFFD100" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() RUF.db:CopyProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
     ProfileContainer:AddChild(CopyFromProfileDropdown)
 
     DeleteProfileDropdown = AG:Create("Dropdown")
     DeleteProfileDropdown:SetLabel("Delete...")
     DeleteProfileDropdown:SetRelativeWidth(0.25)
-    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= RUF.db:GetCurrentProfile() then RUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() RUF.db:DeleteProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
+    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= RUF.db:GetCurrentProfile() then RUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFFFFD100" .. value .. "|r?", function() RUF.db:DeleteProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
     ProfileContainer:AddChild(DeleteProfileDropdown)
 
     ResetProfileButton = AG:Create("Button")
-    ResetProfileButton:SetText("Reset |cFF8080FF" .. RUF.db:GetCurrentProfile() .. "|r Profile")
+    ResetProfileButton:SetText("Reset |cFFFFD100" .. RUF.db:GetCurrentProfile() .. "|r Profile")
     ResetProfileButton:SetRelativeWidth(0.25)
     ResetProfileButton:SetCallback("OnClick", function() RUF.db:ResetProfile() RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(ResetProfileButton)
@@ -4347,7 +4392,7 @@ local function CreateProfileSettings(containerParent)
     GlobalProfileHeading:SetFullWidth(true)
     ProfileContainer:AddChild(GlobalProfileHeading)
 
-    GUIWidgets.CreateInformationTag(ProfileContainer, "If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
+    GUIWidgets.CreateInformationTag(ProfileContainer, "If |cFFFFD100Use Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
 
     UseGlobalProfileToggle = AG:Create("CheckBox")
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
@@ -4394,7 +4439,7 @@ local function CreateProfileSettings(containerParent)
     ExportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ExportingHeading)
 
-    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFRehalted|r Unit Frame users.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFFFFD100Export Profile|r button below & share the string with other |cFFFFD100Rehalted|r Unit Frame users.")
 
     local ExportingEditBox = AG:Create("EditBox")
     ExportingEditBox:SetLabel("Export String...")
@@ -4416,7 +4461,7 @@ local function CreateProfileSettings(containerParent)
     ImportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ImportingHeading)
 
-    GUIWidgets.CreateInformationTag(SharingContainer, "If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "If you have an exported string, paste it in the |cFFFFD100Import String|r box below & press |cFFFFD100Import Profile|r.")
 
     local ImportingEditBox = AG:Create("EditBox")
     ImportingEditBox:SetLabel("Import String...")
@@ -4440,7 +4485,7 @@ local function CreateProfileSettings(containerParent)
     DefaultsExportHeading:SetFullWidth(true)
     SharingContainer:AddChild(DefaultsExportHeading)
 
-    GUIWidgets.CreateInformationTag(SharingContainer, "Export the active profile as a readable Lua table matching the structure used by |cFF8080FFDefaults.lua|r.\nThis is intended for |cFF8080FFadvanced|r users or |cFF8080FFdevelopers|r.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "Export the active profile as a readable Lua table matching the structure used by |cFFFFD100Defaults.lua|r.\nThis is intended for |cFFFFD100advanced|r users or |cFFFFD100developers|r.")
 
     local DefaultsExportEditBox = AG:Create("MultiLineEditBox")
     DefaultsExportEditBox:SetLabel("Export Table...")
@@ -4524,43 +4569,7 @@ function RUF:CreateGUI()
             GlobalTabGroup:SelectTab(generalLastTab)
             ScrollFrame:AddChild(GlobalTabGroup)
 
-            CreateColourSettings(ScrollFrame)
-
-            local SupportMeContainer = AG:Create("InlineGroup")
-            SupportMeContainer:SetTitle("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t  How To Support " .. RUF.PRETTY_ADDON_NAME .. " Development")
-            SupportMeContainer:SetLayout("Flow")
-            SupportMeContainer:SetFullWidth(true)
-            ScrollFrame:AddChild(SupportMeContainer)
-
-            local TwitchInteractive = AG:Create("InteractiveLabel")
-            TwitchInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r")
-            TwitchInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            TwitchInteractive:SetJustifyV("MIDDLE")
-            TwitchInteractive:SetRelativeWidth(0.33)
-            TwitchInteractive:SetCallback("OnClick", function() RUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
-            TwitchInteractive:SetCallback("OnEnter", function() TwitchInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFFFFFFFFTwitch|r") end)
-            TwitchInteractive:SetCallback("OnLeave", function() TwitchInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r") end)
-            SupportMeContainer:AddChild(TwitchInteractive)
-
-            local DiscordInteractive = AG:Create("InteractiveLabel")
-            DiscordInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r")
-            DiscordInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            DiscordInteractive:SetJustifyV("MIDDLE")
-            DiscordInteractive:SetRelativeWidth(0.33)
-            DiscordInteractive:SetCallback("OnClick", function() RUF:OpenURL("Support Me on Discord", "https://discord.gg/UZCgWRYvVE") end)
-            DiscordInteractive:SetCallback("OnEnter", function() DiscordInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFFFFFFFFDiscord|r") end)
-            DiscordInteractive:SetCallback("OnLeave", function() DiscordInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r") end)
-            SupportMeContainer:AddChild(DiscordInteractive)
-
-            local GithubInteractive = AG:Create("InteractiveLabel")
-            GithubInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")
-            GithubInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            GithubInteractive:SetJustifyV("MIDDLE")
-            GithubInteractive:SetRelativeWidth(0.33)
-            GithubInteractive:SetCallback("OnClick", function() RUF:OpenURL("Support Me on Github", "https://github.com/dalehuntgb/RehaltedUnitFrames") end)
-            GithubInteractive:SetCallback("OnEnter", function() GithubInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFFFFFFFFGithub|r") end)
-            GithubInteractive:SetCallback("OnLeave", function() GithubInteractive:SetText("|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r") end)
-            SupportMeContainer:AddChild(GithubInteractive)
+            CreateColorSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then

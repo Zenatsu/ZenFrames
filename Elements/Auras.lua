@@ -46,13 +46,13 @@ local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 			button.Count:SetFont(RUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
 			button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
 			if FontsDB.Shadow.Enabled then
-				button.Count:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+				button.Count:SetShadowColor(FontsDB.Shadow.Color[1], FontsDB.Shadow.Color[2], FontsDB.Shadow.Color[3], FontsDB.Shadow.Color[4])
 				button.Count:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
 			else
 				button.Count:SetShadowColor(0, 0, 0, 0)
 				button.Count:SetShadowOffset(0, 0)
 			end
-			button.Count:SetTextColor(unpack(AuraDB.Count.Colour))
+			button.Count:SetTextColor(unpack(AuraDB.Count.Color))
 			button.Count:Show()
 		end
 	end
@@ -617,13 +617,13 @@ function RUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
                     button.Count:SetFont(RUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
                     else
                         button.Count:SetShadowColor(0, 0, 0, 0)
                         button.Count:SetShadowOffset(0, 0)
                     end
-                    button.Count:SetTextColor(unpack(BuffsDB.Count.Colour))
+                    button.Count:SetTextColor(unpack(BuffsDB.Count.Color))
 
                     local row = math.floor((j - 1) / BuffsDB.Wrap)
                     local col = (j - 1) % BuffsDB.Wrap
@@ -688,13 +688,13 @@ function RUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
                     button.Count:SetFont(RUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
                     else
                         button.Count:SetShadowColor(0, 0, 0, 0)
                         button.Count:SetShadowOffset(0, 0)
                     end
-                    button.Count:SetTextColor(unpack(DebuffsDB.Count.Colour))
+                    button.Count:SetTextColor(unpack(DebuffsDB.Count.Color))
 
                     local row = math.floor((j - 1) / DebuffsDB.Wrap)
                     local col = (j - 1) % DebuffsDB.Wrap
@@ -758,13 +758,13 @@ function RUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetPoint(CustomDB.Count.Layout[1], button, CustomDB.Count.Layout[2], CustomDB.Count.Layout[3], CustomDB.Count.Layout[4])
                     button.Count:SetFont(RUF.Media.Font, CustomDB.Count.FontSize, General.Fonts.FontFlag)
                     if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
                         button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
                     else
                         button.Count:SetShadowColor(0, 0, 0, 0)
                         button.Count:SetShadowOffset(0, 0)
                     end
-                    button.Count:SetTextColor(unpack(CustomDB.Count.Colour))
+                    button.Count:SetTextColor(unpack(CustomDB.Count.Color))
 
                     local row = math.floor((j - 1) / CustomDB.Wrap)
                     local col = (j - 1) % CustomDB.Wrap

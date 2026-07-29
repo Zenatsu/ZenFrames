@@ -40,12 +40,12 @@ local Defaults = {
                 FontFlag = "OUTLINE",
                 Shadow = {
                     Enabled = false,
-                    Colour = {0, 0, 0, 1},
+                    Color = {0, 0, 0, 1},
                     XPos = 1,
                     YPos = -1,
                 }
             },
-            Colours = {
+            Colors = {
                 Reaction = {
                     [1] = {204/255, 64/255, 64/255},            -- Hated
                     [2] = {204/255, 64/255, 64/255},            -- Hostile
@@ -108,10 +108,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Smooth = false,
@@ -129,7 +129,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -138,7 +138,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 40,
                     },
@@ -146,7 +146,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -156,9 +156,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     Position = "BOTTOM",
@@ -168,7 +168,7 @@ local Defaults = {
                     Enabled = false,
                     Height = 3,
                     Position = "TOP",
-                    ColourByType = true,
+                    ColorByType = true,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
                 },
@@ -178,7 +178,7 @@ local Defaults = {
                     Width = 100,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {34/255, 34/255, 34/255},
-                    ColourByType = true,
+                    ColorByType = true,
                     Inverse = false,
                     Layout = {"LEFT", "BOTTOMLEFT", 3, 1},
                 },
@@ -189,11 +189,11 @@ local Defaults = {
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
                     Foreground = {128/255, 128/255, 255/255},
                     Background = {34/255, 34/255, 34/255},
-                    NotInterruptibleColour = {255/255, 64/255, 64/255},
-                    InterruptedFailedColour = {64/255, 255/255, 64/255},
-                    InterruptCooldownColour = {255/255, 210/255, 0/255},
+                    NotInterruptibleColor = {255/255, 64/255, 64/255},
+                    InterruptedFailedColor = {64/255, 255/255, 64/255},
+                    InterruptCooldownColor = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
-                    ColourByClass = false,
+                    ColorByClass = false,
                     Inverse = false,
                     HoldTime = 0.5,
                     ShowTarget = false,
@@ -207,14 +207,14 @@ local Defaults = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                             MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"RIGHT", "RIGHT", -3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                         }
                     }
                 },
@@ -257,7 +257,7 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
@@ -308,7 +308,7 @@ local Defaults = {
                         Count = {
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -327,7 +327,7 @@ local Defaults = {
                         Count = {
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -348,7 +348,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -356,31 +356,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"RIGHT", "RIGHT", -3, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[curhp:abbr]",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"RIGHT", "BOTTOMRIGHT", -3, 2},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[powercolor][curpp]",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -395,10 +395,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Smooth = false,
@@ -416,7 +416,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -425,7 +425,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 40,
                     },
@@ -433,7 +433,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -443,9 +443,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -457,11 +457,11 @@ local Defaults = {
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
                     Foreground = {128/255, 128/255, 255/255},
                     Background = {34/255, 34/255, 34/255},
-                    NotInterruptibleColour = {255/255, 64/255, 64/255},
-                    InterruptedFailedColour = {64/255, 255/255, 64/255},
-                    InterruptCooldownColour = {255/255, 210/255, 0/255},
+                    NotInterruptibleColor = {255/255, 64/255, 64/255},
+                    InterruptedFailedColor = {64/255, 255/255, 64/255},
+                    InterruptCooldownColor = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
-                    ColourByClass = false,
+                    ColorByClass = false,
                     Inverse = false,
                     HoldTime = 0.5,
                     ShowTarget = false,
@@ -475,14 +475,14 @@ local Defaults = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                             MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"RIGHT", "RIGHT", -3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                         }
                     }
                 },
@@ -514,13 +514,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     },
                     Classification = {
                         Enabled = true,
@@ -563,7 +563,7 @@ local Defaults = {
                         Count = {
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -583,7 +583,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -605,7 +605,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -613,31 +613,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"LEFT", "LEFT", 3, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"RIGHT", "RIGHT", -3, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[curhp:abbr]",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"RIGHT", "BOTTOMRIGHT", -3, 2},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[powercolor][curpp]",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -653,10 +653,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -669,7 +669,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -678,7 +678,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 20,
                     },
@@ -686,7 +686,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 20,
                     },
@@ -696,9 +696,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -720,13 +720,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     }
                 },
                 Auras = {
@@ -754,7 +754,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -775,7 +775,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -783,31 +783,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -823,10 +823,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -843,7 +843,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -852,7 +852,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 20,
                     },
@@ -860,7 +860,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 20,
                     },
@@ -870,9 +870,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -884,11 +884,11 @@ local Defaults = {
                     Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 1},
                     Foreground = {128/255, 128/255, 255/255},
                     Background = {34/255, 34/255, 34/255},
-                    NotInterruptibleColour = {255/255, 64/255, 64/255},
-                    InterruptedFailedColour = {64/255, 255/255, 64/255},
-                    InterruptCooldownColour = {255/255, 210/255, 0/255},
+                    NotInterruptibleColor = {255/255, 64/255, 64/255},
+                    InterruptedFailedColor = {64/255, 255/255, 64/255},
+                    InterruptCooldownColor = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
-                    ColourByClass = false,
+                    ColorByClass = false,
                     Inverse = false,
                     HoldTime = 0.5,
                     ShowTarget = false,
@@ -902,14 +902,14 @@ local Defaults = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                             MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"RIGHT", "RIGHT", -3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                         }
                     }
                 },
@@ -930,13 +930,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     }
                 },
                 Auras = {
@@ -963,7 +963,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -984,7 +984,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -1006,7 +1006,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -1014,31 +1014,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -1054,10 +1054,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -1070,7 +1070,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1079,7 +1079,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 20,
                     },
@@ -1087,7 +1087,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 20,
                     },
@@ -1097,9 +1097,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -1121,13 +1121,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     }
                 },
                 Auras = {
@@ -1155,7 +1155,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -1176,7 +1176,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -1184,31 +1184,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -1224,10 +1224,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -1240,7 +1240,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1249,7 +1249,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 20,
                     },
@@ -1257,7 +1257,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 20,
                     },
@@ -1267,9 +1267,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -1281,11 +1281,11 @@ local Defaults = {
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
                     Foreground = {128/255, 128/255, 255/255},
                     Background = {34/255, 34/255, 34/255},
-                    NotInterruptibleColour = {255/255, 64/255, 64/255},
-                    InterruptedFailedColour = {64/255, 255/255, 64/255},
-                    InterruptCooldownColour = {255/255, 210/255, 0/255},
+                    NotInterruptibleColor = {255/255, 64/255, 64/255},
+                    InterruptedFailedColor = {64/255, 255/255, 64/255},
+                    InterruptCooldownColor = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
-                    ColourByClass = false,
+                    ColorByClass = false,
                     Inverse = false,
                     HoldTime = 0.5,
                     ShowTarget = false,
@@ -1299,14 +1299,14 @@ local Defaults = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                             MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"RIGHT", "RIGHT", -3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                         }
                     }
                 },
@@ -1327,13 +1327,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     }
                 },
                 Auras = {
@@ -1361,7 +1361,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -1382,7 +1382,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -1404,7 +1404,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -1412,31 +1412,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER",0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -1452,10 +1452,10 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -1468,7 +1468,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Color = {64/255, 255/255, 64/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1477,7 +1477,7 @@ local Defaults = {
                         ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
-                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Color = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
                         Height = 40,
                     },
@@ -1485,7 +1485,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Color = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1495,9 +1495,9 @@ local Defaults = {
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
-                    ColourByType = true,
-                    ColourBackgroundByType = false,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = false,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
@@ -1509,11 +1509,11 @@ local Defaults = {
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
                     Foreground = {128/255, 128/255, 255/255},
                     Background = {34/255, 34/255, 34/255},
-                    NotInterruptibleColour = {255/255, 64/255, 64/255},
-                    InterruptedFailedColour = {64/255, 255/255, 64/255},
-                    InterruptCooldownColour = {255/255, 210/255, 0/255},
+                    NotInterruptibleColor = {255/255, 64/255, 64/255},
+                    InterruptedFailedColor = {64/255, 255/255, 64/255},
+                    InterruptCooldownColor = {255/255, 210/255, 0/255},
                     MatchParentWidth = true,
-                    ColourByClass = false,
+                    ColorByClass = false,
                     Inverse = false,
                     HoldTime = 0.5,
                     ShowTarget = false,
@@ -1527,14 +1527,14 @@ local Defaults = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                             MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
                             FontSize = 12,
                             Layout = {"RIGHT", "RIGHT", -3, 0},
-                            Colour = {1, 1, 1},
+                            Color = {1, 1, 1},
                         }
                     }
                 },
@@ -1555,13 +1555,13 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     }
                 },
                 Auras = {
@@ -1588,7 +1588,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -1609,7 +1609,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -1631,7 +1631,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -1639,31 +1639,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"LEFT", "LEFT", 3, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"RIGHT", "RIGHT", -3, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[curhpperhp:abbr]",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"RIGHT", "BOTTOMRIGHT", -3, 2},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -1682,12 +1682,12 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
-                    ColourWhenDisconnected = true,
-                    ColourBackdropWhenDead = false,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
+                    ColorWhenDisconnected = true,
+                    ColorBackdropWhenDead = false,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {0.10196079313755, 0.10196079313755, 0.10196079313755},
@@ -1704,7 +1704,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {0.25098039215686, 1, 0.25098039215686, 1},
+                        Color = {0.25098039215686, 1, 0.25098039215686, 1},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1713,7 +1713,7 @@ local Defaults = {
                         ShowOverAbsorb = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
+                        Color = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1721,7 +1721,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = false,
-                        Colour = {0.50196078431373, 0.25098039215686, 1, 1},
+                        Color = {0.50196078431373, 0.25098039215686, 1, 1},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1732,9 +1732,9 @@ local Defaults = {
                     Height = 1,
                     Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
                     Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
-                    ColourByType = true,
-                    ColourBackgroundByType = true,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = true,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.25,
@@ -1747,14 +1747,14 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 1,
                         Style = "BORDER"
                     },
                     Target = {
                         Enabled = false,
                         Style = "Glow",
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     },
                     Threat = {
                         Enabled = false,
@@ -1835,7 +1835,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -1856,7 +1856,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -1878,7 +1878,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -1886,31 +1886,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"TOPLEFT", "TOPLEFT", 16, -3},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[perhp-with-sign]",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 }
@@ -1929,12 +1929,12 @@ local Defaults = {
                     FrameStrata = "LOW",
                 },
                 HealthBar = {
-                    ColourByClass = true,
-                    ColourBackgroundByClass = false,
-                    ColourByReaction = true,
-                    ColourWhenTapped = true,
-                    ColourWhenDisconnected = true,
-                    ColourBackdropWhenDead = true,
+                    ColorByClass = true,
+                    ColorBackgroundByClass = false,
+                    ColorByReaction = true,
+                    ColorWhenTapped = true,
+                    ColorWhenDisconnected = true,
+                    ColorBackdropWhenDead = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {0.10196079313755, 0.10196079313755, 0.10196079313755},
@@ -1951,7 +1951,7 @@ local Defaults = {
                         Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {0.25098039215686, 1, 0.25098039215686, 1},
+                        Color = {0.25098039215686, 1, 0.25098039215686, 1},
                         Position = "RIGHT",
                         Height = 40,
                     },
@@ -1960,7 +1960,7 @@ local Defaults = {
                         ShowOverAbsorb = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
+                        Color = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1968,7 +1968,7 @@ local Defaults = {
                         Enabled = true,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
-                        Colour = {0.50196078431373, 0.25098039215686, 1, 1},
+                        Color = {0.50196078431373, 0.25098039215686, 1, 1},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1979,9 +1979,9 @@ local Defaults = {
                     Height = 1,
                     Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
                     Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
-                    ColourByType = true,
-                    ColourBackgroundByType = true,
-                    ColourByClass = false,
+                    ColorByType = true,
+                    ColorBackgroundByType = true,
+                    ColorByClass = false,
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.25,
@@ -1994,14 +1994,14 @@ local Defaults = {
                     },
                     Mouseover = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         HighlightOpacity = 1,
                         Style = "BORDER"
                     },
                     Target = {
                         Enabled = false,
                         Style = "Glow",
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                     },
                     Threat = {
                         Enabled = false,
@@ -2082,7 +2082,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Debuffs = {
@@ -2103,7 +2103,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                     Custom = {
@@ -2125,7 +2125,7 @@ local Defaults = {
                             HideStacks = false,
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,
-                            Colour = {1, 1, 1, 1}
+                            Color = {1, 1, 1, 1}
                         }
                     },
                 },
@@ -2133,31 +2133,31 @@ local Defaults = {
                     TagOne = {
                         FontSize = 12,
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[name]",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "[status]",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
-                        Colour = {1, 1, 1},
+                        Color = {1, 1, 1},
                         Tag = "",
                     },
                 },
@@ -2174,12 +2174,12 @@ local Defaults = {
 						FrameStrata = "LOW",
 					},
 					HealthBar = {
-                        ColourByClass = true,
-                        ColourBackgroundByClass = false,
-                        ColourByReaction = true,
-                        ColourWhenTapped = true,
-                        ColourWhenDisconnected = true,
-                        ColourBackdropWhenDead = true,
+                        ColorByClass = true,
+                        ColorBackgroundByClass = false,
+                        ColorByReaction = true,
+                        ColorWhenTapped = true,
+                        ColorWhenDisconnected = true,
+                        ColorBackdropWhenDead = true,
                         Inverse = false,
                         Smooth = false,
                         Foreground = {0.10196079313755, 0.10196079313755, 0.10196079313755},
@@ -2196,7 +2196,7 @@ local Defaults = {
                             Enabled = false,
                             UseStripedTexture = false,
                             MatchParentHeight = true,
-                            Colour = {0.25098039215686, 1, 0.25098039215686, 1},
+                            Color = {0.25098039215686, 1, 0.25098039215686, 1},
                             Position = "RIGHT",
                             Height = 40,
                         },
@@ -2205,7 +2205,7 @@ local Defaults = {
                             ShowOverAbsorb = true,
                             UseStripedTexture = false,
                             MatchParentHeight = true,
-                            Colour = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
+                            Color = {0.50196081399918, 0.75294125080109, 1, 0.80000007152557},
                             Position = "ATTACH",
                             Height = 40,
                         },
@@ -2213,7 +2213,7 @@ local Defaults = {
                             Enabled = false,
                             UseStripedTexture = false,
                             MatchParentHeight = true,
-                            Colour = {0.50196078431373, 0.25098039215686, 1, 1},
+                            Color = {0.50196078431373, 0.25098039215686, 1, 1},
                             Position = "ATTACH",
                             Height = 40,
                         },
@@ -2224,9 +2224,9 @@ local Defaults = {
 						Height = 1,
 						Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
 						Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
-						ColourByType = true,
-						ColourBackgroundByType = true,
-						ColourByClass = false,
+						ColorByType = true,
+						ColorBackgroundByType = true,
+						ColorByClass = false,
 						Smooth = true,
 						Inverse = false,
 						BackgroundMultiplier = 0.25,
@@ -2239,14 +2239,14 @@ local Defaults = {
 						},
 						Mouseover = {
 							Enabled = true,
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							HighlightOpacity = 0.25,
 							Style = "OVERLAY"
 						},
 						Target = {
 							Enabled = false,
 							Style = "Glow",
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 						},
 						Threat = {
 							Enabled = false,
@@ -2327,7 +2327,7 @@ local Defaults = {
 								HideStacks = false,
 								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
 								FontSize = 12,
-								Colour = {1, 1, 1, 1}
+								Color = {1, 1, 1, 1}
 							}
 						},
 						Debuffs = {
@@ -2348,7 +2348,7 @@ local Defaults = {
 								HideStacks = false,
 								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
 								FontSize = 12,
-								Colour = {1, 1, 1, 1}
+								Color = {1, 1, 1, 1}
 							}
 						},
 						Custom = {
@@ -2370,7 +2370,7 @@ local Defaults = {
 								HideStacks = false,
 								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
 								FontSize = 12,
-								Colour = {1, 1, 1, 1}
+								Color = {1, 1, 1, 1}
 							}
 						},
 					},
@@ -2378,31 +2378,31 @@ local Defaults = {
 						TagOne = {
 							FontSize = 12,
 							Layout = {"CENTER", "CENTER", 0, 0},
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							Tag = "[name]",
 						},
 						TagTwo = {
 							FontSize = 12,
 							Layout = {"CENTER", "CENTER", 0, 0},
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							Tag = "",
 						},
 						TagThree = {
 							FontSize = 12,
 							Layout = {"CENTER", "CENTER", 0, 0},
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							Tag = "",
 						},
 						TagFour = {
 							FontSize = 12,
 							Layout = {"CENTER", "CENTER", 0, 0},
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							Tag = "",
 						},
 						TagFive = {
 							FontSize = 12,
 							Layout = {"CENTER", "CENTER", 0, 0},
-							Colour = {1, 1, 1},
+							Color = {1, 1, 1},
 							Tag = "",
 						},
 					}

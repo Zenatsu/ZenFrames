@@ -11,7 +11,7 @@ function RUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     if MouseoverDB.Style == "BORDER" then
         MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
         MouseoverHighlight:SetBackdropColor(0,0,0,0)
-        MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
     elseif MouseoverDB.Style == "GRADIENT" then
         MouseoverHighlight:SetBackdrop({
             bgFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png",
@@ -19,11 +19,11 @@ function RUF:CreateUnitMouseoverIndicator(unitFrame, unit)
             tile = false, tileSize = 0, edgeSize = 0,
             insets = { left = 0, right = 0, top = 0, bottom = 0 },
         })
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
         MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
     else
         MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
         MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
     end
 
@@ -45,7 +45,7 @@ function RUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
         if MouseoverDB.Style == "BORDER" then
             unitFrame.MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
             unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+            unitFrame.MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
         elseif MouseoverDB.Style == "GRADIENT" then
             unitFrame.MouseoverHighlight:SetBackdrop({
                 bgFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png",
@@ -53,11 +53,11 @@ function RUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
                 tile = false, tileSize = 0, edgeSize = 0,
                 insets = { left = 0, right = 0, top = 0, bottom = 0 },
             })
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
         else
             unitFrame.MouseoverHighlight:SetBackdrop(RUF.BACKDROP)
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
         end
 

@@ -74,9 +74,9 @@ end
 
 local function CreateScrollFrame(containerParent)
     local scrollFrame = AG:Create("ScrollFrame")
-	StyleScrollFrame(scrollFrame)
-	scrollFrame.FixScroll = FixScrollFrame
-	scrollFrame.OnWidthSet = SetScrollFrameWidth
+	--StyleScrollFrame(scrollFrame)
+	--scrollFrame.FixScroll = FixScrollFrame
+	--scrollFrame.OnWidthSet = SetScrollFrameWidth
     scrollFrame:SetLayout("Flow")
     scrollFrame:SetFullWidth(true)
     containerParent:AddChild(scrollFrame)
@@ -98,7 +98,7 @@ RUF.GUIWidgets.CreateInlineGroup = CreateInlineGroup
 
 local function CreateHeader(containerParent, headerTitle)
     local headingText = AG:Create("Heading")
-    headingText:SetText("|cFF8080FF" .. headerTitle .. "|r")
+    headingText:SetText("|cFFFFD100" .. headerTitle .. "|r")
     headingText:SetFullWidth(true)
     containerParent:AddChild(headingText)
     return headingText

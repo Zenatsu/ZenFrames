@@ -7,9 +7,9 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then
 		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(RUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
 		unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
-		unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
+		unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Color[1], TagDB.Color[2], TagDB.Color[3], 1)
 		if GeneralDB.Fonts.Shadow.Enabled then
-			unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+			unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
 			unitFrame.Tags[tagDB]:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
 		else
 			unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
@@ -42,9 +42,9 @@ function RUF:UpdateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then return end
 
 	unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
-	unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
+	unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Color[1], TagDB.Color[2], TagDB.Color[3], 1)
 	if GeneralDB.Fonts.Shadow.Enabled then
-		unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
+		unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
 		unitFrame.Tags[tagDB]:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
 	else
 		unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)

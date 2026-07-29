@@ -64,13 +64,13 @@ local TestSummonAtlas = {
 	"RaidFrame-Icon-SummonAccepted",
 	"RaidFrame-Icon-SummonDeclined",
 }
-local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
-	if colourByClass then
+local function GetTestUnitColor(id, defaultColor, colorByClass, opacity)
+	if colorByClass then
 		local temporaryClass = TestData[id].class
-		local classColour = RAID_CLASS_COLORS[temporaryClass]
-		return classColour.r, classColour.g, classColour.b, opacity
+		local classColor = RAID_CLASS_COLORS[temporaryClass]
+		return classColor.r, classColor.g, classColor.b, opacity
 	else
-		return defaultColour[1], defaultColour[2], defaultColour[3], opacity
+		return defaultColor[1], defaultColor[2], defaultColor[3], opacity
 	end
 end
 
@@ -83,13 +83,13 @@ local function ApplyTestTag(fontString, frame, tagDB, text)
 	fontString:SetPoint(tagDB.Layout[1], frame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
 	fontString:SetFont(RUF.Media.Font, tagDB.FontSize, General.Fonts.FontFlag)
 	if General.Fonts.Shadow.Enabled then
-		fontString:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+		fontString:SetShadowColor(unpack(General.Fonts.Shadow.Color))
 		fontString:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
 	else
 		fontString:SetShadowColor(0, 0, 0, 0)
 		fontString:SetShadowOffset(0, 0)
 	end
-	fontString:SetTextColor(unpack(tagDB.Colour))
+	fontString:SetTextColor(unpack(tagDB.Color))
 	fontString:SetText(text)
 	fontString:Show()
 end
@@ -145,11 +145,11 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 		if not updateAll then RUF:UpdateUnitHealthBar(unitFrame, unit) end
 		unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
 		unitFrame.Health:SetValue(testData.health)
-		unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+		unitFrame.Health:SetStatusBarColor(GetTestUnitColor(index, HealthBarDB.Foreground, HealthBarDB.ColorByClass, HealthBarDB.ForegroundOpacity))
 		if unitFrame.HealthBackground then
 			unitFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
 			unitFrame.HealthBackground:SetValue(testData.missingHealth)
-			unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(index, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
+			unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColor(index, HealthBarDB.Background, HealthBarDB.ColorBackgroundByClass, HealthBarDB.BackgroundOpacity))
 		end
 	end
 
@@ -176,9 +176,9 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 			else
 				unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
 				unitFrame.Power:SetValue(testData.power)
-				if PowerBarDB.ColourByType and oUF.colors.power[testData.powerType] then
-					local colour = oUF.colors.power[testData.powerType]
-					unitFrame.Power:SetStatusBarColor(colour.r, colour.g, colour.b)
+				if PowerBarDB.ColorByType and oUF.colors.power[testData.powerType] then
+					local color = oUF.colors.power[testData.powerType]
+					unitFrame.Power:SetStatusBarColor(color.r, color.g, color.b)
 				else
 					unitFrame.Power:SetStatusBarColor(unpack(PowerBarDB.Foreground))
 				end
@@ -259,7 +259,7 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 		if IndicatorDB.Target.Style == "Border" then
 			if unitFrame.TargetIndicator ~= unitFrame.Container then unitFrame.TargetIndicator:SetAlpha(0) end
 			unitFrame.TargetIndicator = unitFrame.Container
-			unitFrame.Container:SetBackdropBorderColor(IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[1] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[2] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Colour[3] or 0, IndicatorDB.Target.Enabled and index == 1 and (IndicatorDB.Target.Colour[4] or 1) or 1)
+			unitFrame.Container:SetBackdropBorderColor(IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Color[1] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Color[2] or 0, IndicatorDB.Target.Enabled and index == 1 and IndicatorDB.Target.Color[3] or 0, IndicatorDB.Target.Enabled and index == 1 and (IndicatorDB.Target.Color[4] or 1) or 1)
 		else
 			if not unitFrame.TargetIndicatorFrame then
 				unitFrame.TargetIndicatorFrame = CreateFrame("Frame", RUF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
@@ -272,14 +272,14 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 			unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
 			unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
 			unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
-			unitFrame.TargetIndicator:SetBackdropBorderColor(IndicatorDB.Target.Colour[1], IndicatorDB.Target.Colour[2], IndicatorDB.Target.Colour[3], IndicatorDB.Target.Colour[4])
+			unitFrame.TargetIndicator:SetBackdropBorderColor(IndicatorDB.Target.Color[1], IndicatorDB.Target.Color[2], IndicatorDB.Target.Color[3], IndicatorDB.Target.Color[4])
 			unitFrame.TargetIndicator:SetAlpha(IndicatorDB.Target.Enabled and index == 1 and 1 or 0)
 		end
 	end
 	if (updateAll or element == "Indicators") and unitFrame.ThreatIndicator and IndicatorDB.Threat then
-		local threatColour = RUF.db.profile.General.Colours.Threat[((index - 1) % 3) + 1]
+		local threatColor = RUF.db.profile.General.Colors.Threat[((index - 1) % 3) + 1]
 		if IndicatorDB.Threat.Enabled and index % 5 == 0 then
-			unitFrame.ThreatIndicator:SetBackdropBorderColor(threatColour[1], threatColour[2], threatColour[3], threatColour[4] or 1)
+			unitFrame.ThreatIndicator:SetBackdropBorderColor(threatColor[1], threatColor[2], threatColor[3], threatColor[4] or 1)
 			unitFrame.ThreatIndicator:SetAlpha(1)
 			unitFrame.ThreatIndicator:Show()
 		else
@@ -477,8 +477,8 @@ local function UpdateBossTestEnvironment(element)
 				BossFrame.Health:SetValue(TestData[i].health)
 				BossFrame.HealthBackground:SetMinMaxValues(0, TestData[i].maxHealth)
 				BossFrame.HealthBackground:SetValue(TestData[i].missingHealth)
-				BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
-				BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+				BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColor(i, HealthBarDB.Background, HealthBarDB.ColorBackgroundByClass, HealthBarDB.BackgroundOpacity))
+				BossFrame.Health:SetStatusBarColor(GetTestUnitColor(i, HealthBarDB.Foreground, HealthBarDB.ColorByClass, HealthBarDB.ForegroundOpacity))
 			end
 
 			if (updateAll or element == "Frame" or element == "HealPrediction") and BossFrame.HealthPrediction then
@@ -532,8 +532,8 @@ local function UpdateBossTestEnvironment(element)
 					BossFrame.Castbar.Time:SetText("2.5")
 					BossFrame.Castbar:SetMinMaxValues(0, 1000)
 					BossFrame.Castbar:SetValue(500)
-					local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and RUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
-					BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+					local castBarColor = (false and CastBarDB.NotInterruptibleColor) or (CastBarDB.ColorByClass and RUF:GetClassColor(BossFrame)) or CastBarDB.Foreground
+					BossFrame.Castbar:SetStatusBarColor(castBarColor[1], castBarColor[2], castBarColor[3], castBarColor[4])
 					if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
 				else
 					if CastBarContainer then CastBarContainer:Hide() end
@@ -556,7 +556,7 @@ local function UpdateBossTestEnvironment(element)
 				if TargetIndicatorDB.Style == "Border" then
 					if BossFrame.TargetIndicator ~= BossFrame.Container then BossFrame.TargetIndicator:SetAlpha(0) BossFrame.TargetIndicator:Hide() end
 					BossFrame.TargetIndicator = BossFrame.Container
-					BossFrame.Container:SetBackdropBorderColor(TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[1] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[2] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Colour[3] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and (TargetIndicatorDB.Colour[4] or 1) or 1)
+					BossFrame.Container:SetBackdropBorderColor(TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Color[1] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Color[2] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and TargetIndicatorDB.Color[3] or 0, TargetIndicatorDB.Enabled and i % 2 == 1 and (TargetIndicatorDB.Color[4] or 1) or 1)
 				else
 					if not BossFrame.TargetIndicatorFrame then
 						BossFrame.TargetIndicatorFrame = CreateFrame("Frame", RUF:FetchFrameName("boss" .. i).."_TargetIndicator", BossFrame.Container, "BackdropTemplate")
@@ -569,7 +569,7 @@ local function UpdateBossTestEnvironment(element)
 					BossFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
 					BossFrame.TargetIndicator:SetPoint("TOPLEFT", BossFrame.Container, "TOPLEFT", -3, 3)
 					BossFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", BossFrame.Container, "BOTTOMRIGHT", 3, -3)
-					BossFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3], TargetIndicatorDB.Colour[4])
+					BossFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
 					if TargetIndicatorDB.Enabled and i % 2 == 1 then
 						BossFrame.TargetIndicator:SetAlpha(1)
 						BossFrame.TargetIndicator:Show()

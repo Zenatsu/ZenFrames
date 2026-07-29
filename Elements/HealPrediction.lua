@@ -6,7 +6,7 @@ local function CreateIncomingHeal(unitFrame, unit)
 
     local IncomingHealBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_IncomingHealBar", unitFrame.Health)
     if IncomingHealDB.UseStripedTexture then IncomingHealBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else IncomingHealBar:SetStatusBarTexture(RUF.Media.Foreground) end
-    IncomingHealBar:SetStatusBarColor(IncomingHealDB.Colour[1], IncomingHealDB.Colour[2], IncomingHealDB.Colour[3], IncomingHealDB.Colour[4])
+    IncomingHealBar:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
     IncomingHealBar:ClearAllPoints()
     local position = IncomingHealDB.Position
     local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
@@ -55,7 +55,7 @@ local function CreateUnitAbsorbs(unitFrame, unit)
 
     local AbsorbBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_AbsorbBar", unitFrame.Health)
     if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
-    AbsorbBar:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
+    AbsorbBar:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
     AbsorbBar:ClearAllPoints()
     local position = AbsorbDB.Position
     local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
@@ -104,7 +104,7 @@ local function ConfigureUnitOverAbsorbs(OverAbsorbBar, unitFrame, unit)
     local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     local OverAbsorbClip = OverAbsorbBar.Clip
     if AbsorbDB.UseStripedTexture then OverAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else OverAbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
-    OverAbsorbBar:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
+    OverAbsorbBar:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
     OverAbsorbClip:ClearAllPoints()
     OverAbsorbBar:ClearAllPoints()
     local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
@@ -149,7 +149,7 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
 
     local HealAbsorbBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_HealAbsorbBar", unitFrame.Health)
     if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
-    HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
+    HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
     HealAbsorbBar:ClearAllPoints()
     local position = HealAbsorbDB.Position
     local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
@@ -246,7 +246,7 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             unitFrame.HealthPrediction.healingPlayerClampMode = 2
             unitFrame.HealthPrediction.healingPlayer:Show()
             if IncomingHealDB.UseStripedTexture then unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture(RUF.Media.Foreground) end
-            unitFrame.HealthPrediction.healingPlayer:SetStatusBarColor(IncomingHealDB.Colour[1], IncomingHealDB.Colour[2], IncomingHealDB.Colour[3], IncomingHealDB.Colour[4])
+            unitFrame.HealthPrediction.healingPlayer:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
             unitFrame.HealthPrediction.healingPlayer:ClearAllPoints()
             local position = IncomingHealDB.Position
             local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
@@ -297,7 +297,7 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             unitFrame.HealthPrediction.PostUpdate = function(_, updateUnit) UpdateUnitOverAbsorbs(unitFrame, updateUnit) end
             unitFrame.HealthPrediction.damageAbsorb:Show()
             if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(RUF.Media.Foreground) end
-            unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
+            unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
             unitFrame.HealthPrediction.damageAbsorb:ClearAllPoints()
             local position = AbsorbDB.Position
             local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
@@ -359,7 +359,7 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             unitFrame.HealthPrediction.healAbsorbClampMode = 1
             unitFrame.HealthPrediction.healAbsorb:Show()
             if HealAbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture(RUF.Media.Foreground) end
-            unitFrame.HealthPrediction.healAbsorb:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
+            unitFrame.HealthPrediction.healAbsorb:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
             unitFrame.HealthPrediction.healAbsorb:ClearAllPoints()
             local position = HealAbsorbDB.Position
             local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height

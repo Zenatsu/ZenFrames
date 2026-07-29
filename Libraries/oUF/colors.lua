@@ -181,7 +181,7 @@ for power, color in next, PowerBarColor do
 				colors.power[power]:SetAtlas("UI-HUD-UnitFrame-Player-PortraitOn-Bar-" .. color.atlasElementName)
 			end
 		else
-			-- special handling of colours with stages
+			-- special handling of colors with stages
 			colors.power[power] = {}
 
 			for name, color_ in next, color do
@@ -219,8 +219,8 @@ colors.power[Enum.PowerType.Pain or 18] = colors.power.PAIN
 colors.power[Enum.PowerType.Chi or 12] = colors.power.CHI
 colors.power[Enum.PowerType.ArcaneCharges or 16] = colors.power.ARCANE_CHARGES
 
--- there's no official colour for evoker's essence
--- use the average colour of the essence texture instead
+-- there's no official color for evoker's essence
+-- use the average color of the essence texture instead
 colors.power.ESSENCE = oUF:CreateColor(100, 173, 206)
 colors.power[Enum.PowerType.Essence or 19] = colors.power.ESSENCE
 
