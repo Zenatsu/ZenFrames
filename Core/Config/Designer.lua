@@ -629,7 +629,7 @@ function RUF:SetDesignerSelection(entry)
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     RUF:UpdateDesignerStatusText()
     if entry and entry.designerTab then
-        SaveSubTab(designerUnit, entry.designerTab, entry.key)
+        RUF:SaveSubTab(designerUnit, entry.designerTab, entry.key)
         if RUF.DESIGNER_TAB_GROUP then RUF.DESIGNER_TAB_GROUP:SelectTab(entry.designerTab) end
     else
         RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, designerUnit, nil)

@@ -18,7 +18,7 @@ local function GetDefaultUnitDB(unit)
 	return RUF:GetUnitDB(nil, unit, RUF:GetDefaultDB().profile.Units)
 end
 
-function SaveSubTab(unit, tabName, subTabValue)
+function RUF:SaveSubTab(unit, tabName, subTabValue)
     if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
     if not lastSelectedUnitTabs[unit].subTabs then lastSelectedUnitTabs[unit].subTabs = {} end
     lastSelectedUnitTabs[unit].subTabs[tabName] = subTabValue
@@ -208,52 +208,6 @@ local function DisableAurasTestMode(unit)
 	else
 		RUF:CreateTestAuras(RUF[unit:upper()], unit)
 	end
-end
-
-local function EnableCastBarTestMode(unit)
-    RUF.CASTBAR_TEST_MODE = true
-    RUF:CreateTestCastBar(RUF[unit:upper()], unit)
-end
-
-local function DisableCastBarTestMode(unit)
-    RUF.CASTBAR_TEST_MODE = false
-    RUF:CreateTestCastBar(RUF[unit:upper()], unit)
-end
-
-local function EnableBossFramesTestMode()
-	if RUF.BOSS_TEST_MODE then return end
-    RUF.BOSS_TEST_MODE = true
-    RUF:UpdateTestEnvironment("boss", "all")
-end
-
-local function DisableBossFramesTestMode()
-	if not RUF.BOSS_TEST_MODE then return end
-    RUF.BOSS_TEST_MODE = false
-    RUF:UpdateTestEnvironment("boss", "all")
-end
-
-local function EnablePartyFramesTestMode()
-	if RUF.PARTY_TEST_MODE then return end
-	RUF.PARTY_TEST_MODE = true
-	RUF:EnableTestGroupFrames("party")
-end
-
-local function DisablePartyFramesTestMode()
-	if not RUF.PARTY_TEST_MODE then return end
-	RUF.PARTY_TEST_MODE = false
-	RUF:UpdateTestEnvironment("party", "all")
-end
-
-local function EnableRaidFramesTestMode()
-	if RUF.RAID_TEST_MODE then return end
-	RUF.RAID_TEST_MODE = true
-	RUF:EnableTestGroupFrames("raid")
-end
-
-local function DisableRaidFramesTestMode()
-	if not RUF.RAID_TEST_MODE then return end
-	RUF.RAID_TEST_MODE = false
-	RUF:UpdateTestEnvironment("raid", "all")
 end
 
 local function DisableAllTestModes()
@@ -796,7 +750,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end
     end
 
-    function RefreshSortOrders()
+    local function RefreshSortOrders()
         if unit ~= "party" then return end
         for i = 1, 3 do
             local RoleOrderDropdown = LayoutContainer.children[7 + i]
@@ -1251,7 +1205,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     HealAbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Position = value updateCallback() RefreshHealPredictionSettings() end)
     HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
 
-    function RefreshHealPredictionSettings()
+    local function RefreshHealPredictionSettings()
         GUIWidgets.DeepDisable(IncomingHealSettings, not HealPredictionDB.IncomingHeal.Enabled, ShowIncomingHealToggle)
         IncomingHealHeightSlider:SetDisabled(HealPredictionDB.IncomingHeal.MatchParentHeight or HealPredictionDB.IncomingHeal.Position == "ATTACH")
         GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
@@ -1417,7 +1371,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     InterruptedFailedColorPicker:SetRelativeWidth(isPlayerorPet and 0.2 or 0.2)
     ColorContainer:AddChild(InterruptedFailedColorPicker)
 
-    function RefreshCastBarBarSettings()
+    local function RefreshCastBarBarSettings()
         if CastBarDB.Enabled then
             MatchParentWidthToggle:SetDisabled(false)
             WidthSlider:SetDisabled(CastBarDB.MatchParentWidth)
@@ -1473,7 +1427,7 @@ local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarIconDB.Position = value updateCallback() end)
     LayoutContainer:AddChild(PositionDropdown)
 
-    function RefreshCastBarIconSettings()
+    local function RefreshCastBarIconSettings()
         if CastBarIconDB.Enabled then
             PositionDropdown:SetDisabled(false)
         else
@@ -1563,7 +1517,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     MaxCharsSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.MaxChars = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(MaxCharsSlider)
 
-    function RefreshCastBarSpellNameSettings()
+    local function RefreshCastBarSpellNameSettings()
         if SpellNameTextDB.Enabled then
             SpellNameAnchorFromDropdown:SetDisabled(false)
             SpellNameAnchorToDropdown:SetDisabled(false)
@@ -1651,7 +1605,7 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     DurationFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.FontSize = value updateCallback() end)
     DurationLayoutContainer:AddChild(DurationFontSizeSlider)
 
-    function RefreshCastBarDurationSettings()
+    local function RefreshCastBarDurationSettings()
         if DurationTextDB.Enabled then
             DurationAnchorFromDropdown:SetDisabled(false)
             DurationAnchorToDropdown:SetDisabled(false)
@@ -1676,7 +1630,7 @@ local function CreateCastBarSettings(containerParent, unit)
 	local function UpdateCastBar() UpdateUnitSettings(unit, function() RUF:UpdateUnitCastBar(RUF[unit:upper()], unit) end, "CastBar") end
 
     local function SelectCastBarTab(CastBarContainer, _, CastBarTab)
-        SaveSubTab(unit, "CastBar", CastBarTab)
+        RUF:SaveSubTab(unit, "CastBar", CastBarTab)
         CastBarContainer:ReleaseChildren()
         if CastBarTab == "Bar" then
             CreateCastBarBarSettings(CastBarContainer, unit, UpdateCastBar)
@@ -1824,7 +1778,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColorBackgroundByType)
     ColorContainer:AddChild(BackgroundMultiplierSlider)
 
-    function RefreshPowerBarGUI()
+    local function RefreshPowerBarGUI()
         if PowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
@@ -1903,7 +1857,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     BackgroundColorPicker:SetDisabled(SecondaryPowerBarDB.ColorBackgroundByType)
     ColorContainer:AddChild(BackgroundColorPicker)
 
-    function RefreshSecondaryPowerBarGUI()
+    local function RefreshSecondaryPowerBarGUI()
         if SecondaryPowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
@@ -2020,7 +1974,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     BackgroundColorPicker:SetRelativeWidth(0.33)
     ColorContainer:AddChild(BackgroundColorPicker)
 
-    function RefreshAlternativePowerBarGUI()
+    local function RefreshAlternativePowerBarGUI()
         if AlternativePowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
@@ -2128,7 +2082,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    function RefreshPortraitGUI()
+    local function RefreshPortraitGUI()
         if PortraitDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2197,7 +2151,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshStatusGUI()
+    local function RefreshStatusGUI()
         if RaidTargetMarkerDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2446,7 +2400,7 @@ local function CreateAssistantSettings(containerParent, unit, updateCallback)
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshStatusGUI()
+    local function RefreshStatusGUI()
         if LeaderAssistantDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2551,7 +2505,7 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshRoleGUI()
+    local function RefreshRoleGUI()
         if RoleDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2625,7 +2579,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshPhaseGUI()
+    local function RefreshPhaseGUI()
         if PhaseDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2692,7 +2646,7 @@ local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshPvPIndicatorGUI()
+    local function RefreshPvPIndicatorGUI()
         if PvPIndicatorDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2771,7 +2725,7 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshQuestIndicatorGUI()
+    local function RefreshQuestIndicatorGUI()
         if QuestIndicatorDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2851,7 +2805,7 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshClassificationIndicatorGUI()
+    local function RefreshClassificationIndicatorGUI()
         GUIWidgets.DeepDisable(ToggleContainer, not ClassificationIndicatorDB.Enabled, Toggle)
         GUIWidgets.DeepDisable(LayoutContainer, not ClassificationIndicatorDB.Enabled, Toggle)
     end
@@ -2926,7 +2880,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshStatusGUI()
+    local function RefreshStatusGUI()
         if StatusDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
@@ -2976,7 +2930,7 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
-    function RefreshMouseoverGUI()
+    local function RefreshMouseoverGUI()
         if MouseoverDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
         else
@@ -3016,7 +2970,7 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
-    function RefreshTargetIndicatorGUI()
+    local function RefreshTargetIndicatorGUI()
         if TargetIndicatorDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
         else
@@ -3044,7 +2998,7 @@ local function CreateThreatIndicatorSettings(containerParent, unit, updateCallba
     Toggle:SetRelativeWidth(1)
     ToggleContainer:AddChild(Toggle)
 
-    function RefreshThreatIndicatorGUI()
+    local function RefreshThreatIndicatorGUI()
         GUIWidgets.DeepDisable(ToggleContainer, not ThreatIndicatorDB.Enabled, Toggle)
     end
 
@@ -3120,7 +3074,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    function RefreshTotemsIndicatorGUI()
+    local function RefreshTotemsIndicatorGUI()
         if TotemsIndicatorDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false)
@@ -3135,7 +3089,7 @@ end
 
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
-        SaveSubTab(unit, "Indicators", IndicatorTab)
+        RUF:SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitRaidTargetMarker(RUF[unit:upper()], unit) end, "Indicators") end)
@@ -3402,7 +3356,7 @@ end
 function CreateTagsSettings(containerParent, unit)
 
     local function SelectTagTab(TagContainer, _, TagTab)
-        SaveSubTab(unit, "Tags", TagTab)
+        RUF:SaveSubTab(unit, "Tags", TagTab)
         TagContainer:ReleaseChildren()
         CreateTagSetting(TagContainer, unit, TagTab, function() UpdateUnitSettings(unit, nil, "Tags") end)
         containerParent:DoLayout()
@@ -3706,7 +3660,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value UpdateAuras() end)
     CountContainer:AddChild(FontSizeSlider)
 
-    function RefreshAuraGUI()
+    local function RefreshAuraGUI()
         if AuraDB.Enabled then
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
@@ -3895,7 +3849,7 @@ function CreateAuraSettings(containerParent, unit, updateCallback)
     containerParent:AddChild(FrameStrataDropdown)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
-        SaveSubTab(unit, "Auras", AuraTab)
+        RUF:SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs", updateCallback)
@@ -4676,9 +4630,6 @@ function RUF:CreateGUI()
             if (startTab == "CastBar" or startTab == "Portrait") and not hasCastBarPortrait then startTab = "Frame" end
             DesignerTabGroup:SelectTab(startTab)
         end
-        if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
-        if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
-        if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
         if DesignerUnitTabs[MainTab] then
             local unit = DesignerUnitTabs[MainTab]
             local canvasFrame = PreviewContainer.frame
