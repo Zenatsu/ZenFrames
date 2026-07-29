@@ -5,6 +5,6 @@
 - Added Designer feature for nameplates, inspiried by platynator.
   - Old Units nav group merged into Designer.
   - Various indicators turned into widgets that can be moved around
-  - Designer: widgets can now be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
-  - Designer: the preview is now a bounded canvas that rejects and snaps back drops made outside its bounds.
-  - Designer: selecting a widget now shows its settings inline below the preview instead of requiring the Units tab.
+  - widgets can be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
+  - The preview is a bounded canvas that rejects and snaps back drops made outside its bounds.
+  - selecting a widget shows its settings inline below the preview instead of requiring the Units tab.

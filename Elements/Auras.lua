@@ -131,6 +131,9 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 		local PrivateAuraAnchorParent = PrivateAurasDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
+        if not unitFrame.PrivateAuraContainer then
+            unitFrame.PrivateAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
+        end
 
         unitFrame.PrivateAuraContainer:ClearAllPoints()
         unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], PrivateAuraAnchorParent, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
