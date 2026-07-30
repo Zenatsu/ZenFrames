@@ -430,11 +430,14 @@ end
 -- Overlay region with overlay visuals
 local function UpdateOverlayVisual(overlay)
     if overlay.entry == selectedEntry then
-        overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Selected))  -- Gold: Selected
+        overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Idle))
+        RUF.LG.PixelGlow_Start(overlay, STYLE.Palette.Selected, nil, nil, nil, 2, nil, nil, false) -- Gold: Selected
     elseif overlay.hovered then
         overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Hovered))   -- White: Hovered
+        RUF.LG.PixelGlow_Stop(overlay)
     else
         overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Idle))     -- Invisible: not hovered, not selected
+        RUF.LG.PixelGlow_Stop(overlay)
     end
 end
 

@@ -2135,9 +2135,9 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "Totems" then
             CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitTotems(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Quest" and unit == "target" then
-            CreateQuestIndicatorSettings(IndicatorContainer, function() RUF:UpdateUnitQuestIndicator(RUF.TARGET, "target") end)
+            CreateQuestIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitQuestIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Classification" and unit == "target" then
-            CreateClassificationIndicatorSettings(IndicatorContainer, function() RUF:UpdateUnitClassificationIndicator(RUF.TARGET, "target") end)
+            CreateClassificationIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitQuestIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
         end
     end
 

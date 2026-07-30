@@ -534,6 +534,9 @@ local Defaults = {
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
                         Texture = "DEFAULT",
                     },
+                    Threat = { 
+                        Enabled = false 
+                    },
                 },
                 Range = {
                     Enabled = true,
@@ -937,7 +940,10 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
-                    }
+                    },
+                    Threat = { 
+                        Enabled = false 
+                    },
                 },
                 Auras = {
                     FrameStrata = "LOW",
@@ -1334,7 +1340,10 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
-                    }
+                    },
+                    Threat = { 
+                        Enabled = false 
+                    },
                 },
                 Auras = {
                     FrameStrata = "LOW",

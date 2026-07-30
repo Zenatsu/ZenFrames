@@ -24,6 +24,7 @@ RUF.LSM = LibStub("LibSharedMedia-3.0")
 RUF.LDS = LibStub("LibDualSpec-1.0")
 RUF.AG = LibStub("AceGUI-3.0")
 RUF.LD = LibStub("LibDispel-1.0")
+RUF.LG = LibStub("LibCustomGlow-1.0")
 RUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 RUF.INFOBUTTON = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 RUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Title")
