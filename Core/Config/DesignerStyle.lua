@@ -12,6 +12,16 @@ RUF.DesignerStyle = {
         OptionsWidth  = nil,
         OverlayBleed  = 4,
         OverlayMinHit = 16,
+        WindowWidth   = 1100,
+        WindowHeight  = 600,
+    },
+
+    -- Shared slider min/max/step triples, so every settings panel tunes from one place.
+    Sliders = {
+        Position  = {-255, 255, 0.1}, -- element X/Y offsets
+        FontSize  = {8, 64, 1},
+        Dimension = {1, 3000, 0.1},   -- frame width/height
+        Opacity   = {0, 1, 0.01},
     },
 
     -- Shared colors

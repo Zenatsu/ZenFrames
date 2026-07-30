@@ -9,6 +9,7 @@
 
     <Script file="Config/DesignerStyle.lua"/>
     <Script file="Config/GUIWidgets.lua"/>
+    <Script file="Config/GUIBuilders.lua"/>
     <Script file="Config/GUI.lua"/>
     <Script file="Config/Share.lua"/>
     <Script file="Config/TagsDatabase.lua"/>

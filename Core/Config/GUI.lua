@@ -2,6 +2,8 @@ local _, RUF = ...
 local LSM = RUF.LSM
 local AG = RUF.AG
 local GUIWidgets = RUF.GUIWidgets
+local GUIBuilders = RUF.GUIBuilders
+local STYLE = RUF.DesignerStyle
 local RUFGUI = {}
 local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
@@ -302,13 +304,12 @@ local function CreateFontSettings(containerParent)
 
     GUIWidgets.CreateHeader(SimpleGroup, "Font Shadows")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable Font Shadows")
-    Toggle:SetValue(RUF.db.profile.General.Fonts.Shadow.Enabled)
-    Toggle:SetFullWidth(true)
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.Fonts.Shadow.Enabled = value RUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not RUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    Toggle:SetRelativeWidth(0.5)
-    SimpleGroup:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(SimpleGroup, "Enable Font Shadows", RUF.db.profile.General.Fonts.Shadow, function()
+        RUF:ResolveLSM()
+        RUF:UpdateAllUnitFrames()
+        RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
+    end, {width = 0.5})
+    panelsToDisable[1] = SimpleGroup
 
     local ColorPicker = AG:Create("ColorPicker")
     ColorPicker:SetLabel("Color")
@@ -336,7 +337,7 @@ local function CreateFontSettings(containerParent)
     YSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(YSlider)
 
-    GUIWidgets.DeepDisable(SimpleGroup, not RUF.db.profile.General.Fonts.Shadow.Enabled, Toggle)
+    Refresh()
 end
 
 local function CreateTextureSettings(containerParent)
@@ -373,7 +374,7 @@ local function CreateTextureSettings(containerParent)
     local MouseoverHighlightSlider = AG:Create("Slider")
     MouseoverHighlightSlider:SetLabel("Highlight Opacity")
     MouseoverHighlightSlider:SetValue(0.8)
-    MouseoverHighlightSlider:SetSliderValues(0.0, 1.0, 0.01)
+    MouseoverHighlightSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     MouseoverHighlightSlider:SetRelativeWidth(0.5)
     MouseoverHighlightSlider:SetIsPercent(true)
     MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end) RUF:UpdateAllUnitFrames() end)
@@ -390,7 +391,7 @@ local function CreateTextureSettings(containerParent)
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
     ForegroundOpacitySlider:SetValue(0.8)
-    ForegroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    ForegroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     ForegroundOpacitySlider:SetRelativeWidth(0.5)
     ForegroundOpacitySlider:SetIsPercent(true)
     ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.ForegroundOpacity = value end) RUF:UpdateAllUnitFrames() end)
@@ -407,7 +408,7 @@ local function CreateTextureSettings(containerParent)
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
     BackgroundOpacitySlider:SetValue(0.8)
-    BackgroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    BackgroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     BackgroundOpacitySlider:SetRelativeWidth(0.5)
     BackgroundOpacitySlider:SetIsPercent(true)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.BackgroundOpacity = value end) RUF:UpdateAllUnitFrames() end)
@@ -452,18 +453,13 @@ local function CreateRangeSettings(containerParent)
     local RangeDB = RUF.db.profile.General.Range
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Range")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable Range Fading")
-    Toggle:SetValue(RangeDB.Enabled)
-    Toggle:SetFullWidth(true)
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value RUF:UpdateAllRangeFrames() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
-    Toggle:SetRelativeWidth(0.33)
-    Container:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(Container, "Enable Range Fading", RangeDB, function() RUF:UpdateAllRangeFrames() end, {width = 0.33})
+    panelsToDisable[1] = Container
 
     local InAlphaSlider = AG:Create("Slider")
     InAlphaSlider:SetLabel("In Range Alpha")
     InAlphaSlider:SetValue(RangeDB.InRange)
-    InAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
+    InAlphaSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     InAlphaSlider:SetFullWidth(true)
 	InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value RUF:UpdateAllRangeFrames() end)
     InAlphaSlider:SetRelativeWidth(0.33)
@@ -473,14 +469,14 @@ local function CreateRangeSettings(containerParent)
     local OutAlphaSlider = AG:Create("Slider")
     OutAlphaSlider:SetLabel("Out of Range Alpha")
     OutAlphaSlider:SetValue(RangeDB.OutOfRange)
-    OutAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
+    OutAlphaSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     OutAlphaSlider:SetFullWidth(true)
 	OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value RUF:UpdateAllRangeFrames() end)
     OutAlphaSlider:SetRelativeWidth(0.33)
     OutAlphaSlider:SetIsPercent(true)
     Container:AddChild(OutAlphaSlider)
 
-    GUIWidgets.DeepDisable(Container, not RangeDB.Enabled, Toggle)
+    Refresh()
 end
 
 local function CreateColorSettings(containerParent)
@@ -494,143 +490,149 @@ local function CreateColorSettings(containerParent)
         RUF.db.profile.General.Colors.Threat[threatStatus] = RUF.db.profile.General.Colors.Threat[threatStatus] or {color[1], color[2], color[3]}
     end
 
-    GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colors to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
+    local function PopulateColors()
+        Container:ReleaseChildren()
 
-    local ResetAllColorsButton = AG:Create("Button")
-    ResetAllColorsButton:SetText("All Colors")
-    ResetAllColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors, RUF.db.profile.General.Colors) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetAllColorsButton:SetRelativeWidth(1)
-    Container:AddChild(ResetAllColorsButton)
+        GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colors to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
 
-    local ResetPowerColorsButton = AG:Create("Button")
-    ResetPowerColorsButton:SetText("Power Colors")
-    ResetPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Power, RUF.db.profile.General.Colors.Power) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetPowerColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetPowerColorsButton)
+        local ResetAllColorsButton = AG:Create("Button")
+        ResetAllColorsButton:SetText("All Colors")
+        ResetAllColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors, RUF.db.profile.General.Colors) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetAllColorsButton:SetRelativeWidth(1)
+        Container:AddChild(ResetAllColorsButton)
 
-    local ResetSecondaryPowerColorsButton = AG:Create("Button")
-    ResetSecondaryPowerColorsButton:SetText("Secondary Power Colors")
-    ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.SecondaryPower, RUF.db.profile.General.Colors.SecondaryPower) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetSecondaryPowerColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetSecondaryPowerColorsButton)
+        local ResetPowerColorsButton = AG:Create("Button")
+        ResetPowerColorsButton:SetText("Power Colors")
+        ResetPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Power, RUF.db.profile.General.Colors.Power) PopulateColors() end)
+        ResetPowerColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetPowerColorsButton)
 
-    local ResetReactionColorsButton = AG:Create("Button")
-    ResetReactionColorsButton:SetText("Reaction Colors")
-    ResetReactionColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Reaction, RUF.db.profile.General.Colors.Reaction) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetReactionColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetReactionColorsButton)
+        local ResetSecondaryPowerColorsButton = AG:Create("Button")
+        ResetSecondaryPowerColorsButton:SetText("Secondary Power Colors")
+        ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.SecondaryPower, RUF.db.profile.General.Colors.SecondaryPower) PopulateColors() end)
+        ResetSecondaryPowerColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetSecondaryPowerColorsButton)
 
-    local ResetDispelColorsButton = AG:Create("Button")
-    ResetDispelColorsButton:SetText("Dispel Colors")
-    ResetDispelColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Dispel, RUF.db.profile.General.Colors.Dispel) Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetDispelColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetDispelColorsButton)
+        local ResetReactionColorsButton = AG:Create("Button")
+        ResetReactionColorsButton:SetText("Reaction Colors")
+        ResetReactionColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Reaction, RUF.db.profile.General.Colors.Reaction) PopulateColors() end)
+        ResetReactionColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetReactionColorsButton)
 
-    local ResetStatusColorsButton = AG:Create("Button")
-    ResetStatusColorsButton:SetText("Status Colors")
-    ResetStatusColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Status, RUF.db.profile.General.Colors.Status) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetStatusColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetStatusColorsButton)
+        local ResetDispelColorsButton = AG:Create("Button")
+        ResetDispelColorsButton:SetText("Dispel Colors")
+        ResetDispelColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Dispel, RUF.db.profile.General.Colors.Dispel) PopulateColors() end)
+        ResetDispelColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetDispelColorsButton)
 
-    local ResetThreatColorsButton = AG:Create("Button")
-    ResetThreatColorsButton:SetText("Threat Colors")
-    ResetThreatColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Threat, RUF.db.profile.General.Colors.Threat) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColorSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetThreatColorsButton:SetRelativeWidth(0.33)
-    Container:AddChild(ResetThreatColorsButton)
+        local ResetStatusColorsButton = AG:Create("Button")
+        ResetStatusColorsButton:SetText("Status Colors")
+        ResetStatusColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Status, RUF.db.profile.General.Colors.Status) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetStatusColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetStatusColorsButton)
 
-    GUIWidgets.CreateHeader(Container, "Power")
+        local ResetThreatColorsButton = AG:Create("Button")
+        ResetThreatColorsButton:SetText("Threat Colors")
+        ResetThreatColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Threat, RUF.db.profile.General.Colors.Threat) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetThreatColorsButton:SetRelativeWidth(0.33)
+        Container:AddChild(ResetThreatColorsButton)
 
-    local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
+        GUIWidgets.CreateHeader(Container, "Power")
 
-    for _, powerType in ipairs(PowerOrder) do
-        local powerColor = RUF.db.profile.General.Colors.Power[powerType]
-        local PowerColorPicker = AG:Create("ColorPicker")
-        PowerColorPicker:SetLabel(Power[powerType])
-        local R, G, B = unpack(powerColor)
-        PowerColorPicker:SetColor(R, G, B)
-        PowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Power[powerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-        PowerColorPicker:SetHasAlpha(false)
-        PowerColorPicker:SetRelativeWidth(0.19)
-        Container:AddChild(PowerColorPicker)
-    end
+        local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
-    GUIWidgets.CreateHeader(Container, "Secondary Power")
-
-    local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
-
-    for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
-        local secondaryPowerColor = RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType]
-        if secondaryPowerColor then
-            local SecondaryPowerColorPicker = AG:Create("ColorPicker")
-            SecondaryPowerColorPicker:SetLabel(Power[secondaryPowerType])
-            local R, G, B = unpack(secondaryPowerColor)
-            SecondaryPowerColorPicker:SetColor(R, G, B)
-            SecondaryPowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            SecondaryPowerColorPicker:SetHasAlpha(false)
-            SecondaryPowerColorPicker:SetRelativeWidth(0.2)
-            Container:AddChild(SecondaryPowerColorPicker)
+        for _, powerType in ipairs(PowerOrder) do
+            local powerColor = RUF.db.profile.General.Colors.Power[powerType]
+            local PowerColorPicker = AG:Create("ColorPicker")
+            PowerColorPicker:SetLabel(Power[powerType])
+            local R, G, B = unpack(powerColor)
+            PowerColorPicker:SetColor(R, G, B)
+            PowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Power[powerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            PowerColorPicker:SetHasAlpha(false)
+            PowerColorPicker:SetRelativeWidth(0.19)
+            Container:AddChild(PowerColorPicker)
         end
+
+        GUIWidgets.CreateHeader(Container, "Secondary Power")
+
+        local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
+
+        for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
+            local secondaryPowerColor = RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType]
+            if secondaryPowerColor then
+                local SecondaryPowerColorPicker = AG:Create("ColorPicker")
+                SecondaryPowerColorPicker:SetLabel(Power[secondaryPowerType])
+                local R, G, B = unpack(secondaryPowerColor)
+                SecondaryPowerColorPicker:SetColor(R, G, B)
+                SecondaryPowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+                SecondaryPowerColorPicker:SetHasAlpha(false)
+                SecondaryPowerColorPicker:SetRelativeWidth(0.2)
+                Container:AddChild(SecondaryPowerColorPicker)
+            end
+        end
+
+        GUIWidgets.CreateHeader(Container, "Reaction")
+
+        local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
+
+        for _, reactionType in ipairs(ReactionOrder) do
+            local ReactionColorPicker = AG:Create("ColorPicker")
+            ReactionColorPicker:SetLabel(Reaction[reactionType])
+            local R, G, B = unpack(RUF.db.profile.General.Colors.Reaction[reactionType])
+            ReactionColorPicker:SetColor(R, G, B)
+            ReactionColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Reaction[reactionType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            ReactionColorPicker:SetHasAlpha(false)
+            ReactionColorPicker:SetRelativeWidth(0.25)
+            Container:AddChild(ReactionColorPicker)
+        end
+
+        GUIWidgets.CreateHeader(Container, "Status")
+
+        local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
+
+        for _, statusType in ipairs(StatusOrder) do
+            local StatusColorPicker = AG:Create("ColorPicker")
+            StatusColorPicker:SetLabel(Status[statusType])
+            local R, G, B = unpack(RUF.db.profile.General.Colors.Status[statusType])
+            StatusColorPicker:SetColor(R, G, B)
+            StatusColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Status[statusType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            StatusColorPicker:SetHasAlpha(false)
+            StatusColorPicker:SetRelativeWidth(0.25)
+            Container:AddChild(StatusColorPicker)
+        end
+
+        GUIWidgets.CreateHeader(Container, "Threat")
+
+        local ThreatOrder = {0, 1, 2, 3}
+
+        for _, threatStatus in ipairs(ThreatOrder) do
+            local ThreatColorPicker = AG:Create("ColorPicker")
+            ThreatColorPicker:SetLabel(Threat[threatStatus])
+            local R, G, B = unpack(RUF.db.profile.General.Colors.Threat[threatStatus])
+            ThreatColorPicker:SetColor(R, G, B)
+            ThreatColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Threat[threatStatus] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            ThreatColorPicker:SetHasAlpha(false)
+            ThreatColorPicker:SetRelativeWidth(0.25)
+            Container:AddChild(ThreatColorPicker)
+        end
+
+        GUIWidgets.CreateHeader(Container, "Dispel Types")
+
+        local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
+
+        for _, dispelType in ipairs(DispelTypes) do
+            local DispelColorPicker = AG:Create("ColorPicker")
+            DispelColorPicker:SetLabel(dispelType)
+            local R, G, B = unpack(RUF.db.profile.General.Colors.Dispel[dispelType])
+            DispelColorPicker:SetColor(R, G, B)
+            DispelColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Dispel[dispelType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
+            DispelColorPicker:SetHasAlpha(false)
+            DispelColorPicker:SetRelativeWidth(0.2)
+            Container:AddChild(DispelColorPicker)
+        end
+        Container:DoLayout()
     end
-
-    GUIWidgets.CreateHeader(Container, "Reaction")
-
-    local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
-
-    for _, reactionType in ipairs(ReactionOrder) do
-        local ReactionColorPicker = AG:Create("ColorPicker")
-        ReactionColorPicker:SetLabel(Reaction[reactionType])
-        local R, G, B = unpack(RUF.db.profile.General.Colors.Reaction[reactionType])
-        ReactionColorPicker:SetColor(R, G, B)
-        ReactionColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Reaction[reactionType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-        ReactionColorPicker:SetHasAlpha(false)
-        ReactionColorPicker:SetRelativeWidth(0.25)
-        Container:AddChild(ReactionColorPicker)
-    end
-
-    GUIWidgets.CreateHeader(Container, "Status")
-
-    local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
-
-    for _, statusType in ipairs(StatusOrder) do
-        local StatusColorPicker = AG:Create("ColorPicker")
-        StatusColorPicker:SetLabel(Status[statusType])
-        local R, G, B = unpack(RUF.db.profile.General.Colors.Status[statusType])
-        StatusColorPicker:SetColor(R, G, B)
-        StatusColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Status[statusType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-        StatusColorPicker:SetHasAlpha(false)
-        StatusColorPicker:SetRelativeWidth(0.25)
-        Container:AddChild(StatusColorPicker)
-    end
-
-    GUIWidgets.CreateHeader(Container, "Threat")
-
-    local ThreatOrder = {0, 1, 2, 3}
-
-    for _, threatStatus in ipairs(ThreatOrder) do
-        local ThreatColorPicker = AG:Create("ColorPicker")
-        ThreatColorPicker:SetLabel(Threat[threatStatus])
-        local R, G, B = unpack(RUF.db.profile.General.Colors.Threat[threatStatus])
-        ThreatColorPicker:SetColor(R, G, B)
-        ThreatColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Threat[threatStatus] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-        ThreatColorPicker:SetHasAlpha(false)
-        ThreatColorPicker:SetRelativeWidth(0.25)
-        Container:AddChild(ThreatColorPicker)
-    end
-
-    GUIWidgets.CreateHeader(Container, "Dispel Types")
-
-    local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
-
-    for _, dispelType in ipairs(DispelTypes) do
-        local DispelColorPicker = AG:Create("ColorPicker")
-        DispelColorPicker:SetLabel(dispelType)
-        local R, G, B = unpack(RUF.db.profile.General.Colors.Dispel[dispelType])
-        DispelColorPicker:SetColor(R, G, B)
-        DispelColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Dispel[dispelType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-        DispelColorPicker:SetHasAlpha(false)
-        DispelColorPicker:SetRelativeWidth(0.2)
-        Container:AddChild(DispelColorPicker)
-    end
+    PopulateColors()
 end
 
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
@@ -642,7 +644,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
     WidthSlider:SetValue(FrameDB.Width)
-    WidthSlider:SetSliderValues(1, 3000, 0.1)
+    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
     WidthSlider:SetRelativeWidth(0.5)
     WidthSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Width = value updateCallback("Frame") end)
     LayoutContainer:AddChild(WidthSlider)
@@ -650,7 +652,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(FrameDB.Height)
-    HeightSlider:SetSliderValues(1, 3000, 0.1)
+    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
     HeightSlider:SetRelativeWidth(0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Height = value updateCallback("Frame") end)
     LayoutContainer:AddChild(HeightSlider)
@@ -913,55 +915,37 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     GUIWidgets.CreateInformationTag(ColorContainer, "Foreground & Background Opacity can be set using the sliders.")
 
-    local ForegroundColorPicker = AG:Create("ColorPicker")
-    ForegroundColorPicker:SetLabel("Foreground Color")
-    local R, G, B = unpack(HealthBarDB.Foreground)
-    ForegroundColorPicker:SetColor(R, G, B)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback("HealthBar") end)
-    ForegroundColorPicker:SetHasAlpha(false)
-    ForegroundColorPicker:SetRelativeWidth(0.25)
-    ForegroundColorPicker:SetDisabled(HealthBarDB.ColorByClass)
-    ColorContainer:AddChild(ForegroundColorPicker)
-    RUFGUI.FrameFGColorPicker = ForegroundColorPicker
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", HealthBarDB, "Foreground", function() updateCallback("HealthBar") end, {width = 0.25, disabled = HealthBarDB.ColorByClass})
 
     local ForegroundColorByClassToggle = AG:Create("CheckBox")
     ForegroundColorByClassToggle:SetLabel("Color by Class / Reaction")
     ForegroundColorByClassToggle:SetValue(HealthBarDB.ColorByClass)
-    ForegroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorByClass = value RUFGUI.FrameFGColorPicker:SetDisabled(HealthBarDB.ColorByClass) updateCallback("HealthBar") end)
+    ForegroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorByClass = value ForegroundColorPicker:SetDisabled(HealthBarDB.ColorByClass) updateCallback("HealthBar") end)
     ForegroundColorByClassToggle:SetRelativeWidth(0.25)
     ColorContainer:AddChild(ForegroundColorByClassToggle)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
     ForegroundOpacitySlider:SetValue(HealthBarDB.ForegroundOpacity)
-    ForegroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+    ForegroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     ForegroundOpacitySlider:SetRelativeWidth(0.5)
     ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ForegroundOpacity = value updateCallback("HealthBar") end)
     ForegroundOpacitySlider:SetIsPercent(true)
     ColorContainer:AddChild(ForegroundOpacitySlider)
 
-    local BackgroundColorPicker = AG:Create("ColorPicker")
-    BackgroundColorPicker:SetLabel("Background Color")
-    local R2, G2, B2 = unpack(HealthBarDB.Background)
-    BackgroundColorPicker:SetColor(R2, G2, B2)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback("HealthBar") end)
-    BackgroundColorPicker:SetHasAlpha(false)
-    BackgroundColorPicker:SetRelativeWidth(0.25)
-    BackgroundColorPicker:SetDisabled(HealthBarDB.ColorBackgroundByClass)
-    ColorContainer:AddChild(BackgroundColorPicker)
-    RUFGUI.FrameBGColorPicker = BackgroundColorPicker
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", HealthBarDB, "Background", function() updateCallback("HealthBar") end, {width = 0.25, disabled = HealthBarDB.ColorBackgroundByClass})
 
     local BackgroundColorByClassToggle = AG:Create("CheckBox")
     BackgroundColorByClassToggle:SetLabel("Color by Class / Reaction")
     BackgroundColorByClassToggle:SetValue(HealthBarDB.ColorBackgroundByClass)
-    BackgroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorBackgroundByClass = value RUFGUI.FrameBGColorPicker:SetDisabled(HealthBarDB.ColorBackgroundByClass) updateCallback("HealthBar") end)
+    BackgroundColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColorBackgroundByClass = value BackgroundColorPicker:SetDisabled(HealthBarDB.ColorBackgroundByClass) updateCallback("HealthBar") end)
     BackgroundColorByClassToggle:SetRelativeWidth(0.25)
     ColorContainer:AddChild(BackgroundColorByClassToggle)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
     BackgroundOpacitySlider:SetValue(HealthBarDB.BackgroundOpacity)
-    BackgroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+    BackgroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     BackgroundOpacitySlider:SetRelativeWidth(0.5)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback("HealthBar") end)
     BackgroundOpacitySlider:SetIsPercent(true)
@@ -1050,14 +1034,11 @@ end
 local function CreateHealPredictionSettings(containerParent, unit, updateCallback)
     local FrameDB = GetUnitDB(unit).Frame
     local HealPredictionDB = GetUnitDB(unit).HealPrediction
+    local RefreshHealPredictionSettings
 
     local IncomingHealSettings = GUIWidgets.CreateInlineGroup(containerParent, "Incoming Heal Settings")
-    local ShowIncomingHealToggle = AG:Create("CheckBox")
-    ShowIncomingHealToggle:SetLabel("Show Incoming Heals")
-    ShowIncomingHealToggle:SetValue(HealPredictionDB.IncomingHeal.Enabled)
-    ShowIncomingHealToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeal.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowIncomingHealToggle:SetRelativeWidth(0.33)
-    IncomingHealSettings:AddChild(ShowIncomingHealToggle)
+    local ShowIncomingHealToggle, IncomingHealBuilderRefresh, incomingHealPanels = GUIBuilders.CreateEnableToggle(IncomingHealSettings, "Show Incoming Heals", HealPredictionDB.IncomingHeal, updateCallback, {width = 0.33})
+    incomingHealPanels[1] = IncomingHealSettings
 
     local UseStripedTextureIncomingHealToggle = AG:Create("CheckBox")
     UseStripedTextureIncomingHealToggle:SetLabel("Use Striped Texture")
@@ -1073,14 +1054,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightToggle:SetRelativeWidth(0.33)
     IncomingHealSettings:AddChild(MatchParentHeightToggle)
 
-    local IncomingHealColorPicker = AG:Create("ColorPicker")
-    IncomingHealColorPicker:SetLabel("Incoming Heal Color")
-    local R, G, B, A = unpack(HealPredictionDB.IncomingHeal.Color)
-    IncomingHealColorPicker:SetColor(R, G, B, A)
-    IncomingHealColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeal.Color = {r, g, b, a} updateCallback() end)
-    IncomingHealColorPicker:SetHasAlpha(true)
-    IncomingHealColorPicker:SetRelativeWidth(0.33)
-    IncomingHealSettings:AddChild(IncomingHealColorPicker)
+    local IncomingHealColorPicker = GUIBuilders.CreateColorBlock(IncomingHealSettings, "Incoming Heal Color", HealPredictionDB.IncomingHeal, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local IncomingHealHeightSlider = AG:Create("Slider")
     IncomingHealHeightSlider:SetLabel("Height")
@@ -1088,7 +1062,6 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     IncomingHealHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
     IncomingHealHeightSlider:SetRelativeWidth(0.33)
     IncomingHealHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeal.Height = value updateCallback() end)
-    IncomingHealHeightSlider:SetDisabled(HealPredictionDB.IncomingHeal.MatchParentHeight or HealPredictionDB.IncomingHeal.Position == "ATTACH")
     IncomingHealSettings:AddChild(IncomingHealHeightSlider)
 
     local IncomingHealPositionDropdown = AG:Create("Dropdown")
@@ -1100,13 +1073,8 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     IncomingHealSettings:AddChild(IncomingHealPositionDropdown)
 
     local AbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Absorb Settings")
-
-    local ShowAbsorbToggle = AG:Create("CheckBox")
-    ShowAbsorbToggle:SetLabel("Show Absorbs")
-    ShowAbsorbToggle:SetValue(HealPredictionDB.Absorbs.Enabled)
-    ShowAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowAbsorbToggle:SetRelativeWidth(0.25)
-    AbsorbSettings:AddChild(ShowAbsorbToggle)
+    local ShowAbsorbToggle, AbsorbBuilderRefresh, absorbPanels = GUIBuilders.CreateEnableToggle(AbsorbSettings, "Show Absorbs", HealPredictionDB.Absorbs, updateCallback, {width = 0.25})
+    absorbPanels[1] = AbsorbSettings
 
     local ShowOverAbsorbToggle = AG:Create("CheckBox")
     ShowOverAbsorbToggle:SetLabel("Show Over Absorb")
@@ -1124,21 +1092,14 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     UseStripedTextureAbsorbToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(UseStripedTextureAbsorbToggle)
 
-    local MatchParentHeightToggle = AG:Create("CheckBox")
-    MatchParentHeightToggle:SetLabel("Match Parent Height")
-    MatchParentHeightToggle:SetValue(HealPredictionDB.Absorbs.MatchParentHeight)
-    MatchParentHeightToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
-    MatchParentHeightToggle:SetRelativeWidth(0.25)
-    AbsorbSettings:AddChild(MatchParentHeightToggle)
+    local MatchParentHeightAbsorbToggle = AG:Create("CheckBox")
+    MatchParentHeightAbsorbToggle:SetLabel("Match Parent Height")
+    MatchParentHeightAbsorbToggle:SetValue(HealPredictionDB.Absorbs.MatchParentHeight)
+    MatchParentHeightAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
+    MatchParentHeightAbsorbToggle:SetRelativeWidth(0.25)
+    AbsorbSettings:AddChild(MatchParentHeightAbsorbToggle)
 
-    local AbsorbColorPicker = AG:Create("ColorPicker")
-    AbsorbColorPicker:SetLabel("Absorb Color")
-    local R, G, B, A = unpack(HealPredictionDB.Absorbs.Color)
-    AbsorbColorPicker:SetColor(R, G, B, A)
-    AbsorbColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.Absorbs.Color = {r, g, b, a} updateCallback() end)
-    AbsorbColorPicker:SetHasAlpha(true)
-    AbsorbColorPicker:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(AbsorbColorPicker)
+    local AbsorbColorPicker = GUIBuilders.CreateColorBlock(AbsorbSettings, "Absorb Color", HealPredictionDB.Absorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local AbsorbHeightSlider = AG:Create("Slider")
     AbsorbHeightSlider:SetLabel("Height")
@@ -1146,7 +1107,6 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     AbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
     AbsorbHeightSlider:SetRelativeWidth(0.33)
     AbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Height = value updateCallback() end)
-    AbsorbHeightSlider:SetDisabled(HealPredictionDB.Absorbs.MatchParentHeight or HealPredictionDB.Absorbs.Position == "ATTACH")
     AbsorbSettings:AddChild(AbsorbHeightSlider)
 
     local AbsorbPositionDropdown = AG:Create("Dropdown")
@@ -1158,12 +1118,8 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     AbsorbSettings:AddChild(AbsorbPositionDropdown)
 
     local HealAbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Heal Absorb Settings")
-    local ShowHealAbsorbToggle = AG:Create("CheckBox")
-    ShowHealAbsorbToggle:SetLabel("Show Heal Absorbs")
-    ShowHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.Enabled)
-    ShowHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowHealAbsorbToggle:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(ShowHealAbsorbToggle)
+    local ShowHealAbsorbToggle, HealAbsorbBuilderRefresh, healAbsorbPanels = GUIBuilders.CreateEnableToggle(HealAbsorbSettings, "Show Heal Absorbs", HealPredictionDB.HealAbsorbs, updateCallback, {width = 0.33})
+    healAbsorbPanels[1] = HealAbsorbSettings
 
     local UseStripedTextureHealAbsorbToggle = AG:Create("CheckBox")
     UseStripedTextureHealAbsorbToggle:SetLabel("Use Striped Texture")
@@ -1179,14 +1135,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightHealAbsorbToggle:SetRelativeWidth(0.33)
     HealAbsorbSettings:AddChild(MatchParentHeightHealAbsorbToggle)
 
-    local HealAbsorbColorPicker = AG:Create("ColorPicker")
-    HealAbsorbColorPicker:SetLabel("Heal Absorb Color")
-    local R2, G2, B2, A2 = unpack(HealPredictionDB.HealAbsorbs.Color)
-    HealAbsorbColorPicker:SetColor(R2, G2, B2, A2)
-    HealAbsorbColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.HealAbsorbs.Color = {r, g, b, a} updateCallback() end)
-    HealAbsorbColorPicker:SetHasAlpha(true)
-    HealAbsorbColorPicker:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(HealAbsorbColorPicker)
+    local HealAbsorbColorPicker = GUIBuilders.CreateColorBlock(HealAbsorbSettings, "Heal Absorb Color", HealPredictionDB.HealAbsorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local HealAbsorbHeightSlider = AG:Create("Slider")
     HealAbsorbHeightSlider:SetLabel("Height")
@@ -1194,7 +1143,6 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     HealAbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
     HealAbsorbHeightSlider:SetRelativeWidth(0.33)
     HealAbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Height = value updateCallback() end)
-    HealAbsorbHeightSlider:SetDisabled(HealPredictionDB.HealAbsorbs.MatchParentHeight or HealPredictionDB.HealAbsorbs.Position == "ATTACH")
     HealAbsorbSettings:AddChild(HealAbsorbHeightSlider)
 
     local HealAbsorbPositionDropdown = AG:Create("Dropdown")
@@ -1205,15 +1153,18 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     HealAbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Position = value updateCallback() RefreshHealPredictionSettings() end)
     HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
 
-    local function RefreshHealPredictionSettings()
-        GUIWidgets.DeepDisable(IncomingHealSettings, not HealPredictionDB.IncomingHeal.Enabled, ShowIncomingHealToggle)
+    RefreshHealPredictionSettings = function()
+        IncomingHealBuilderRefresh()
         IncomingHealHeightSlider:SetDisabled(HealPredictionDB.IncomingHeal.MatchParentHeight or HealPredictionDB.IncomingHeal.Position == "ATTACH")
-        GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
-        GUIWidgets.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
+        AbsorbBuilderRefresh()
         AbsorbHeightSlider:SetDisabled(HealPredictionDB.Absorbs.MatchParentHeight or HealPredictionDB.Absorbs.Position == "ATTACH")
         ShowOverAbsorbToggle:SetDisabled(not HealPredictionDB.Absorbs.Enabled or HealPredictionDB.Absorbs.Position ~= "ATTACH")
+        HealAbsorbBuilderRefresh()
         HealAbsorbHeightSlider:SetDisabled(HealPredictionDB.HealAbsorbs.MatchParentHeight or HealPredictionDB.HealAbsorbs.Position == "ATTACH")
     end
+    ShowIncomingHealToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeal.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
+    ShowAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
+    ShowHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
 
     RefreshHealPredictionSettings()
 end
@@ -1224,15 +1175,10 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local DefaultCastBarDB = GetDefaultUnitDB(unit).CastBar
     if not CastBarDB.InterruptCooldownColor then CastBarDB.InterruptCooldownColor = {unpack(DefaultCastBarDB.InterruptCooldownColor)} end
     local isPlayerorPet = unit == "player" or unit == "pet"
+    local RefreshCastBarBarSettings
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cast Bar Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Cast Bar|r")
-    Toggle:SetValue(CastBarDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value updateCallback() RefreshCastBarBarSettings() end)
-    Toggle:SetRelativeWidth(0.33)
-    LayoutContainer:AddChild(Toggle)
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "Cast Bar|r", CastBarDB, updateCallback, {width = 0.33})
 
     local MatchParentWidthToggle = AG:Create("CheckBox")
     MatchParentWidthToggle:SetLabel("Match Frame Width")
@@ -1240,6 +1186,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     MatchParentWidthToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.MatchParentWidth = value updateCallback() RefreshCastBarBarSettings() end)
     MatchParentWidthToggle:SetRelativeWidth(0.33)
     LayoutContainer:AddChild(MatchParentWidthToggle)
+    panelsToDisable[#panelsToDisable + 1] = MatchParentWidthToggle
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
@@ -1251,7 +1198,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
     WidthSlider:SetValue(CastBarDB.Width)
-    WidthSlider:SetSliderValues(1, 3000, 0.1)
+    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
     WidthSlider:SetRelativeWidth(0.5)
     WidthSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Width = value updateCallback() end)
     LayoutContainer:AddChild(WidthSlider)
@@ -1259,10 +1206,11 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(CastBarDB.Height)
-    HeightSlider:SetSliderValues(1, 3000, 0.1)
+    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
     HeightSlider:SetRelativeWidth(0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
+    panelsToDisable[#panelsToDisable + 1] = HeightSlider
 
     local HoldTimeSlider = AG:Create("Slider")
     HoldTimeSlider:SetLabel("Interrupted/Failed Hold Time")
@@ -1271,6 +1219,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     HoldTimeSlider:SetRelativeWidth(1)
     HoldTimeSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.HoldTime = value updateCallback() end)
     LayoutContainer:AddChild(HoldTimeSlider)
+    panelsToDisable[#panelsToDisable + 1] = HoldTimeSlider
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1279,6 +1228,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
+    panelsToDisable[#panelsToDisable + 1] = AnchorFromDropdown
 
     local AnchorToDropdown = AG:Create("Dropdown")
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1287,22 +1237,25 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
+    panelsToDisable[#panelsToDisable + 1] = AnchorToDropdown
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(CastBarDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
+    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
+    panelsToDisable[#panelsToDisable + 1] = XPosSlider
 
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(CastBarDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
+    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
+    panelsToDisable[#panelsToDisable + 1] = YPosSlider
 
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
@@ -1318,92 +1271,28 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
         local ClassColorToggle = AG:Create("CheckBox")
         ClassColorToggle:SetLabel("Foreground: Color by Class")
         ClassColorToggle:SetValue(CastBarDB.ColorByClass)
-        ClassColorToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColorByClass = value RUFGUI.ForegroundColorPicker:SetDisabled(CastBarDB.ColorByClass) updateCallback() end)
+        ClassColorToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColorByClass = value updateCallback() RefreshCastBarBarSettings() end)
         ClassColorToggle:SetRelativeWidth(0.5)
         ColorContainer:AddChild(ClassColorToggle)
-        RUFGUI.ClassColorToggle = ClassColorToggle
+        panelsToDisable[#panelsToDisable + 1] = ClassColorToggle
     end
 
-    local ForegroundColorPicker = AG:Create("ColorPicker")
-    ForegroundColorPicker:SetLabel("Foreground")
-    local R, G, B, A = unpack(CastBarDB.Foreground)
-    ForegroundColorPicker:SetColor(R, G, B, A)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColorPicker:SetHasAlpha(true)
-    ForegroundColorPicker:SetRelativeWidth(0.5)
-    ColorContainer:AddChild(ForegroundColorPicker)
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground", CastBarDB, "Foreground", updateCallback, {hasAlpha = true, width = 0.5})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background", CastBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.5})
+    panelsToDisable[#panelsToDisable + 1] = BackgroundColorPicker
+    local NotInterruptibleColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Not Interruptible", CastBarDB, "NotInterruptibleColor", updateCallback, {hasAlpha = true, width = 0.5})
+    panelsToDisable[#panelsToDisable + 1] = NotInterruptibleColorPicker
+    local InterruptCooldownColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Interrupt on Cooldown", CastBarDB, "InterruptCooldownColor", updateCallback, {hasAlpha = true, width = 0.5})
+    panelsToDisable[#panelsToDisable + 1] = InterruptCooldownColorPicker
+    local InterruptedFailedColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Interrupted / Failed", CastBarDB, "InterruptedFailedColor", updateCallback, {hasAlpha = true, width = 0.2})
+    panelsToDisable[#panelsToDisable + 1] = InterruptedFailedColorPicker
 
-    RUFGUI.ForegroundColorPicker = ForegroundColorPicker
-
-    local BackgroundColorPicker = AG:Create("ColorPicker")
-    BackgroundColorPicker:SetLabel("Background")
-    local R2, G2, B2, A2 = unpack(CastBarDB.Background)
-    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColorPicker:SetHasAlpha(true)
-    BackgroundColorPicker:SetRelativeWidth(0.5)
-    ColorContainer:AddChild(BackgroundColorPicker)
-
-    local NotInterruptibleColorPicker = AG:Create("ColorPicker")
-    NotInterruptibleColorPicker:SetLabel("Not Interruptible")
-    local R3, G3, B3 = unpack(CastBarDB.NotInterruptibleColor)
-    NotInterruptibleColorPicker:SetColor(R3, G3, B3)
-    NotInterruptibleColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.NotInterruptibleColor = {r, g, b, a} updateCallback() end)
-    NotInterruptibleColorPicker:SetHasAlpha(true)
-    NotInterruptibleColorPicker:SetRelativeWidth(0.5)
-    ColorContainer:AddChild(NotInterruptibleColorPicker)
-
-    local InterruptCooldownColorPicker = AG:Create("ColorPicker")
-    InterruptCooldownColorPicker:SetLabel("Interrupt on Cooldown")
-    local R4, G4, B4 = unpack(CastBarDB.InterruptCooldownColor)
-    InterruptCooldownColorPicker:SetColor(R4, G4, B4)
-    InterruptCooldownColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptCooldownColor = {r, g, b, a} updateCallback() end)
-    InterruptCooldownColorPicker:SetHasAlpha(true)
-    InterruptCooldownColorPicker:SetRelativeWidth(0.5)
-    ColorContainer:AddChild(InterruptCooldownColorPicker)
-
-    local InterruptedFailedColorPicker = AG:Create("ColorPicker")
-    InterruptedFailedColorPicker:SetLabel("Interrupted / Failed")
-    local R5, G5, B5 = unpack(CastBarDB.InterruptedFailedColor)
-    InterruptedFailedColorPicker:SetColor(R5, G5, B5)
-    InterruptedFailedColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptedFailedColor = {r, g, b, a} updateCallback() end)
-    InterruptedFailedColorPicker:SetHasAlpha(true)
-    InterruptedFailedColorPicker:SetRelativeWidth(isPlayerorPet and 0.2 or 0.2)
-    ColorContainer:AddChild(InterruptedFailedColorPicker)
-
-    local function RefreshCastBarBarSettings()
-        if CastBarDB.Enabled then
-            MatchParentWidthToggle:SetDisabled(false)
-            WidthSlider:SetDisabled(CastBarDB.MatchParentWidth)
-            HeightSlider:SetDisabled(false)
-            HoldTimeSlider:SetDisabled(false)
-            AnchorFromDropdown:SetDisabled(false)
-            AnchorToDropdown:SetDisabled(false)
-            XPosSlider:SetDisabled(false)
-            YPosSlider:SetDisabled(false)
-            ForegroundColorPicker:SetDisabled(CastBarDB.ColorByClass)
-            BackgroundColorPicker:SetDisabled(false)
-            NotInterruptibleColorPicker:SetDisabled(false)
-            InterruptCooldownColorPicker:SetDisabled(false)
-            InterruptedFailedColorPicker:SetDisabled(false)
-            if isPlayerorPet then RUFGUI.ClassColorToggle:SetDisabled(false) end
-        else
-            MatchParentWidthToggle:SetDisabled(true)
-            WidthSlider:SetDisabled(true)
-            HeightSlider:SetDisabled(true)
-            HoldTimeSlider:SetDisabled(true)
-            AnchorFromDropdown:SetDisabled(true)
-            AnchorToDropdown:SetDisabled(true)
-            XPosSlider:SetDisabled(true)
-            YPosSlider:SetDisabled(true)
-            ForegroundColorPicker:SetDisabled(true)
-            BackgroundColorPicker:SetDisabled(true)
-            NotInterruptibleColorPicker:SetDisabled(true)
-            InterruptCooldownColorPicker:SetDisabled(true)
-            InterruptedFailedColorPicker:SetDisabled(true)
-            if isPlayerorPet then RUFGUI.ClassColorToggle:SetDisabled(true) end
-        end
+    RefreshCastBarBarSettings = function()
+        BuilderRefresh()
+        WidthSlider:SetDisabled(not CastBarDB.Enabled or CastBarDB.MatchParentWidth)
+        ForegroundColorPicker:SetDisabled(not CastBarDB.Enabled or CastBarDB.ColorByClass)
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value updateCallback() RefreshCastBarBarSettings() end)
 
     RefreshCastBarBarSettings()
 end
@@ -1412,12 +1301,7 @@ local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
     local CastBarIconDB = GetUnitDB(unit).CastBar.Icon
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Icon Settings")
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Cast Bar Icon|r")
-    Toggle:SetValue(CastBarIconDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarIconDB.Enabled = value updateCallback() RefreshCastBarIconSettings() end)
-    Toggle:SetRelativeWidth(0.5)
-    LayoutContainer:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "Cast Bar Icon|r", CastBarIconDB, updateCallback, {width = 0.5})
 
     local PositionDropdown = AG:Create("Dropdown")
     PositionDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right"})
@@ -1426,16 +1310,9 @@ local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
     PositionDropdown:SetRelativeWidth(0.5)
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarIconDB.Position = value updateCallback() end)
     LayoutContainer:AddChild(PositionDropdown)
+    panelsToDisable[1] = PositionDropdown
 
-    local function RefreshCastBarIconSettings()
-        if CastBarIconDB.Enabled then
-            PositionDropdown:SetDisabled(false)
-        else
-            PositionDropdown:SetDisabled(true)
-        end
-    end
-
-    RefreshCastBarIconSettings()
+    Refresh()
 end
 
 local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateCallback)
@@ -1444,13 +1321,8 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     local SpellNameTextDB = CastBarTextDB.SpellName
 
     local SpellNameContainer = GUIWidgets.CreateInlineGroup(containerParent, "Spell Name Settings")
-
-    local SpellNameToggle = AG:Create("CheckBox")
-    SpellNameToggle:SetLabel("Enable |cFFFFD100Spell Name Text|r")
-    SpellNameToggle:SetValue(SpellNameTextDB.Enabled)
-    SpellNameToggle:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Enabled = value updateCallback() RefreshCastBarSpellNameSettings() end)
-    SpellNameToggle:SetRelativeWidth(0.33)
-    SpellNameContainer:AddChild(SpellNameToggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(SpellNameContainer, "Enable " .. STYLE.Palette.SelectedText .. "Spell Name Text|r", SpellNameTextDB, updateCallback, {width = 0.33})
+    panelsToDisable[1] = SpellNameContainer
 
     local ShowTargetToggle = AG:Create("CheckBox")
     ShowTargetToggle:SetLabel("Show Target")
@@ -1459,55 +1331,9 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     ShowTargetToggle:SetRelativeWidth(0.33)
     SpellNameContainer:AddChild(ShowTargetToggle)
 
-    local SpellNameColorPicker = AG:Create("ColorPicker")
-    SpellNameColorPicker:SetLabel("Color")
-    local R, G, B = unpack(SpellNameTextDB.Color)
-    SpellNameColorPicker:SetColor(R, G, B)
-    SpellNameColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) SpellNameTextDB.Color = {r, g, b} updateCallback() end)
-    SpellNameColorPicker:SetHasAlpha(false)
-    SpellNameColorPicker:SetRelativeWidth(0.33)
-    SpellNameContainer:AddChild(SpellNameColorPicker)
+    GUIBuilders.CreateColorBlock(SpellNameContainer, "Color", SpellNameTextDB, "Color", updateCallback, {width = 0.33})
 
-    local SpellNameLayoutContainer = GUIWidgets.CreateInlineGroup(SpellNameContainer, "Layout")
-    local SpellNameAnchorFromDropdown = AG:Create("Dropdown")
-    SpellNameAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    SpellNameAnchorFromDropdown:SetLabel("Anchor From")
-    SpellNameAnchorFromDropdown:SetValue(SpellNameTextDB.Layout[1])
-    SpellNameAnchorFromDropdown:SetRelativeWidth(0.5)
-    SpellNameAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[1] = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(SpellNameAnchorFromDropdown)
-
-    local SpellNameAnchorToDropdown = AG:Create("Dropdown")
-    SpellNameAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    SpellNameAnchorToDropdown:SetLabel("Anchor To")
-    SpellNameAnchorToDropdown:SetValue(SpellNameTextDB.Layout[2])
-    SpellNameAnchorToDropdown:SetRelativeWidth(0.5)
-    SpellNameAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[2] = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(SpellNameAnchorToDropdown)
-
-    local SpellNameXPosSlider = AG:Create("Slider")
-    SpellNameXPosSlider:SetLabel("X Position")
-    SpellNameXPosSlider:SetValue(SpellNameTextDB.Layout[3])
-    SpellNameXPosSlider:SetSliderValues(-255, 255, 0.1)
-    SpellNameXPosSlider:SetRelativeWidth(0.25)
-    SpellNameXPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[3] = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(SpellNameXPosSlider)
-
-    local SpellNameYPosSlider = AG:Create("Slider")
-    SpellNameYPosSlider:SetLabel("Y Position")
-    SpellNameYPosSlider:SetValue(SpellNameTextDB.Layout[4])
-    SpellNameYPosSlider:SetSliderValues(-255, 255, 0.1)
-    SpellNameYPosSlider:SetRelativeWidth(0.25)
-    SpellNameYPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[4] = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(SpellNameYPosSlider)
-
-    local SpellNameFontSizeSlider = AG:Create("Slider")
-    SpellNameFontSizeSlider:SetLabel("Font Size")
-    SpellNameFontSizeSlider:SetValue(SpellNameTextDB.FontSize)
-    SpellNameFontSizeSlider:SetSliderValues(8, 64, 1)
-    SpellNameFontSizeSlider:SetRelativeWidth(0.25)
-    SpellNameFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.FontSize = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(SpellNameFontSizeSlider)
+    local SpellNameLayoutContainer = GUIBuilders.CreateLayoutPositionBlock(SpellNameContainer, SpellNameTextDB, updateCallback, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", groupLabel = "Layout", xyWidth = 0.25, sizeWidth = 0.25})
 
     local MaxCharsSlider = AG:Create("Slider")
     MaxCharsSlider:SetLabel("Max Characters")
@@ -1517,29 +1343,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     MaxCharsSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.MaxChars = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(MaxCharsSlider)
 
-    local function RefreshCastBarSpellNameSettings()
-        if SpellNameTextDB.Enabled then
-            SpellNameAnchorFromDropdown:SetDisabled(false)
-            SpellNameAnchorToDropdown:SetDisabled(false)
-            SpellNameXPosSlider:SetDisabled(false)
-            SpellNameYPosSlider:SetDisabled(false)
-            SpellNameFontSizeSlider:SetDisabled(false)
-            SpellNameColorPicker:SetDisabled(false)
-            ShowTargetToggle:SetDisabled(false)
-            MaxCharsSlider:SetDisabled(false)
-        else
-            SpellNameAnchorFromDropdown:SetDisabled(true)
-            SpellNameAnchorToDropdown:SetDisabled(true)
-            SpellNameXPosSlider:SetDisabled(true)
-            SpellNameYPosSlider:SetDisabled(true)
-            SpellNameFontSizeSlider:SetDisabled(true)
-            SpellNameColorPicker:SetDisabled(true)
-            ShowTargetToggle:SetDisabled(true)
-            MaxCharsSlider:SetDisabled(true)
-        end
-    end
-
-    RefreshCastBarSpellNameSettings()
+    Refresh()
 end
 
 local function CreateCastBarDurationTextSettings(containerParent, unit, updateCallback)
@@ -1547,83 +1351,14 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     local DurationTextDB = CastBarTextDB.Duration
 
      local DurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(DurationContainer, "Enable " .. STYLE.Palette.SelectedText .. "Duration Text|r", DurationTextDB, updateCallback, {width = 0.5})
+    panelsToDisable[1] = DurationContainer
 
-    local DurationToggle = AG:Create("CheckBox")
-    DurationToggle:SetLabel("Enable |cFFFFD100Duration Text|r")
-    DurationToggle:SetValue(DurationTextDB.Enabled)
-    DurationToggle:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Enabled = value updateCallback() RefreshCastBarDurationSettings() end)
-    DurationToggle:SetRelativeWidth(0.5)
-    DurationContainer:AddChild(DurationToggle)
+    GUIBuilders.CreateColorBlock(DurationContainer, "Color", DurationTextDB, "Color", updateCallback, {width = 0.5})
 
-    local DurationColorPicker = AG:Create("ColorPicker")
-    DurationColorPicker:SetLabel("Color")
-    local R, G, B = unpack(DurationTextDB.Color)
-    DurationColorPicker:SetColor(R, G, B)
-    DurationColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) DurationTextDB.Color = {r, g, b} updateCallback() end)
-    DurationColorPicker:SetHasAlpha(false)
-    DurationColorPicker:SetRelativeWidth(0.5)
-    DurationContainer:AddChild(DurationColorPicker)
+    GUIBuilders.CreateLayoutPositionBlock(DurationContainer, DurationTextDB, updateCallback, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", groupLabel = "Layout"})
 
-    local DurationLayoutContainer = GUIWidgets.CreateInlineGroup(DurationContainer, "Layout")
-    local DurationAnchorFromDropdown = AG:Create("Dropdown")
-    DurationAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    DurationAnchorFromDropdown:SetLabel("Anchor From")
-    DurationAnchorFromDropdown:SetValue(DurationTextDB.Layout[1])
-    DurationAnchorFromDropdown:SetRelativeWidth(0.5)
-    DurationAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[1] = value updateCallback() end)
-    DurationLayoutContainer:AddChild(DurationAnchorFromDropdown)
-
-    local DurationAnchorToDropdown = AG:Create("Dropdown")
-    DurationAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    DurationAnchorToDropdown:SetLabel("Anchor To")
-    DurationAnchorToDropdown:SetValue(DurationTextDB.Layout[2])
-    DurationAnchorToDropdown:SetRelativeWidth(0.5)
-    DurationAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[2] = value updateCallback() end)
-    DurationLayoutContainer:AddChild(DurationAnchorToDropdown)
-
-    local DurationXPosSlider = AG:Create("Slider")
-    DurationXPosSlider:SetLabel("X Position")
-    DurationXPosSlider:SetValue(DurationTextDB.Layout[3])
-    DurationXPosSlider:SetSliderValues(-255, 255, 0.1)
-    DurationXPosSlider:SetRelativeWidth(0.33)
-    DurationXPosSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[3] = value updateCallback() end)
-    DurationLayoutContainer:AddChild(DurationXPosSlider)
-
-    local DurationYPosSlider = AG:Create("Slider")
-    DurationYPosSlider:SetLabel("Y Position")
-    DurationYPosSlider:SetValue(DurationTextDB.Layout[4])
-    DurationYPosSlider:SetSliderValues(-255, 255, 0.1)
-    DurationYPosSlider:SetRelativeWidth(0.33)
-    DurationYPosSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.Layout[4] = value updateCallback() end)
-    DurationLayoutContainer:AddChild(DurationYPosSlider)
-
-    local DurationFontSizeSlider = AG:Create("Slider")
-    DurationFontSizeSlider:SetLabel("Font Size")
-    DurationFontSizeSlider:SetValue(DurationTextDB.FontSize)
-    DurationFontSizeSlider:SetSliderValues(8, 64, 1)
-    DurationFontSizeSlider:SetRelativeWidth(0.33)
-    DurationFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) DurationTextDB.FontSize = value updateCallback() end)
-    DurationLayoutContainer:AddChild(DurationFontSizeSlider)
-
-    local function RefreshCastBarDurationSettings()
-        if DurationTextDB.Enabled then
-            DurationAnchorFromDropdown:SetDisabled(false)
-            DurationAnchorToDropdown:SetDisabled(false)
-            DurationXPosSlider:SetDisabled(false)
-            DurationYPosSlider:SetDisabled(false)
-            DurationFontSizeSlider:SetDisabled(false)
-            DurationColorPicker:SetDisabled(false)
-        else
-            DurationAnchorFromDropdown:SetDisabled(true)
-            DurationAnchorToDropdown:SetDisabled(true)
-            DurationXPosSlider:SetDisabled(true)
-            DurationYPosSlider:SetDisabled(true)
-            DurationFontSizeSlider:SetDisabled(true)
-            DurationColorPicker:SetDisabled(true)
-        end
-    end
-
-    RefreshCastBarDurationSettings()
+    Refresh()
 end
 
 local function CreateCastBarSettings(containerParent, unit)
@@ -1662,6 +1397,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local PowerBarDB = GetUnitDB(unit).PowerBar
     local isGroupPowerBar = unit == "party" or unit == "raid"
     local toggleRelativeWidth = isGroupPowerBar and 0.5 or 0.25
+    local RefreshPowerBarGUI
 
     local function UpdatePowerBarSettings()
         updateCallback()
@@ -1671,13 +1407,8 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Power Bar|r")
-    Toggle:SetValue(PowerBarDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.25)
-    LayoutContainer:AddChild(Toggle)
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "Power Bar|r", PowerBarDB, UpdatePowerBarSettings, {width = 0.25})
+    panelsToDisable[1] = LayoutContainer
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
@@ -1703,6 +1434,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     LayoutContainer:AddChild(HeightSlider)
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
+    panelsToDisable[2] = ColorContainer
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
@@ -1748,53 +1480,25 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
         ColorContainer:AddChild(ColorRowBreak)
     end
 
-    local ForegroundColorPicker = AG:Create("ColorPicker")
-    ForegroundColorPicker:SetLabel("Foreground Color")
-    local R, G, B, A = unpack(PowerBarDB.Foreground)
-    ForegroundColorPicker:SetColor(R, G, B, A)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Foreground = {r, g, b, a} UpdatePowerBarSettings() end)
-    ForegroundColorPicker:SetHasAlpha(true)
-    ForegroundColorPicker:SetRelativeWidth(0.33)
-    ForegroundColorPicker:SetDisabled(PowerBarDB.ColorByClass or PowerBarDB.ColorByType)
-    ColorContainer:AddChild(ForegroundColorPicker)
-
-    local BackgroundColorPicker = AG:Create("ColorPicker")
-    BackgroundColorPicker:SetLabel("Background Color")
-    local R2, G2, B2, A2 = unpack(PowerBarDB.Background)
-    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} UpdatePowerBarSettings() end)
-    BackgroundColorPicker:SetHasAlpha(true)
-    BackgroundColorPicker:SetRelativeWidth(0.33)
-    BackgroundColorPicker:SetDisabled(PowerBarDB.ColorBackgroundByType)
-    ColorContainer:AddChild(BackgroundColorPicker)
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", PowerBarDB, "Foreground", UpdatePowerBarSettings, {hasAlpha = true, width = 0.33})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", PowerBarDB, "Background", UpdatePowerBarSettings, {hasAlpha = true, width = 0.33})
 
     local BackgroundMultiplierSlider = AG:Create("Slider")
     BackgroundMultiplierSlider:SetLabel("Background Multiplier")
     BackgroundMultiplierSlider:SetValue(PowerBarDB.BackgroundMultiplier)
-    BackgroundMultiplierSlider:SetSliderValues(0, 1, 0.01)
+    BackgroundMultiplierSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     BackgroundMultiplierSlider:SetRelativeWidth(0.33)
     BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BackgroundMultiplier = value UpdatePowerBarSettings() end)
     BackgroundMultiplierSlider:SetIsPercent(true)
-    BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColorBackgroundByType)
     ColorContainer:AddChild(BackgroundMultiplierSlider)
 
-    local function RefreshPowerBarGUI()
-        if PowerBarDB.Enabled then
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
-            if PowerBarDB.ColorByClass or PowerBarDB.ColorByType then
-                ForegroundColorPicker:SetDisabled(true)
-            else
-                ForegroundColorPicker:SetDisabled(false)
-            end
-            BackgroundColorPicker:SetDisabled(PowerBarDB.ColorBackgroundByType)
-            BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColorBackgroundByType)
-            if OnlyShowHealersToggle then OnlyShowHealersToggle:SetDisabled(false) end
-        else
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
-        end
+    RefreshPowerBarGUI = function()
+        BuilderRefresh()
+        ForegroundColorPicker:SetDisabled(not PowerBarDB.Enabled or PowerBarDB.ColorByClass or PowerBarDB.ColorByType)
+        BackgroundColorPicker:SetDisabled(not PowerBarDB.Enabled or PowerBarDB.ColorBackgroundByType)
+        BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.Enabled or not PowerBarDB.ColorBackgroundByType)
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
 
     RefreshPowerBarGUI()
 end
@@ -1802,15 +1506,11 @@ end
 local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = GetUnitDB(unit).Frame
     local SecondaryPowerBarDB = GetUnitDB(unit).SecondaryPowerBar
+    local RefreshSecondaryPowerBarGUI
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Secondary Power Bar|r")
-    Toggle:SetValue(SecondaryPowerBarDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.33)
-    LayoutContainer:AddChild(Toggle)
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "Secondary Power Bar|r", SecondaryPowerBarDB, updateCallback, {width = 0.33})
+    panelsToDisable[1] = LayoutContainer
 
     local PositionDropdown = AG:Create("Dropdown")
     PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
@@ -1829,6 +1529,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     LayoutContainer:AddChild(HeightSlider)
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
+    panelsToDisable[2] = ColorContainer
 
     local ColorByTypeToggle = AG:Create("CheckBox")
     ColorByTypeToggle:SetLabel("Color By Type")
@@ -1837,57 +1538,26 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     ColorByTypeToggle:SetRelativeWidth(1)
     ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ForegroundColorPicker = AG:Create("ColorPicker")
-    ForegroundColorPicker:SetLabel("Foreground Color")
-    local R, G, B, A = unpack(SecondaryPowerBarDB.Foreground)
-    ForegroundColorPicker:SetColor(R, G, B, A)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColorPicker:SetHasAlpha(true)
-    ForegroundColorPicker:SetRelativeWidth(0.5)
-    ForegroundColorPicker:SetDisabled(SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType)
-    ColorContainer:AddChild(ForegroundColorPicker)
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", SecondaryPowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = 0.5})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", SecondaryPowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.5})
 
-    local BackgroundColorPicker = AG:Create("ColorPicker")
-    BackgroundColorPicker:SetLabel("Background Color")
-    local R2, G2, B2, A2 = unpack(SecondaryPowerBarDB.Background)
-    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColorPicker:SetHasAlpha(true)
-    BackgroundColorPicker:SetRelativeWidth(0.5)
-    BackgroundColorPicker:SetDisabled(SecondaryPowerBarDB.ColorBackgroundByType)
-    ColorContainer:AddChild(BackgroundColorPicker)
-
-    local function RefreshSecondaryPowerBarGUI()
-        if SecondaryPowerBarDB.Enabled then
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
-            if SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType then
-                ForegroundColorPicker:SetDisabled(true)
-            else
-                ForegroundColorPicker:SetDisabled(false)
-            end
-        else
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
-        end
+    RefreshSecondaryPowerBarGUI = function()
+        BuilderRefresh()
+        ForegroundColorPicker:SetDisabled(not SecondaryPowerBarDB.Enabled or SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType)
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
 
     RefreshSecondaryPowerBarGUI()
 end
 
 local function CreateAlternativePowerBarSettings(containerParent, unit, updateCallback)
     local AlternativePowerBarDB = GetUnitDB(unit).AlternativePowerBar
+    local RefreshAlternativePowerBarGUI
 
     GUIWidgets.CreateInformationTag(containerParent, "The |cFFFFD100Alternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
 
     local AlternativePowerBarSettings = GUIWidgets.CreateInlineGroup(containerParent, "Alternative Power Bar Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Alternative Power Bar|r")
-    Toggle:SetValue(AlternativePowerBarDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    AlternativePowerBarSettings:AddChild(Toggle)
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(AlternativePowerBarSettings, "Enable " .. STYLE.Palette.SelectedText .. "Alternative Power Bar|r", AlternativePowerBarDB, updateCallback, {width = 0.5})
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
@@ -1895,13 +1565,15 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Inverse = value updateCallback() end)
     InverseGrowthDirectionToggle:SetRelativeWidth(0.5)
     AlternativePowerBarSettings:AddChild(InverseGrowthDirectionToggle)
+    panelsToDisable[1] = InverseGrowthDirectionToggle
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    panelsToDisable[2] = LayoutContainer
 
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
     WidthSlider:SetValue(AlternativePowerBarDB.Width)
-    WidthSlider:SetSliderValues(1, 3000, 0.1)
+    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
     WidthSlider:SetRelativeWidth(0.5)
     WidthSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Width = value updateCallback() end)
     LayoutContainer:AddChild(WidthSlider)
@@ -1933,7 +1605,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(AlternativePowerBarDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
+    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -1941,12 +1613,13 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(AlternativePowerBarDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
+    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
+    panelsToDisable[3] = ColorContainer
 
     local ColorByTypeToggle = AG:Create("CheckBox")
     ColorByTypeToggle:SetLabel("Color By Type")
@@ -1955,40 +1628,14 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     ColorByTypeToggle:SetRelativeWidth(0.33)
     ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ForegroundColorPicker = AG:Create("ColorPicker")
-    ForegroundColorPicker:SetLabel("Foreground Color")
-    local R, G, B, A = unpack(AlternativePowerBarDB.Foreground)
-    ForegroundColorPicker:SetColor(R, G, B, A)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
-    ForegroundColorPicker:SetHasAlpha(true)
-    ForegroundColorPicker:SetRelativeWidth(0.33)
-    ForegroundColorPicker:SetDisabled(AlternativePowerBarDB.ColorByType)
-    ColorContainer:AddChild(ForegroundColorPicker)
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", AlternativePowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = 0.33})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", AlternativePowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.33})
 
-    local BackgroundColorPicker = AG:Create("ColorPicker")
-    BackgroundColorPicker:SetLabel("Background Color")
-    local R2, G2, B2, A2 = unpack(AlternativePowerBarDB.Background)
-    BackgroundColorPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.Background = {r, g, b, a} updateCallback() end)
-    BackgroundColorPicker:SetHasAlpha(true)
-    BackgroundColorPicker:SetRelativeWidth(0.33)
-    ColorContainer:AddChild(BackgroundColorPicker)
-
-    local function RefreshAlternativePowerBarGUI()
-        if AlternativePowerBarDB.Enabled then
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, false, Toggle)
-            if AlternativePowerBarDB.ColorByType then
-                ForegroundColorPicker:SetDisabled(true)
-            else
-                ForegroundColorPicker:SetDisabled(false)
-            end
-        else
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(ColorContainer, true, Toggle)
-        end
-        InverseGrowthDirectionToggle:SetDisabled(not AlternativePowerBarDB.Enabled)
+    RefreshAlternativePowerBarGUI = function()
+        BuilderRefresh()
+        ForegroundColorPicker:SetDisabled(not AlternativePowerBarDB.Enabled or AlternativePowerBarDB.ColorByType)
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
 
     RefreshAlternativePowerBarGUI()
 end
@@ -1996,17 +1643,14 @@ end
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = GetUnitDB(unit).Portrait
     PortraitDB.Style = PortraitDB.Style or "2D"
+    local RefreshPortraitGUI
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
 
     GUIWidgets.CreateInformationTag(ToggleContainer, "|cFFFFD1003D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret. |cFFFFD1002D Portraits|r will be used as a fallback if this is the case.")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Portrait|r")
-    Toggle:SetValue(PortraitDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
-    Toggle:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Portrait|r", PortraitDB, updateCallback, {width = 0.33})
+    panelsToDisable[1] = ToggleContainer
 
     local UseClassPortraitToggle = AG:Create("CheckBox")
     UseClassPortraitToggle:SetLabel("Use Class Portrait")
@@ -2024,6 +1668,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     ToggleContainer:AddChild(PortraitStyleDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    panelsToDisable[2] = LayoutContainer
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -2044,7 +1689,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PortraitDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
+    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -2052,7 +1697,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PortraitDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
+    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -2060,7 +1705,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local ZoomSlider = AG:Create("Slider")
     ZoomSlider:SetLabel("Zoom")
     ZoomSlider:SetValue(PortraitDB.Zoom)
-    ZoomSlider:SetSliderValues(0, 1, 0.01)
+    ZoomSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     ZoomSlider:SetRelativeWidth(0.33)
     ZoomSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Zoom = value updateCallback() end)
     ZoomSlider:SetIsPercent(true)
@@ -2082,17 +1727,12 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    local function RefreshPortraitGUI()
-        if PortraitDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
+    RefreshPortraitGUI = function()
+        BuilderRefresh()
         UseClassPortraitToggle:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
         ZoomSlider:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
 
     RefreshPortraitGUI()
 end
@@ -2101,78 +1741,22 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     local RaidTargetMarkerDB = GetUnitDB(unit).Indicators.RaidTargetMarker
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Target Marker Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Raid Target Marker|r Indicator", RaidTargetMarkerDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Raid Target Marker|r Indicator")
-    Toggle:SetValue(RaidTargetMarkerDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, RaidTargetMarkerDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(RaidTargetMarkerDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(RaidTargetMarkerDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(RaidTargetMarkerDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(RaidTargetMarkerDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(RaidTargetMarkerDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshStatusGUI()
-        if RaidTargetMarkerDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshStatusGUI()
+    Refresh()
 end
 
 local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback)
 	local ReadyCheckDB = GetUnitDB(unit).Indicators.ReadyCheckIndicator
 	ReadyCheckDB.Texture = ReadyCheckDB.Texture or "Default"
+
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
-	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFFFFD100Ready Check|r Indicator")
-	Toggle:SetValue(ReadyCheckDB.Enabled)
-	Toggle:SetRelativeWidth(0.5)
-	ToggleContainer:AddChild(Toggle)
+	local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Ready Check|r Indicator", ReadyCheckDB, updateCallback, {width = 0.5})
+	panelsToDisable[1] = ToggleContainer
 
 	local TextureDropdown = AG:Create("Dropdown")
 	TextureDropdown:SetList({
@@ -2186,104 +1770,21 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Texture = value updateCallback() end)
 	ToggleContainer:AddChild(TextureDropdown)
 
-	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-	local AnchorFromDropdown = AG:Create("Dropdown")
-	AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorFromDropdown:SetLabel("Anchor From")
-	AnchorFromDropdown:SetValue(ReadyCheckDB.Layout[1])
-	AnchorFromDropdown:SetRelativeWidth(0.5)
-	AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[1] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorFromDropdown)
+	local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, ReadyCheckDB, updateCallback, {includeSize = true})
+	panelsToDisable[2] = LayoutContainer
 
-	local AnchorToDropdown = AG:Create("Dropdown")
-	AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorToDropdown:SetLabel("Anchor To")
-	AnchorToDropdown:SetValue(ReadyCheckDB.Layout[2])
-	AnchorToDropdown:SetRelativeWidth(0.5)
-	AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[2] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorToDropdown)
-
-	local XPosSlider = AG:Create("Slider")
-	XPosSlider:SetLabel("X Position")
-	XPosSlider:SetValue(ReadyCheckDB.Layout[3])
-	XPosSlider:SetSliderValues(-255, 255, 0.1)
-	XPosSlider:SetRelativeWidth(0.33)
-	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
-	LayoutContainer:AddChild(XPosSlider)
-
-	local YPosSlider = AG:Create("Slider")
-	YPosSlider:SetLabel("Y Position")
-	YPosSlider:SetValue(ReadyCheckDB.Layout[4])
-	YPosSlider:SetSliderValues(-255, 255, 0.1)
-	YPosSlider:SetRelativeWidth(0.33)
-	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
-	LayoutContainer:AddChild(YPosSlider)
-
-	local SizeSlider = AG:Create("Slider")
-	SizeSlider:SetLabel("Size")
-	SizeSlider:SetValue(ReadyCheckDB.Size)
-	SizeSlider:SetSliderValues(8, 64, 1)
-	SizeSlider:SetRelativeWidth(0.33)
-	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
-	LayoutContainer:AddChild(SizeSlider)
-
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(ToggleContainer, not value, Toggle) GUIWidgets.DeepDisable(LayoutContainer, not value) end)
-	GUIWidgets.DeepDisable(ToggleContainer, not ReadyCheckDB.Enabled, Toggle)
-	GUIWidgets.DeepDisable(LayoutContainer, not ReadyCheckDB.Enabled)
+	Refresh()
 end
 
 local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback)
 	local ResurrectDB = GetUnitDB(unit).Indicators.ResurrectIndicator
+
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrect Indicator Settings")
-	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFFFFD100Resurrect|r Indicator")
-	Toggle:SetValue(ResurrectDB.Enabled)
-	Toggle:SetRelativeWidth(1)
-	ToggleContainer:AddChild(Toggle)
+	local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Resurrect|r Indicator", ResurrectDB, updateCallback)
 
-	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-	local AnchorFromDropdown = AG:Create("Dropdown")
-	AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorFromDropdown:SetLabel("Anchor From")
-	AnchorFromDropdown:SetValue(ResurrectDB.Layout[1])
-	AnchorFromDropdown:SetRelativeWidth(0.5)
-	AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[1] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorFromDropdown)
+	panelsToDisable[1] = GUIBuilders.CreateLayoutPositionBlock(containerParent, ResurrectDB, updateCallback, {includeSize = true})
 
-	local AnchorToDropdown = AG:Create("Dropdown")
-	AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorToDropdown:SetLabel("Anchor To")
-	AnchorToDropdown:SetValue(ResurrectDB.Layout[2])
-	AnchorToDropdown:SetRelativeWidth(0.5)
-	AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[2] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorToDropdown)
-
-	local XPosSlider = AG:Create("Slider")
-	XPosSlider:SetLabel("X Position")
-	XPosSlider:SetValue(ResurrectDB.Layout[3])
-	XPosSlider:SetSliderValues(-255, 255, 0.1)
-	XPosSlider:SetRelativeWidth(0.33)
-	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
-	LayoutContainer:AddChild(XPosSlider)
-
-	local YPosSlider = AG:Create("Slider")
-	YPosSlider:SetLabel("Y Position")
-	YPosSlider:SetValue(ResurrectDB.Layout[4])
-	YPosSlider:SetSliderValues(-255, 255, 0.1)
-	YPosSlider:SetRelativeWidth(0.33)
-	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
-	LayoutContainer:AddChild(YPosSlider)
-
-	local SizeSlider = AG:Create("Slider")
-	SizeSlider:SetLabel("Size")
-	SizeSlider:SetValue(ResurrectDB.Size)
-	SizeSlider:SetSliderValues(8, 64, 1)
-	SizeSlider:SetRelativeWidth(0.33)
-	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Size = value updateCallback() end)
-	LayoutContainer:AddChild(SizeSlider)
-
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(LayoutContainer, not value) end)
-	GUIWidgets.DeepDisable(LayoutContainer, not ResurrectDB.Enabled)
+	Refresh()
 end
 
 local function CreateSummonIndicatorSettings(containerParent, unit, updateCallback)
@@ -2295,122 +1796,23 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 	end
 
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Summon Indicator Settings")
-	local Toggle = AG:Create("CheckBox")
-	Toggle:SetLabel("Enable |cFFFFD100Summon|r Indicator")
-	Toggle:SetValue(SummonDB.Enabled)
-	Toggle:SetRelativeWidth(1)
-	ToggleContainer:AddChild(Toggle)
+	local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Summon|r Indicator", SummonDB, updateCallback)
 
-	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-	local AnchorFromDropdown = AG:Create("Dropdown")
-	AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorFromDropdown:SetLabel("Anchor From")
-	AnchorFromDropdown:SetValue(SummonDB.Layout[1])
-	AnchorFromDropdown:SetRelativeWidth(0.5)
-	AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[1] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorFromDropdown)
+	panelsToDisable[1] = GUIBuilders.CreateLayoutPositionBlock(containerParent, SummonDB, updateCallback, {includeSize = true})
 
-	local AnchorToDropdown = AG:Create("Dropdown")
-	AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-	AnchorToDropdown:SetLabel("Anchor To")
-	AnchorToDropdown:SetValue(SummonDB.Layout[2])
-	AnchorToDropdown:SetRelativeWidth(0.5)
-	AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[2] = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorToDropdown)
-
-	local XPosSlider = AG:Create("Slider")
-	XPosSlider:SetLabel("X Position")
-	XPosSlider:SetValue(SummonDB.Layout[3])
-	XPosSlider:SetSliderValues(-255, 255, 0.1)
-	XPosSlider:SetRelativeWidth(0.33)
-	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[3] = value updateCallback() end)
-	LayoutContainer:AddChild(XPosSlider)
-
-	local YPosSlider = AG:Create("Slider")
-	YPosSlider:SetLabel("Y Position")
-	YPosSlider:SetValue(SummonDB.Layout[4])
-	YPosSlider:SetSliderValues(-255, 255, 0.1)
-	YPosSlider:SetRelativeWidth(0.33)
-	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[4] = value updateCallback() end)
-	LayoutContainer:AddChild(YPosSlider)
-
-	local SizeSlider = AG:Create("Slider")
-	SizeSlider:SetLabel("Size")
-	SizeSlider:SetValue(SummonDB.Size)
-	SizeSlider:SetSliderValues(8, 64, 1)
-	SizeSlider:SetRelativeWidth(0.33)
-	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Size = value updateCallback() end)
-	LayoutContainer:AddChild(SizeSlider)
-
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(LayoutContainer, not value) end)
-	GUIWidgets.DeepDisable(LayoutContainer, not SummonDB.Enabled)
+	Refresh()
 end
 
 local function CreateAssistantSettings(containerParent, unit, updateCallback)
     local LeaderAssistantDB = GetUnitDB(unit).Indicators.LeaderAssistantIndicator
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Leader|r & " .. STYLE.Palette.SelectedText .. "Assistant|r Indicator", LeaderAssistantDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Leader|r & |cFFFFD100Assistant|r Indicator")
-    Toggle:SetValue(LeaderAssistantDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    panelsToDisable[2] = GUIBuilders.CreateLayoutPositionBlock(containerParent, LeaderAssistantDB, updateCallback, {includeSize = true})
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(LeaderAssistantDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(LeaderAssistantDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(LeaderAssistantDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(LeaderAssistantDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(LeaderAssistantDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshStatusGUI()
-        if LeaderAssistantDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshStatusGUI()
+    Refresh()
 end
 
 local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback)
@@ -2426,13 +1828,8 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     RoleDB.Layout = RoleDB.Layout or {unpack(DefaultRoleDB.Layout)}
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Indicator Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Role|r Indicator")
-    Toggle:SetValue(RoleDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Enabled = value updateCallback() RefreshRoleGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Role|r Indicator", RoleDB, updateCallback, {width = 0.5})
+    panelsToDisable[1] = ToggleContainer
 
     local TextureDropdown = AG:Create("Dropdown")
 	TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Color", "White", "ElvUI", "Square"})
@@ -2463,59 +1860,10 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
 	DamagerToggle:SetRelativeWidth(0.33)
 	ToggleContainer:AddChild(DamagerToggle)
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, RoleDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(RoleDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(RoleDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(RoleDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(RoleDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(RoleDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshRoleGUI()
-        if RoleDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshRoleGUI()
+    Refresh()
 end
 
 local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallback)
@@ -2529,147 +1877,34 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     local PhaseDB = GetUnitDB(unit).Indicators.Phase
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Phase Indicator Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Phase|r Indicator", PhaseDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Phase|r Indicator")
-    Toggle:SetValue(PhaseDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Enabled = value updateCallback() RefreshPhaseGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, PhaseDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(PhaseDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(PhaseDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(PhaseDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(PhaseDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(PhaseDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshPhaseGUI()
-        if PhaseDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshPhaseGUI()
+    Refresh()
 end
 
 local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
     local PvPIndicatorDB = GetUnitDB(unit).Indicators.PvP
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "PvP Indicator Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "PvP|r Indicator", PvPIndicatorDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100PvP|r Indicator")
-    Toggle:SetValue(PvPIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Enabled = value updateCallback() RefreshPvPIndicatorGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, PvPIndicatorDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(PvPIndicatorDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(PvPIndicatorDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(PvPIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(PvPIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(PvPIndicatorDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshPvPIndicatorGUI()
-        if PvPIndicatorDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshPvPIndicatorGUI()
+    Refresh()
 end
 
 local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     local QuestIndicatorDB = RUF.db.profile.Units.target.Indicators.Quest
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Quest Indicator Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Quest|r Indicator")
-    Toggle:SetValue(QuestIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Enabled = value updateCallback() RefreshQuestIndicatorGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Quest|r Indicator", QuestIndicatorDB, updateCallback, {width = 0.5})
+    panelsToDisable[1] = ToggleContainer
 
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
@@ -2683,72 +1918,18 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Texture = value updateCallback() end)
     ToggleContainer:AddChild(TextureDropdown)
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, QuestIndicatorDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(QuestIndicatorDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(QuestIndicatorDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(QuestIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(QuestIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(QuestIndicatorDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshQuestIndicatorGUI()
-        if QuestIndicatorDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshQuestIndicatorGUI()
+    Refresh()
 end
 
 local function CreateClassificationIndicatorSettings(containerParent, updateCallback)
     local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Classification Indicator Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Classification|r Indicator")
-    Toggle:SetValue(ClassificationIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Enabled = value updateCallback() RefreshClassificationIndicatorGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Classification|r Indicator", ClassificationIndicatorDB, updateCallback, {width = 0.5})
+    panelsToDisable[1] = ToggleContainer
 
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
@@ -2763,72 +1944,23 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Texture = value updateCallback() end)
     ToggleContainer:AddChild(TextureDropdown)
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, ClassificationIndicatorDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(ClassificationIndicatorDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(ClassificationIndicatorDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(ClassificationIndicatorDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(ClassificationIndicatorDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(ClassificationIndicatorDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshClassificationIndicatorGUI()
-        GUIWidgets.DeepDisable(ToggleContainer, not ClassificationIndicatorDB.Enabled, Toggle)
-        GUIWidgets.DeepDisable(LayoutContainer, not ClassificationIndicatorDB.Enabled, Toggle)
-    end
-
-    RefreshClassificationIndicatorGUI()
+    Refresh()
 end
 
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = GetUnitDB(unit).Indicators[statusDB]
-
-    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, statusDB .. " Settings")
 
     local StatusTextureList = {}
     for key, texture in pairs(StatusTextures[statusDB]) do
         StatusTextureList[key] = texture
     end
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100"..statusDB.."|r Indicator")
-    Toggle:SetValue(StatusDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, statusDB .. " Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. statusDB .. "|r Indicator", StatusDB, updateCallback, {width = 0.5})
+    panelsToDisable[1] = ToggleContainer
 
     local StatusTextureDropdown = AG:Create("Dropdown")
     StatusTextureDropdown:SetList(StatusTextureList)
@@ -2838,89 +1970,20 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     StatusTextureDropdown:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Texture = value updateCallback() end)
     ToggleContainer:AddChild(StatusTextureDropdown)
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, StatusDB, updateCallback, {includeSize = true})
+    panelsToDisable[2] = LayoutContainer
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(StatusDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(StatusDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(StatusDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(StatusDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(StatusDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
-    SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
-
-    local function RefreshStatusGUI()
-        if StatusDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-        end
-    end
-
-    RefreshStatusGUI()
+    Refresh()
 end
 
 local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     local MouseoverDB = GetUnitDB(unit).Indicators.Mouseover
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Mouseover Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Mouseover|r Highlight", MouseoverDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Mouseover|r Highlight")
-    Toggle:SetValue(MouseoverDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Enabled = value updateCallback() RefreshMouseoverGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
-
-    local ColorPicker = AG:Create("ColorPicker")
-    ColorPicker:SetLabel("Highlight Color")
-    ColorPicker:SetColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3])
-    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) MouseoverDB.Color = {r, g, b} updateCallback() end)
-    ColorPicker:SetHasAlpha(false)
-    ColorPicker:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(ColorPicker)
-
-    local OpacitySlider = AG:Create("Slider")
-    OpacitySlider:SetLabel("Highlight Opacity")
-    OpacitySlider:SetValue(MouseoverDB.HighlightOpacity)
-    OpacitySlider:SetSliderValues(0, 1, 0.01)
-    OpacitySlider:SetRelativeWidth(0.33)
-    OpacitySlider:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.HighlightOpacity = value updateCallback() end)
-    OpacitySlider:SetIsPercent(true)
-    ToggleContainer:AddChild(OpacitySlider)
+    GUIBuilders.CreateColorBlock(ToggleContainer, "Highlight Color", MouseoverDB, "Color", updateCallback, {width = 0.33, opacityKey = "HighlightOpacity"})
 
     local StyleDropdown = AG:Create("Dropdown")
     StyleDropdown:SetList({["BORDER"] = "Border", ["OVERLAY"] = "Overlay", ["GRADIENT"] = "Gradient" })
@@ -2930,15 +1993,7 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
-    local function RefreshMouseoverGUI()
-        if MouseoverDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-        end
-    end
-
-    RefreshMouseoverGUI()
+    Refresh()
 end
 
 local function CreateTargetIndicatorSettings(containerParent, unit, updateCallback)
@@ -2946,21 +2001,10 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     TargetIndicatorDB.Style = TargetIndicatorDB.Style or "Glow"
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Target Indicator Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Target Indicator|r", TargetIndicatorDB, updateCallback, {width = 0.33})
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Target Indicator|r")
-    Toggle:SetValue(TargetIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Enabled = value updateCallback() RefreshTargetIndicatorGUI() end)
-    Toggle:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(Toggle)
-
-    local ColorPicker = AG:Create("ColorPicker")
-    ColorPicker:SetLabel("Indicator Color")
-    ColorPicker:SetColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3])
-    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TargetIndicatorDB.Color = {r, g, b} updateCallback() end)
-    ColorPicker:SetHasAlpha(false)
-    ColorPicker:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(ColorPicker)
+    GUIBuilders.CreateColorBlock(ToggleContainer, "Indicator Color", TargetIndicatorDB, "Color", updateCallback, {width = 0.33})
 
     local StyleDropdown = AG:Create("Dropdown")
     StyleDropdown:SetList({["Glow"] = "Glow", ["Border"] = "Border"}, {"Glow", "Border"})
@@ -2970,15 +2014,7 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
-    local function RefreshTargetIndicatorGUI()
-        if TargetIndicatorDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-        end
-    end
-
-    RefreshTargetIndicatorGUI()
+    Refresh()
 end
 
 local function CreateThreatIndicatorSettings(containerParent, unit, updateCallback)
@@ -2990,36 +2026,23 @@ local function CreateThreatIndicatorSettings(containerParent, unit, updateCallba
     local ThreatIndicatorDB = GetUnitDB(unit).Indicators.Threat
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Threat Indicator Settings")
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Threat|r Indicator", ThreatIndicatorDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Threat|r Indicator")
-    Toggle:SetValue(ThreatIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) ThreatIndicatorDB.Enabled = value updateCallback() RefreshThreatIndicatorGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
-
-    local function RefreshThreatIndicatorGUI()
-        GUIWidgets.DeepDisable(ToggleContainer, not ThreatIndicatorDB.Enabled, Toggle)
-    end
-
-    RefreshThreatIndicatorGUI()
+    Refresh()
 end
 
 local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallback)
     local TotemsIndicatorDB = GetUnitDB(unit).Indicators.Totems
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Totems|r")
-    Toggle:SetValue(TotemsIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Totems|r", TotemsIndicatorDB, updateCallback)
+    panelsToDisable[1] = ToggleContainer
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    panelsToDisable[2] = LayoutContainer
     local TotemAnchorFromDropdown = AG:Create("Dropdown")
-    TotemAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    TotemAnchorFromDropdown:SetList(GUIBuilders.AnchorPoints[1], GUIBuilders.AnchorPoints[2])
     TotemAnchorFromDropdown:SetLabel("Anchor From")
     TotemAnchorFromDropdown:SetValue(TotemsIndicatorDB.Layout[1])
     TotemAnchorFromDropdown:SetRelativeWidth(0.33)
@@ -3027,7 +2050,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     LayoutContainer:AddChild(TotemAnchorFromDropdown)
 
     local TotemAnchorToDropdown = AG:Create("Dropdown")
-    TotemAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    TotemAnchorToDropdown:SetList(GUIBuilders.AnchorPoints[1], GUIBuilders.AnchorPoints[2])
     TotemAnchorToDropdown:SetLabel("Anchor To")
     TotemAnchorToDropdown:SetValue(TotemsIndicatorDB.Layout[2])
     TotemAnchorToDropdown:SetRelativeWidth(0.33)
@@ -3074,18 +2097,67 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
-    local function RefreshTotemsIndicatorGUI()
-        if TotemsIndicatorDB.Enabled then
-            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, false)
-        else
-            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true)
-        end
-    end
-
-    RefreshTotemsIndicatorGUI()
+    Refresh()
 end
+
+local IndicatorTabsByCategory = {
+    player = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Leader & Assistant", value = "LeaderAssistant" },
+        { text = "Resting", value = "Resting" },
+        { text = "Combat", value = "Combat" },
+        { text = "PvP", value = "PvP" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Threat Indicator", value = "ThreatIndicator" },
+        { text = "Totems", value = "Totems" },
+    },
+    target = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Leader & Assistant", value = "LeaderAssistant" },
+        { text = "Combat", value = "Combat" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Target Indicator", value = "TargetIndicator" },
+        { text = "Threat Indicator", value = "ThreatIndicator" },
+        { text = "Classification", value = "Classification" },
+        { text = "Quest", value = "Quest" },
+    },
+    group = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Leader & Assistant", value = "LeaderAssistant" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Target Indicator", value = "TargetIndicator" },
+        { text = "Threat Indicator", value = "ThreatIndicator" },
+        { text = "Role", value = "Role" },
+        { text = "Phase", value = "Phase" },
+        { text = "Ready Check", value = "ReadyCheckIndicator" },
+        { text = "Resurrect", value = "ResurrectIndicator" },
+        { text = "Summon", value = "Summon" },
+    },
+    minor = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Target Indicator", value = "TargetIndicator" },
+        { text = "Threat Indicator", value = "ThreatIndicator" },
+    },
+    passive = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Target Indicator", value = "TargetIndicator" },
+    },
+}
+
+local IndicatorCategoryByUnit = {
+    player = "player",
+    target = "target",
+    party = "group",
+    raid = "group",
+    augmentation = "group",
+    focus = "minor",
+    pet = "minor",
+    targettarget = "passive",
+    focustarget = "passive",
+    boss = "passive",
+}
 
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
@@ -3129,54 +2201,9 @@ local function CreateIndicatorSettings(containerParent, unit)
     local IndicatorContainerTabGroup = AG:Create("TabGroup")
     IndicatorContainerTabGroup:SetLayout("Flow")
     IndicatorContainerTabGroup:SetFullWidth(true)
-    if unit == "player" then
-        IndicatorContainerTabGroup:SetTabs({
-            { text = "Raid Target Marker", value = "RaidTargetMarker" },
-            { text = "Leader & Assistant", value = "LeaderAssistant" },
-            { text = "Resting", value = "Resting" },
-            { text = "Combat", value = "Combat" },
-            { text = "PvP", value = "PvP" },
-            { text = "Mouseover", value = "Mouseover" },
-            { text = "Threat Indicator", value = "ThreatIndicator" },
-            { text = "Totems", value = "Totems" },
-        })
-    elseif unit == "target" then
-        IndicatorContainerTabGroup:SetTabs({
-            { text = "Raid Target Marker", value = "RaidTargetMarker" },
-            { text = "Leader & Assistant", value = "LeaderAssistant" },
-            { text = "Combat", value = "Combat" },
-            { text = "Mouseover", value = "Mouseover" },
-            { text = "Target Indicator", value = "TargetIndicator" },
-            { text = "Threat Indicator", value = "ThreatIndicator" },
-            { text = "Classification", value = "Classification" },
-            { text = "Quest", value = "Quest" },
-        })
-	elseif unit == "party" or unit == "raid" or unit == "augmentation" then
-        IndicatorContainerTabGroup:SetTabs({
-            { text = "Raid Target Marker", value = "RaidTargetMarker" },
-            { text = "Leader & Assistant", value = "LeaderAssistant" },
-            { text = "Mouseover", value = "Mouseover" },
-            { text = "Target Indicator", value = "TargetIndicator" },
-            { text = "Threat Indicator", value = "ThreatIndicator" },
-            { text = "Role", value = "Role" },
-            { text = "Phase", value = "Phase" },
-			{ text = "Ready Check", value = "ReadyCheckIndicator" },
-			{ text = "Resurrect", value = "ResurrectIndicator" },
-			{ text = "Summon", value = "Summon" },
-        })
-    elseif unit == "focus" or unit == "pet" then
-        IndicatorContainerTabGroup:SetTabs({
-            { text = "Raid Target Marker", value = "RaidTargetMarker" },
-            { text = "Mouseover", value = "Mouseover" },
-            { text = "Target Indicator", value = "TargetIndicator" },
-            { text = "Threat Indicator", value = "ThreatIndicator" },
-        })
-    elseif unit == "targettarget" or unit == "focustarget" or unit == "boss" then
-        IndicatorContainerTabGroup:SetTabs({
-            { text = "Raid Target Marker", value = "RaidTargetMarker" },
-            { text = "Mouseover", value = "Mouseover" },
-            { text = "Target Indicator", value = "TargetIndicator" },
-        })
+    local tabs = IndicatorTabsByCategory[IndicatorCategoryByUnit[unit]]
+    if tabs then
+        IndicatorContainerTabGroup:SetTabs(tabs)
     end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
     IndicatorContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Indicators", "RaidTargetMarker"))
@@ -3389,13 +2416,9 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     end
 
     local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100"..auraDB.."|r")
-    Toggle:SetValue(AuraDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UpdateAuras() RefreshAuraGUI() end)
-    Toggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
-    AuraContainer:AddChild(Toggle)
+    local RefreshAuraGUI
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(AuraContainer, "Enable " .. STYLE.Palette.SelectedText .. auraDB .. "|r", AuraDB, UpdateAuras, {width = isCustom and 0.5 or 0.33})
+    panelsToDisable[1] = AuraContainer
 
     if auraDB == "Custom" then
         local TypeDropdown = AG:Create("Dropdown")
@@ -3488,6 +2511,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    panelsToDisable[2] = LayoutContainer
 
 	local AnchorParentDropdown = AG:Create("Dropdown")
 	AnchorParentDropdown:SetList(AuraAnchorParents[1], AuraAnchorParents[2])
@@ -3540,7 +2564,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(AuraDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
+    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     XPosSlider:SetRelativeWidth(0.25)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[3] = value UpdateAuras() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -3548,7 +2572,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(AuraDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
+    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     YPosSlider:SetRelativeWidth(0.25)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[4] = value UpdateAuras() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3556,7 +2580,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local SizeSlider = AG:Create("Slider")
     SizeSlider:SetLabel("Size")
     SizeSlider:SetValue(AuraDB.Size)
-    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
     SizeSlider:SetRelativeWidth(0.25)
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Size = value UpdateAuras() end)
     LayoutContainer:AddChild(SizeSlider)
@@ -3605,13 +2629,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
 
     local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
 
-    local ColorPicker = AG:Create("ColorPicker")
-    ColorPicker:SetLabel("Color")
-    ColorPicker:SetColor(AuraDB.Count.Color[1], AuraDB.Count.Color[2], AuraDB.Count.Color[3], 1)
-    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Color = {r, g, b} UpdateAuras() end)
-    ColorPicker:SetHasAlpha(false)
-    ColorPicker:SetRelativeWidth(0.5)
-    CountContainer:AddChild(ColorPicker)
+    GUIBuilders.CreateColorBlock(CountContainer, "Color", AuraDB.Count, "Color", UpdateAuras, {width = 0.5})
 
     local HideStacksToggle = AG:Create("CheckBox")
     HideStacksToggle:SetLabel("Hide Stacks")
@@ -3639,7 +2657,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local CountXPosSlider = AG:Create("Slider")
     CountXPosSlider:SetLabel("X Position")
     CountXPosSlider:SetValue(AuraDB.Count.Layout[3])
-    CountXPosSlider:SetSliderValues(-255, 255, 0.1)
+    CountXPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     CountXPosSlider:SetRelativeWidth(0.33)
     CountXPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[3] = value UpdateAuras() end)
     CountContainer:AddChild(CountXPosSlider)
@@ -3647,7 +2665,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local CountYPosSlider = AG:Create("Slider")
     CountYPosSlider:SetLabel("Y Position")
     CountYPosSlider:SetValue(AuraDB.Count.Layout[4])
-    CountYPosSlider:SetSliderValues(-255, 255, 0.1)
+    CountYPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     CountYPosSlider:SetRelativeWidth(0.33)
     CountYPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[4] = value UpdateAuras() end)
     CountContainer:AddChild(CountYPosSlider)
@@ -3655,25 +2673,20 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
     local FontSizeSlider = AG:Create("Slider")
     FontSizeSlider:SetLabel("Font Size")
     FontSizeSlider:SetValue(AuraDB.Count.FontSize)
-    FontSizeSlider:SetSliderValues(8, 64, 1)
+    FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
     FontSizeSlider:SetRelativeWidth(0.33)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value UpdateAuras() end)
     CountContainer:AddChild(FontSizeSlider)
 
-    local function RefreshAuraGUI()
-        if AuraDB.Enabled then
-            GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
-            GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
-            for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
-            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(CountContainer, AuraDB.Count.HideStacks, HideStacksToggle)
-        else
-            GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
-            GUIWidgets.DeepDisable(FilterContainer, true, Toggle)
-            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
-            GUIWidgets.DeepDisable(CountContainer, true, Toggle)
-        end
+    RefreshAuraGUI = function()
+        BuilderRefresh()
+        BlacklistToggle:SetDisabled(not AuraDB.Enabled)
+        GUIWidgets.DeepDisable(FilterContainer, not AuraDB.Enabled or AuraDB.OnlyShowPlayer, BlacklistToggle)
+        for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(not AuraDB.Enabled or AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
+        HideStacksToggle:SetDisabled(not AuraDB.Enabled)
+        GUIWidgets.DeepDisable(CountContainer, not AuraDB.Enabled or AuraDB.Count.HideStacks, HideStacksToggle)
     end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UpdateAuras() RefreshAuraGUI() end)
 
     RefreshAuraGUI()
 
@@ -3692,18 +2705,10 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
     local SizeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Size & Spacing")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFFFFD100Private Auras|r")
-    Toggle:SetValue(PrivateAurasDB.Enabled)
-    Toggle:SetRelativeWidth(0.33)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value)
-        PrivateAurasDB.Enabled = value
-        UpdatePrivateAuras()
-        GUIWidgets.DeepDisable(GeneralContainer, not value, Toggle)
-        GUIWidgets.DeepDisable(LayoutContainer, not value)
-        GUIWidgets.DeepDisable(SizeContainer, not value)
-    end)
-    GeneralContainer:AddChild(Toggle)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(GeneralContainer, "Enable " .. STYLE.Palette.SelectedText .. "Private Auras|r", PrivateAurasDB, UpdatePrivateAuras, {width = 0.33})
+    panelsToDisable[1] = GeneralContainer
+    panelsToDisable[2] = LayoutContainer
+    panelsToDisable[3] = SizeContainer
 
     local DisableCooldownToggle = AG:Create("CheckBox")
     DisableCooldownToggle:SetLabel("Disable Cooldown Spiral")
@@ -3762,7 +2767,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PrivateAurasDB.Layout[3])
-    XPosSlider:SetSliderValues(-255, 255, 0.1)
+    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[3] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(XPosSlider)
@@ -3770,7 +2775,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     local YPosSlider = AG:Create("Slider")
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PrivateAurasDB.Layout[4])
-    YPosSlider:SetSliderValues(-255, 255, 0.1)
+    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
     YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[4] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(YPosSlider)
@@ -3823,9 +2828,7 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value UpdatePrivateAuras() end)
     SizeContainer:AddChild(NumSlider)
 
-    GUIWidgets.DeepDisable(GeneralContainer, not PrivateAurasDB.Enabled, Toggle)
-    GUIWidgets.DeepDisable(LayoutContainer, not PrivateAurasDB.Enabled)
-    GUIWidgets.DeepDisable(SizeContainer, not PrivateAurasDB.Enabled)
+    Refresh()
 
     containerParent:DoLayout()
 end
@@ -3866,13 +2869,10 @@ function CreateAuraSettings(containerParent, unit, updateCallback)
     local AuraContainerTabGroup = AG:Create("TabGroup")
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
-    if AurasDB.PrivateAuras then
-        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, { text = "Private Auras", value = "PrivateAuras"}, })
-    elseif AurasDB.Custom then
-        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, })
-    else
-        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
-    end
+    local auraTabs = { { text = "Buffs", value = "Buffs" }, { text = "Debuffs", value = "Debuffs" } }
+    if AurasDB.Custom then auraTabs[#auraTabs + 1] = { text = "Custom", value = "Custom" } end
+    if AurasDB.PrivateAuras then auraTabs[#auraTabs + 1] = { text = "Private Auras", value = "PrivateAuras" } end
+    AuraContainerTabGroup:SetTabs(auraTabs)
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
     AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
     containerParent:AddChild(AuraContainerTabGroup)
@@ -3919,7 +2919,7 @@ local function CreateCooldownTextSettings(containerParent)
         local XPosSlider = AG:Create("Slider")
         XPosSlider:SetLabel("X Position")
         XPosSlider:SetValue(CooldownTextStyleDB.Layout[3])
-        XPosSlider:SetSliderValues(-255, 255, 0.1)
+        XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
         XPosSlider:SetRelativeWidth(0.33)
         XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[3] = value RUF:UpdateAllUnitFrames() end)
         StyleContainerParent:AddChild(XPosSlider)
@@ -3927,7 +2927,7 @@ local function CreateCooldownTextSettings(containerParent)
         local YPosSlider = AG:Create("Slider")
         YPosSlider:SetLabel("Y Position")
         YPosSlider:SetValue(CooldownTextStyleDB.Layout[4])
-        YPosSlider:SetSliderValues(-255, 255, 0.1)
+        YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
         YPosSlider:SetRelativeWidth(0.33)
         YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[4] = value RUF:UpdateAllUnitFrames() end)
         StyleContainerParent:AddChild(YPosSlider)
@@ -3935,7 +2935,7 @@ local function CreateCooldownTextSettings(containerParent)
         local FontSizeSlider = AG:Create("Slider")
         FontSizeSlider:SetLabel("Font Size")
         FontSizeSlider:SetValue(CooldownTextStyleDB.FontSize)
-        FontSizeSlider:SetSliderValues(8, 64, 1)
+        FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
         FontSizeSlider:SetRelativeWidth(0.33)
         FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value RUF:UpdateAllUnitFrames() end)
         FontSizeSlider:SetDisabled(CooldownTextStyleDB.ScaleByIconSize)
@@ -4063,32 +3063,6 @@ local function CreateGlobalToggleSettings(containerParent)
     ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
     ToggleContainer:AddChild(ToggleMoversButton)
 
-    local ApplyColors = AG:Create("Button")
-    ApplyColors:SetText("Enable Class Color")
-    ApplyColors:SetRelativeWidth(0.33)
-    ApplyColors:SetCallback("OnClick", function()
-        RUF:ForEachUnitDB(function(unitDB)
-            unitDB.HealthBar.ColorByClass = true
-            unitDB.HealthBar.ColorWhenTapped = true
-            unitDB.HealthBar.ColorBackgroundByClass = false
-        end)
-        RUF:UpdateAllUnitFrames()
-    end)
-    ToggleContainer:AddChild(ApplyColors)
-
-    local RemoveColors = AG:Create("Button")
-    RemoveColors:SetText("Disable Class Color")
-    RemoveColors:SetRelativeWidth(0.33)
-    RemoveColors:SetCallback("OnClick", function()
-        RUF:ForEachUnitDB(function(unitDB)
-            unitDB.HealthBar.ColorByClass = false
-            unitDB.HealthBar.ColorWhenTapped = false
-            unitDB.HealthBar.ColorBackgroundByClass = false
-        end)
-        RUF:UpdateAllUnitFrames()
-    end)
-    ToggleContainer:AddChild(RemoveColors)
-
     local DisplayLoginMessageToggle = AG:Create("CheckBox")
     DisplayLoginMessageToggle:SetLabel("Display Login Message")
     DisplayLoginMessageToggle:SetValue(RUF.db.global.DisplayLoginMessage)
@@ -4189,7 +3163,7 @@ local function CreateUnitEnableToggles(containerParent, unit)
 	end
 end
 
-local function CreateTagSettings(containerParent)
+local function CreateTagReferenceSettings(containerParent)
 
     local function DrawTagContainer(TagContainer, TagGroup)
         local TagsList, TagOrder = RUF:FetchTagData(TagGroup)[1], RUF:FetchTagData(TagGroup)[2]
@@ -4250,6 +3224,7 @@ local function CreateProfileSettings(containerParent)
     local profileKeys = {}
     local specProfilesList = {}
     local numSpecs = GetNumSpecializations()
+    local SelectProfileDropdown, CopyFromProfileDropdown, DeleteProfileDropdown, ResetProfileButton, UseGlobalProfileToggle, GlobalProfileDropdown
 
     local ProfileContainer = GUIWidgets.CreateInlineGroup(containerParent, "Profile Management")
 
@@ -4528,7 +3503,7 @@ function RUF:CreateGUI()
             ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-            CreateTagSettings(ScrollFrame)
+            CreateTagReferenceSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
@@ -4690,15 +3665,4 @@ function RUF:OpenGUIToUnit(unit)
 	if unit == "augmentation" and not RUF:IsAugmentationEvoker() then return end
     RUF:CreateGUI()
 	if RUFGUI.MainNavigation then RUFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
-end
-
-function RUFG:OpenRUFGUI()
-    RUF:CreateGUI()
-end
-
-function RUFG:CloseRUFGUI()
-    if isGUIOpen and Container then
-        Container:Hide()
-        DisableAllTestModes()
-    end
 end
