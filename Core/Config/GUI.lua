@@ -493,6 +493,11 @@ local function CreateColorSettings(containerParent)
     local function PopulateColors()
         Container:ReleaseChildren()
 
+        local function UpdateColors()
+            RUF:LoadCustomColors()
+            RUF:UpdateAllUnitFrames()
+        end
+
         GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colors to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
 
         local ResetAllColorsButton = AG:Create("Button")
@@ -542,15 +547,7 @@ local function CreateColorSettings(containerParent)
         local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
         for _, powerType in ipairs(PowerOrder) do
-            local powerColor = RUF.db.profile.General.Colors.Power[powerType]
-            local PowerColorPicker = AG:Create("ColorPicker")
-            PowerColorPicker:SetLabel(Power[powerType])
-            local R, G, B = unpack(powerColor)
-            PowerColorPicker:SetColor(R, G, B)
-            PowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Power[powerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            PowerColorPicker:SetHasAlpha(false)
-            PowerColorPicker:SetRelativeWidth(0.19)
-            Container:AddChild(PowerColorPicker)
+            GUIBuilders.CreateColorBlock(Container, Power[powerType], RUF.db.profile.General.Colors.Power, powerType, UpdateColors, {width = 0.19})
         end
 
         GUIWidgets.CreateHeader(Container, "Secondary Power")
@@ -558,16 +555,8 @@ local function CreateColorSettings(containerParent)
         local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
 
         for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
-            local secondaryPowerColor = RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType]
-            if secondaryPowerColor then
-                local SecondaryPowerColorPicker = AG:Create("ColorPicker")
-                SecondaryPowerColorPicker:SetLabel(Power[secondaryPowerType])
-                local R, G, B = unpack(secondaryPowerColor)
-                SecondaryPowerColorPicker:SetColor(R, G, B)
-                SecondaryPowerColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-                SecondaryPowerColorPicker:SetHasAlpha(false)
-                SecondaryPowerColorPicker:SetRelativeWidth(0.2)
-                Container:AddChild(SecondaryPowerColorPicker)
+            if RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] then
+                GUIBuilders.CreateColorBlock(Container, Power[secondaryPowerType], RUF.db.profile.General.Colors.SecondaryPower, secondaryPowerType, UpdateColors, {width = 0.2})
             end
         end
 
@@ -576,14 +565,7 @@ local function CreateColorSettings(containerParent)
         local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
 
         for _, reactionType in ipairs(ReactionOrder) do
-            local ReactionColorPicker = AG:Create("ColorPicker")
-            ReactionColorPicker:SetLabel(Reaction[reactionType])
-            local R, G, B = unpack(RUF.db.profile.General.Colors.Reaction[reactionType])
-            ReactionColorPicker:SetColor(R, G, B)
-            ReactionColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Reaction[reactionType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            ReactionColorPicker:SetHasAlpha(false)
-            ReactionColorPicker:SetRelativeWidth(0.25)
-            Container:AddChild(ReactionColorPicker)
+            GUIBuilders.CreateColorBlock(Container, Reaction[reactionType], RUF.db.profile.General.Colors.Reaction, reactionType, UpdateColors, {width = 0.25})
         end
 
         GUIWidgets.CreateHeader(Container, "Status")
@@ -591,14 +573,7 @@ local function CreateColorSettings(containerParent)
         local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
 
         for _, statusType in ipairs(StatusOrder) do
-            local StatusColorPicker = AG:Create("ColorPicker")
-            StatusColorPicker:SetLabel(Status[statusType])
-            local R, G, B = unpack(RUF.db.profile.General.Colors.Status[statusType])
-            StatusColorPicker:SetColor(R, G, B)
-            StatusColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Status[statusType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            StatusColorPicker:SetHasAlpha(false)
-            StatusColorPicker:SetRelativeWidth(0.25)
-            Container:AddChild(StatusColorPicker)
+            GUIBuilders.CreateColorBlock(Container, Status[statusType], RUF.db.profile.General.Colors.Status, statusType, UpdateColors, {width = 0.25})
         end
 
         GUIWidgets.CreateHeader(Container, "Threat")
@@ -606,14 +581,7 @@ local function CreateColorSettings(containerParent)
         local ThreatOrder = {0, 1, 2, 3}
 
         for _, threatStatus in ipairs(ThreatOrder) do
-            local ThreatColorPicker = AG:Create("ColorPicker")
-            ThreatColorPicker:SetLabel(Threat[threatStatus])
-            local R, G, B = unpack(RUF.db.profile.General.Colors.Threat[threatStatus])
-            ThreatColorPicker:SetColor(R, G, B)
-            ThreatColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Threat[threatStatus] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            ThreatColorPicker:SetHasAlpha(false)
-            ThreatColorPicker:SetRelativeWidth(0.25)
-            Container:AddChild(ThreatColorPicker)
+            GUIBuilders.CreateColorBlock(Container, Threat[threatStatus], RUF.db.profile.General.Colors.Threat, threatStatus, UpdateColors, {width = 0.25})
         end
 
         GUIWidgets.CreateHeader(Container, "Dispel Types")
@@ -621,14 +589,7 @@ local function CreateColorSettings(containerParent)
         local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
 
         for _, dispelType in ipairs(DispelTypes) do
-            local DispelColorPicker = AG:Create("ColorPicker")
-            DispelColorPicker:SetLabel(dispelType)
-            local R, G, B = unpack(RUF.db.profile.General.Colors.Dispel[dispelType])
-            DispelColorPicker:SetColor(R, G, B)
-            DispelColorPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) RUF.db.profile.General.Colors.Dispel[dispelType] = {r, g, b} RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() end)
-            DispelColorPicker:SetHasAlpha(false)
-            DispelColorPicker:SetRelativeWidth(0.2)
-            Container:AddChild(DispelColorPicker)
+            GUIBuilders.CreateColorBlock(Container, dispelType, RUF.db.profile.General.Colors.Dispel, dispelType, UpdateColors, {width = 0.2})
         end
         Container:DoLayout()
     end
@@ -810,25 +771,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 	local secondaryToggleWidth = (unit == "raid" or unit == "augmentation") and 0.33 or primaryToggleWidth
 
     if unit == "party" then
-        local ShowPlayerToggle = AG:Create("CheckBox")
-        ShowPlayerToggle:SetLabel("Show Player")
-        ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
-        ShowPlayerToggle:SetRelativeWidth(primaryToggleWidth)
-        ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value)
-            StaticPopupDialogs["RUF_RELOAD_UI"] = {
-                text = "You must reload to apply this change, do you want to reload now?",
-                button1 = "Reload Now",
-                button2 = "Later",
-                showAlert = true,
-                OnAccept = function() FrameDB.ShowPlayer = value C_UI.Reload() end,
-                OnCancel = function() ShowPlayerToggle:SetValue(FrameDB.ShowPlayer) containerParent:DoLayout() end,
-                timeout = 0,
-                whileDead = true,
-                hideOnEscape = true,
-            }
-            StaticPopup_Show("RUF_RELOAD_UI")
-        end)
-        ColorContainer:AddChild(ShowPlayerToggle)
+        GUIBuilders.CreateReloadPrompt(ColorContainer, "Show Player", FrameDB, "ShowPlayer", {width = primaryToggleWidth})
     end
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
@@ -3119,48 +3062,13 @@ local function CreateGlobalTagSettings(containerParent)
 end
 
 local function CreateUnitEnableToggles(containerParent, unit)
-    local EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Enable |cFFFFD100"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
-    EnableUnitFrameToggle:SetValue(GetUnitDB(unit).Enabled)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
-        StaticPopupDialogs["RUF_RELOAD_UI"] = {
-            text = "You must reload to apply this change, do you want to reload now?",
-            button1 = "Reload Now",
-            button2 = "Later",
-            showAlert = true,
-            OnAccept = function() GetUnitDB(unit).Enabled= value C_UI.Reload() end,
-            OnCancel = function() EnableUnitFrameToggle:SetValue(GetUnitDB(unit).Enabled) containerParent:DoLayout() end,
-            timeout = 0,
-            whileDead = true,
-            hideOnEscape = true,
-        }
-        StaticPopup_Show("RUF_RELOAD_UI")
-    end)
-	EnableUnitFrameToggle:SetRelativeWidth(unit == "augmentation" and 0.5 or 0.33)
-    containerParent:AddChild(EnableUnitFrameToggle)
+    local UnitDB = GetUnitDB(unit)
+    GUIBuilders.CreateReloadPrompt(containerParent, "Enable " .. STYLE.Palette.SelectedText .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r", UnitDB, "Enabled", {width = unit == "augmentation" and 0.5 or 0.33})
 
-	if unit ~= "augmentation" then
-		local HideBlizzardToggle = AG:Create("CheckBox")
-		HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFD100"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
-		HideBlizzardToggle:SetValue(GetUnitDB(unit).ForceHideBlizzard)
-		HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
-				StaticPopupDialogs["RUF_RELOAD_UI"] = {
-				text = "You must reload to apply this change, do you want to reload now?",
-				button1 = "Reload Now",
-				button2 = "Later",
-				showAlert = true,
-				OnAccept = function() GetUnitDB(unit).ForceHideBlizzard = value C_UI.Reload() end,
-				OnCancel = function() HideBlizzardToggle:SetValue(GetUnitDB(unit).ForceHideBlizzard) containerParent:DoLayout() end,
-				timeout = 0,
-				whileDead = true,
-				hideOnEscape = true,
-			}
-			StaticPopup_Show("RUF_RELOAD_UI")
-		end)
-		HideBlizzardToggle:SetRelativeWidth(0.33)
-		HideBlizzardToggle:SetDisabled(GetUnitDB(unit).Enabled)
-		containerParent:AddChild(HideBlizzardToggle)
-	end
+    if unit ~= "augmentation" then
+        local HideBlizzardToggle = GUIBuilders.CreateReloadPrompt(containerParent, "Hide Blizzard " .. STYLE.Palette.SelectedText .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r", UnitDB, "ForceHideBlizzard", {width = 0.33})
+        HideBlizzardToggle:SetDisabled(UnitDB.Enabled)
+    end
 end
 
 local function CreateTagReferenceSettings(containerParent)

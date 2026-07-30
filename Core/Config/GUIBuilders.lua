@@ -129,3 +129,30 @@ function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, 
 
     return ColorPicker, OpacitySlider
 end
+
+-- Reload prompt, a seperate pop-up that informs the user that a reload is required to make the desired change (like enableing and disabling frames)
+function Builders.CreateReloadPrompt(parent, label, db, key, opts)
+    opts = opts or {}
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel(label)
+    Toggle:SetValue(db[key])
+    Toggle:SetRelativeWidth(opts.width or 1)
+    parent:AddChild(Toggle)
+
+    Toggle:SetCallback("OnValueChanged", function(_, _, value)
+        StaticPopupDialogs["RUF_RELOAD_UI"] ={
+            text = "You must reload to apply this change, do you want to reload now?",
+            button1 = "Reload",
+            button2 = "Later",
+            showAlert = true,
+            OnAccept = function() db[key] = value C_UI.Reload() end,
+            OnCancel = function() Toggle:SetValue(db[key]) parent:DoLayout() end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+        }
+        StaticPopup_Show("RUF_RELOAD_UI")
+    end)
+
+    return Toggle
+end
