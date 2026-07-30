@@ -534,6 +534,13 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		if RaidDB and RaidDB.ForceHideBlizzard then RUF:HideBlizzardRaidFrames() end
 		RUF:UpdateGroupIndicators("party")
 		RUF:UpdateAugmentationRaidFrames()
+		for _, partyFrame in ipairs(RUF.PARTY_FRAMES) do
+			local unitGUID = UnitGUID(partyFrame.unit)
+			if unitGUID ~= nil and not RUF:IsSecretValue(unitGUID) and unitGUID ~= partyFrame.unitGUID then 
+				partyFrame.unitGUID = unitGUID
+				partyFrame:UpdateAllElements("GROUP_ROSTER_UPDATE")
+			end
+		end
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		RUF:UpdateGroupIndicators("party", true)
 		RUF:UpdateGroupIndicators("raid", true)
