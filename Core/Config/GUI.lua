@@ -3349,7 +3349,7 @@ function RUF:CreateGUI()
     Container:SetTitle(RUF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
     Container:SetWidth(1100)
-    Container:SetHeight(600)
+    Container:SetHeight(800)
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
 

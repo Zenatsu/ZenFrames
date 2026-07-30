@@ -2,6 +2,7 @@ local _, RUF = ...
 local Serialize = LibStub:GetLibrary("AceSerializer-3.0")
 local Compress = LibStub:GetLibrary("LibDeflate")
 local RUF_IMPORT_PREFIX = "!RUF_"
+local UUF_IMPORT_PREFIX = "!UUF_"
 
 local function MergeInto(target, source)
     for key, value in pairs(source) do
@@ -82,11 +83,19 @@ local function BuildEncodedProfile(profileData)
 end
 
 local function ParseEncodedProfile(encodedInfo)
-    if type(encodedInfo) ~= "string" or encodedInfo:sub(1, #RUF_IMPORT_PREFIX) ~= RUF_IMPORT_PREFIX then
+    if type(encodedInfo) ~= "string" then
         return nil
     end
 
-    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#RUF_IMPORT_PREFIX + 1))
+    local prefix = (encodedInfo:sub(1, #RUF_IMPORT_PREFIX) == RUF_IMPORT_PREFIX) and RUF_IMPORT_PREFIX 
+        or (encodedInfo:sub(1, #UUF_IMPORT_PREFIX) == UUF_IMPORT_PREFIX) and UUF_IMPORT_PREFIX
+        or nil
+        
+    if not prefix then
+        return nil
+    end
+
+    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#prefix + 1))
     if not decodedInfo then
         return nil
     end
