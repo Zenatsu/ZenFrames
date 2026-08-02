@@ -16,15 +16,13 @@ end
 
 function RUF:CreateUnitClassificationIndicator(unitFrame, unit)
 	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
-	local ClassificationIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_ClassificationIndicator", "OVERLAY")
-	ClassificationIndicator:SetSize(ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Size)
-	ClassificationIndicator:SetPoint(ClassificationIndicatorDB.Layout[1], unitFrame.HighLevelContainer, ClassificationIndicatorDB.Layout[2], ClassificationIndicatorDB.Layout[3], ClassificationIndicatorDB.Layout[4])
+	local ClassificationIndicator = RUF:CreateIndicatorTexture(unitFrame, unit, "_ClassificationIndicator", ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
 	ClassificationIndicator.PostUpdate = UpdateClassificationTexture
 
 	if ClassificationIndicatorDB.Enabled then
 		unitFrame.ClassificationIndicator = ClassificationIndicator
 	else
-		ClassificationIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", ClassificationIndicator)
 	end
 
 	return ClassificationIndicator
@@ -37,13 +35,10 @@ function RUF:UpdateUnitClassificationIndicator(unitFrame, unit)
 		unitFrame.ClassificationIndicator = unitFrame.ClassificationIndicator or RUF:CreateUnitClassificationIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ClassificationIndicator") then unitFrame:EnableElement("ClassificationIndicator") end
 
-		unitFrame.ClassificationIndicator:ClearAllPoints()
-		unitFrame.ClassificationIndicator:SetSize(ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Size)
-		unitFrame.ClassificationIndicator:SetPoint(ClassificationIndicatorDB.Layout[1], unitFrame.HighLevelContainer, ClassificationIndicatorDB.Layout[2], ClassificationIndicatorDB.Layout[3], ClassificationIndicatorDB.Layout[4])
+		RUF:PositionIndicatorTexture(unitFrame.ClassificationIndicator, unitFrame.HighLevelContainer, ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
 		unitFrame.ClassificationIndicator:ForceUpdate()
 	elseif unitFrame.ClassificationIndicator then
-		if unitFrame:IsElementEnabled("ClassificationIndicator") then unitFrame:DisableElement("ClassificationIndicator") end
-		unitFrame.ClassificationIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", unitFrame.ClassificationIndicator)
 		unitFrame.ClassificationIndicator = nil
 	end
 end

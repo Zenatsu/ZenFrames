@@ -164,16 +164,6 @@ function RUF:SpawnUnitFrame(unit)
             RegisterUnitWatch(RUF[unit:upper()])
             RUF[unit:upper()]:Show()
         end
-    else
-        if unit == "boss" then
-            for i = 1, RUF.MAX_BOSS_FRAMES do
-                UnregisterUnitWatch(RUF[unit:upper() .. i])
-                RUF[unit:upper() .. i]:Hide()
-            end
-        else
-            UnregisterUnitWatch(RUF[unit:upper()])
-            RUF[unit:upper()]:Hide()
-        end
     end
 
     return RUF[unit:upper()]

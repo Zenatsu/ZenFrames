@@ -82,29 +82,13 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     local SpellNameText = CastBar:CreateFontString(RUF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
     SpellNameText:ClearAllPoints()
     SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-    SpellNameText:SetFont(RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag)
-    SpellNameText:SetTextColor(unpack(SpellNameDB.Color))
-    if GeneralDB.Fonts.Shadow.Enabled then
-        SpellNameText:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-        SpellNameText:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-    else
-        SpellNameText:SetShadowColor(0, 0, 0, 0)
-        SpellNameText:SetShadowOffset(0, 0)
-    end
+    RUF:ApplyFontStringStyle(SpellNameText, RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
     SpellNameText:SetJustifyH(RUF:SetJustification(SpellNameDB.Layout[1]))
 
     local DurationText = CastBar:CreateFontString(RUF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
     DurationText:ClearAllPoints()
     DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-    DurationText:SetFont(RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag)
-    DurationText:SetTextColor(unpack(DurationDB.Color))
-    if GeneralDB.Fonts.Shadow.Enabled then
-        DurationText:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-        DurationText:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-    else
-        DurationText:SetShadowColor(0, 0, 0, 0)
-        DurationText:SetShadowOffset(0, 0)
-    end
+    RUF:ApplyFontStringStyle(DurationText, RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
     DurationText:SetJustifyH(RUF:SetJustification(DurationDB.Layout[1]))
 
     if CastBarDB.Inverse then
@@ -246,15 +230,7 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
                 local SpellNameDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-                unitFrame.Castbar.Text:SetFont(RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag)
-                unitFrame.Castbar.Text:SetTextColor(unpack(SpellNameDB.Color))
-                if GeneralDB.Fonts.Shadow.Enabled then
-                    unitFrame.Castbar.Text:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-                    unitFrame.Castbar.Text:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-                else
-                    unitFrame.Castbar.Text:SetShadowColor(0, 0, 0, 0)
-                    unitFrame.Castbar.Text:SetShadowOffset(0, 0)
-                end
+                RUF:ApplyFontStringStyle(unitFrame.Castbar.Text, RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
                 unitFrame.Castbar.Text:SetJustifyH(RUF:SetJustification(SpellNameDB.Layout[1]))
                 if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
             end
@@ -263,15 +239,7 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
                 local DurationDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-                unitFrame.Castbar.Time:SetFont(RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag)
-                unitFrame.Castbar.Time:SetTextColor(unpack(DurationDB.Color))
-                if GeneralDB.Fonts.Shadow.Enabled then
-                    unitFrame.Castbar.Time:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-                    unitFrame.Castbar.Time:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-                else
-                    unitFrame.Castbar.Time:SetShadowColor(0, 0, 0, 0)
-                    unitFrame.Castbar.Time:SetShadowOffset(0, 0)
-                end
+                RUF:ApplyFontStringStyle(unitFrame.Castbar.Time, RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
                 unitFrame.Castbar.Time:SetJustifyH(RUF:SetJustification(DurationDB.Layout[1]))
                 if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
             end

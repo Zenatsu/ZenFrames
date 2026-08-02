@@ -16,6 +16,11 @@ RUF.DesignerStyle = {
         WindowHeight  = 600,
     },
 
+    Movers = {
+        NudgeStep = 1,
+        NudgeStepFine = 0.1,
+    },
+
     -- Shared slider min/max/step triples, so every settings panel tunes from one place.
     Sliders = {
         Position  = {-255, 255, 0.1}, -- element X/Y offsets
@@ -29,6 +34,7 @@ RUF.DesignerStyle = {
         Selected     = {1, 0.82, 0, 1},     -- gold: selected widget outline
         Hovered      = {1, 1, 1, 0.7},      -- soft white: hovered widget outline
         Idle         = {1, 1, 1, 0},        -- alpha 0 when no widget selected
+        MoverBorder  = {1, 0.82, 0, 1},      -- gold Mover Border
         SelectedText = "|cFFFFD100",        -- gold
         ErrorText    = "|cFFFF4040",        -- red
     },

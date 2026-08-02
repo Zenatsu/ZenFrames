@@ -17,7 +17,7 @@ function RUF:CreateUnitPhaseIndicator(unitFrame, unit)
 	if PhaseDB.Enabled then
 		unitFrame.PhaseIndicator = PhaseIndicator
 	else
-		PhaseIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "PhaseIndicator", PhaseIndicator)
 	end
 
 	return PhaseIndicator
@@ -31,13 +31,10 @@ function RUF:UpdateUnitPhaseIndicator(unitFrame, unit)
 		unitFrame.PhaseIndicator = unitFrame.PhaseIndicator or RUF:CreateUnitPhaseIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("PhaseIndicator") then unitFrame:EnableElement("PhaseIndicator") end
 
-		unitFrame.PhaseIndicator:ClearAllPoints()
-		unitFrame.PhaseIndicator:SetSize(PhaseDB.Size, PhaseDB.Size)
-		unitFrame.PhaseIndicator:SetPoint(PhaseDB.Layout[1], unitFrame.HighLevelContainer, PhaseDB.Layout[2], PhaseDB.Layout[3], PhaseDB.Layout[4])
+		RUF:PositionIndicatorTexture(unitFrame.PhaseIndicator, unitFrame.HighLevelContainer, PhaseDB.Size, PhaseDB.Layout)
 		unitFrame.PhaseIndicator:ForceUpdate()
 	elseif unitFrame.PhaseIndicator then
-		if unitFrame:IsElementEnabled("PhaseIndicator") then unitFrame:DisableElement("PhaseIndicator") end
-		unitFrame.PhaseIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "PhaseIndicator", unitFrame.PhaseIndicator)
 		unitFrame.PhaseIndicator = nil
 	end
 end

@@ -20,6 +20,25 @@ DispelEventFrame:SetScript("OnEvent", function()
 	for unitFrame in pairs(DispelHighlightFrames) do RUF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end
 end)
 
+local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
+	texture:ClearAllPoints()
+	if DispelHighlightDB.Style == "GRADIENT" then
+		texture:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+		texture:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+		texture:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png")
+		texture:SetAlpha(1)
+	else
+		local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
+		if barTexture then
+			texture:SetAllPoints(barTexture)
+		else
+			texture:SetAllPoints(unitFrame.Health)
+		end
+		texture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		texture:SetAlpha(0.75)
+	end
+end
+
 function RUF:UpdateDispelColorCurve(unitFrame)
     if not unitFrame.dispelColorCurve then return end
     unitFrame.dispelColorCurve:ClearPoints()
@@ -36,22 +55,7 @@ function RUF:CreateUnitDispelHighlight(unitFrame, unit)
 	local DispelHighlightDB = RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 	if not unitFrame.DispelHighlight then
 		local DispelHighlight = unitFrame.Health:CreateTexture(RUF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
-		DispelHighlight:ClearAllPoints()
-		if DispelHighlightDB.Style == "GRADIENT" then
-			DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-			DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-			DispelHighlight:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png")
-			DispelHighlight:SetAlpha(1)
-		else
-			local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
-			if barTexture then
-				DispelHighlight:SetAllPoints(barTexture)
-			else
-				DispelHighlight:SetAllPoints(unitFrame.Health)
-			end
-			DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
-			DispelHighlight:SetAlpha(0.75)
-		end
+		ApplyDispelHighlightStyle(DispelHighlight, unitFrame, DispelHighlightDB)
 		DispelHighlight:SetBlendMode("BLEND")
 		DispelHighlight:Hide()
 
@@ -73,22 +77,7 @@ function RUF:UpdateUnitDispelHighlight(unitFrame, unit)
 	if unitFrame.DispelHighlight then
 		if DispelHighlightDB.Enabled then
 			RUF:RegisterDispelHighlightEvents(unitFrame, unit)
-			unitFrame.DispelHighlight:ClearAllPoints()
-			if DispelHighlightDB.Style == "GRADIENT" then
-				unitFrame.DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-				unitFrame.DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-				unitFrame.DispelHighlight:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png")
-				unitFrame.DispelHighlight:SetAlpha(1)
-			else
-				local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
-				if barTexture then
-					unitFrame.DispelHighlight:SetAllPoints(barTexture)
-				else
-					unitFrame.DispelHighlight:SetAllPoints(unitFrame.Health)
-				end
-				unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
-				unitFrame.DispelHighlight:SetAlpha(0.75)
-			end
+			ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
 			RUF:UpdateUnitDispelState(unitFrame, unit)
 		else
 			RUF:UnregisterDispelHighlightEvents(unitFrame)

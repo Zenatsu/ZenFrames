@@ -6,15 +6,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 
 	if not unitFrame.Tags[tagDB] then
 		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(RUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
-		unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
-		unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Color[1], TagDB.Color[2], TagDB.Color[3], 1)
-		if GeneralDB.Fonts.Shadow.Enabled then
-			unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-			unitFrame.Tags[tagDB]:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-		else
-			unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
-			unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
-		end
+		RUF:ApplyFontStringStyle(unitFrame.Tags[tagDB], RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
 		unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
 		unitFrame.Tags[tagDB]:SetJustifyH(RUF:SetJustification(TagDB.Layout[1]))
 		if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
@@ -41,15 +33,7 @@ function RUF:UpdateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then CreateUnitTag(unitFrame, unit, tagDB) end
 	if not unitFrame.Tags[tagDB] then return end
 
-	unitFrame.Tags[tagDB]:SetFont(RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
-	unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Color[1], TagDB.Color[2], TagDB.Color[3], 1)
-	if GeneralDB.Fonts.Shadow.Enabled then
-		unitFrame.Tags[tagDB]:SetShadowColor(GeneralDB.Fonts.Shadow.Color[1], GeneralDB.Fonts.Shadow.Color[2], GeneralDB.Fonts.Shadow.Color[3], GeneralDB.Fonts.Shadow.Color[4])
-		unitFrame.Tags[tagDB]:SetShadowOffset(GeneralDB.Fonts.Shadow.XPos, GeneralDB.Fonts.Shadow.YPos)
-	else
-		unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
-		unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
-	end
+	RUF:ApplyFontStringStyle(unitFrame.Tags[tagDB], RUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
 	unitFrame.Tags[tagDB]:ClearAllPoints()
 	unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
 	unitFrame.Tags[tagDB]:SetJustifyH(RUF:SetJustification(TagDB.Layout[1]))

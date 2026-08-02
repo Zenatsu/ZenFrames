@@ -4,9 +4,7 @@ function RUF:CreateUnitRoleIndicator(unitFrame, unit)
 	local RoleDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Role
 	if not RoleDB then return end
 
-	local RoleIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_RoleIndicator", "OVERLAY")
-	RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
-	RoleIndicator:SetPoint(RoleDB.Layout[1], unitFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+	local RoleIndicator = RUF:CreateIndicatorTexture(unitFrame, unit, "_RoleIndicator", RoleDB.Size, RoleDB.Layout)
 	RoleIndicator.PostUpdate = function(textureElement, role)
 		local showRole = (role == "TANK" and RoleDB.ShowTank ~= false) or (role == "HEALER" and RoleDB.ShowHealer ~= false) or (role == "DAMAGER" and RoleDB.ShowDamager ~= false)
 		if not showRole then textureElement:Hide() return end
@@ -21,7 +19,7 @@ function RUF:CreateUnitRoleIndicator(unitFrame, unit)
 	if RoleDB.Enabled then
 		unitFrame.GroupRoleIndicator = RoleIndicator
 	else
-		RoleIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "GroupRoleIndicator", RoleIndicator)
 	end
 
 	return RoleIndicator
@@ -35,13 +33,10 @@ function RUF:UpdateUnitRoleIndicator(unitFrame, unit)
 		unitFrame.GroupRoleIndicator = unitFrame.GroupRoleIndicator or RUF:CreateUnitRoleIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("GroupRoleIndicator") then unitFrame:EnableElement("GroupRoleIndicator") end
 
-		unitFrame.GroupRoleIndicator:ClearAllPoints()
-		unitFrame.GroupRoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
-		unitFrame.GroupRoleIndicator:SetPoint(RoleDB.Layout[1], unitFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+		RUF:PositionIndicatorTexture(unitFrame.GroupRoleIndicator, unitFrame.HighLevelContainer, RoleDB.Size, RoleDB.Layout)
 		unitFrame.GroupRoleIndicator:ForceUpdate()
 	elseif unitFrame.GroupRoleIndicator then
-		if unitFrame:IsElementEnabled("GroupRoleIndicator") then unitFrame:DisableElement("GroupRoleIndicator") end
-		unitFrame.GroupRoleIndicator:Hide()
+		RUF:DisableIndicatorElement(unitFrame, "GroupRoleIndicator", unitFrame.GroupRoleIndicator)
 		unitFrame.GroupRoleIndicator = nil
 	end
 end

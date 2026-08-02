@@ -1,7 +1,7 @@
 local _, RUF = ...
 
-local function UpdateQuestTexture(QuestIndicator)
-    local QuestIndicatorDB = RUF.db.profile.Units.target.Indicators.Quest
+local function UpdateQuestTexture(QuestIndicator, unitFrame, unit)
+    local QuestIndicatorDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Quest
     QuestIndicator:SetTexture(RUF.QuestTextures[QuestIndicatorDB.Texture] or RUF.QuestTextures.DEFAULT)
     if QuestIndicatorDB.Texture == "QUEST0" then
         QuestIndicator:SetHeight(QuestIndicatorDB.Size)
@@ -12,26 +12,25 @@ local function UpdateQuestTexture(QuestIndicator)
 end
 
 function RUF:CreateUnitQuestIndicator(unitFrame, unit)
-    local QuestIndicatorDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Quest
+    local QuestIndicatorDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Quest
 
     local QuestIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_QuestIndicator", "OVERLAY")
     QuestIndicator:SetPoint(QuestIndicatorDB.Layout[1], unitFrame.HighLevelContainer, QuestIndicatorDB.Layout[2], QuestIndicatorDB.Layout[3], QuestIndicatorDB.Layout[4])
-    QuestIndicator.PostUpdate = UpdateQuestTexture
-    UpdateQuestTexture(QuestIndicator)
+    QuestIndicator.PostUpdate = function(indicator) UpdateQuestTexture(indicator, unitFrame, unit) end
+    UpdateQuestTexture(QuestIndicator, unitFrame, unit)
 
     if QuestIndicatorDB.Enabled then
         unitFrame.QuestUnitIndicator = QuestIndicator
         unitFrame.QuestUnitIndicator:Show()
     else
-        if unitFrame:IsElementEnabled("QuestUnitIndicator") then unitFrame:DisableElement("QuestUnitIndicator") end
-        QuestIndicator:Hide()
+        RUF:DisableIndicatorElement(unitFrame, "QuestUnitIndicator", QuestIndicator)
     end
 
     return QuestIndicator
 end
 
 function RUF:UpdateUnitQuestIndicator(unitFrame, unit)
-    local QuestIndicatorDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Quest
+    local QuestIndicatorDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Quest
 
     if QuestIndicatorDB.Enabled then
         unitFrame.QuestUnitIndicator = unitFrame.QuestUnitIndicator or RUF:CreateUnitQuestIndicator(unitFrame, unit)
@@ -45,10 +44,7 @@ function RUF:UpdateUnitQuestIndicator(unitFrame, unit)
         end
     else
         if not unitFrame.QuestUnitIndicator then return end
-        if unitFrame:IsElementEnabled("QuestUnitIndicator") then unitFrame:DisableElement("QuestUnitIndicator") end
-        if unitFrame.QuestUnitIndicator then
-            unitFrame.QuestUnitIndicator:Hide()
-            unitFrame.QuestUnitIndicator = nil
-        end
+        RUF:DisableIndicatorElement(unitFrame, "QuestUnitIndicator", unitFrame.QuestUnitIndicator)
+        unitFrame.QuestUnitIndicator = nil
     end
 end

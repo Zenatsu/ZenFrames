@@ -432,6 +432,7 @@ local function UpdateOverlayVisual(overlay)
     if overlay.entry == selectedEntry then
         overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Idle))
         RUF.LG.PixelGlow_Start(overlay, STYLE.Palette.Selected, nil, nil, nil, 2, nil, nil, false) -- Gold: Selected
+                            -- Args: r (The target frame), color(R,G,B,A), N(Number of Dashes), frequency(Animation speed), length(How long the dashes are), th(Line Thickness), xOffset, yOffset(X/Y offset from the source frame), border(Draw a dark border under the dashes), key(Internal namespace for multi glow frames), frameLevel(frame level in which to draw the glow)
     elseif overlay.hovered then
         overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Hovered))   -- White: Hovered
         RUF.LG.PixelGlow_Stop(overlay)

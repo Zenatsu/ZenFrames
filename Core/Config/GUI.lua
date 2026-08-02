@@ -6,7 +6,7 @@ local GUIBuilders = RUF.GUIBuilders
 local STYLE = RUF.DesignerStyle
 local RUFGUI = {}
 local isGUIOpen = false
--- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
+local Container
 local lastSelectedUnitTabs = {}
 local designerLastTab = {}
 local generalLastTab = "GlobalToggles"
@@ -3003,7 +3003,7 @@ local function CreateGlobalToggleSettings(containerParent)
     local ToggleMoversButton = AG:Create("Button")
     ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
     ToggleMoversButton:SetRelativeWidth(0.33)
-    ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+    ToggleMoversButton:SetCallback("OnClick", function() RUF:ToggleMovers() end)
     ToggleContainer:AddChild(ToggleMoversButton)
 
     local DisplayLoginMessageToggle = AG:Create("CheckBox")
@@ -3339,6 +3339,18 @@ local function CreateProfileSettings(containerParent)
     SharingContainer:AddChild(ExportDefaultsButton)
 end
 
+function RUF:SetMainGUIShown(shown)
+    if not Container then return end
+    if shown then
+        Container:Show()
+    else
+        local realOnClose = Container.events["OnClose"]
+        Container.events["OnClose"] = function() end
+        Container:Hide()
+        Container.events["OnClose"] = realOnClose
+    end
+end
+
 function RUF:CreateGUI()
     if isGUIOpen then return end
     if InCombatLockdown() then return end
@@ -3452,9 +3464,9 @@ function RUF:CreateGUI()
             CreateUnitEnableToggles(DesignerSettingsContainer, unit)
             
             local ToggleMoversButton = AG:Create("Button")
-            ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+            ToggleMoversButton:SetText("Unlock Movers")
             ToggleMoversButton:SetRelativeWidth(0.33)
-            ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(RUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+            ToggleMoversButton:SetCallback("OnClick", function() RUF:ToggleMovers() end)
             DesignerSettingsContainer:AddChild(ToggleMoversButton)
 
             local hasCastBarPortrait = unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "party" and unit ~= "raid" and unit ~= "Augmentation"

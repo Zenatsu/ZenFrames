@@ -44,17 +44,26 @@ local function Update3DPortrait(unitFrame, _, unit)
 	if unitPortrait.PostUpdate then return unitPortrait:PostUpdate(unit, portraitChanged) end
 end
 
+local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
+	local portraitBackdrop = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
+	portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+	portraitBackdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+	RUF:ApplyBackdropStyle(portraitBackdrop, {26/255, 26/255, 26/255, 1}, {0, 0, 0, 0})
+
+	local border = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
+	border:SetAllPoints(portraitBackdrop)
+	RUF:ApplyBackdropStyle(border, {0, 0, 0, 0}, {0, 0, 0, 1})
+	border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
+
+	return portraitBackdrop, border
+end
+
 function RUF:CreateUnitPortrait(unitFrame, unit)
 	local PortraitDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
 
 	if portraitStyle == "3D" then
-		local portraitBackdrop = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
-		portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-		portraitBackdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-		portraitBackdrop:SetBackdrop(RUF.BACKDROP)
-		portraitBackdrop:SetBackdropColor(26/255, 26/255, 26/255, 1)
-		portraitBackdrop:SetBackdropBorderColor(0, 0, 0, 0)
+		local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 
 		local unitPortrait = CreateFrame("PlayerModel", RUF:FetchFrameName(unit) .. "_Portrait3D", portraitBackdrop)
 		unitPortrait:SetAllPoints(portraitBackdrop)
@@ -69,12 +78,7 @@ function RUF:CreateUnitPortrait(unitFrame, unit)
 		unitPortrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 		unitPortrait.Fallback:Hide()
 
-		unitPortrait.Border = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
-		unitPortrait.Border:SetAllPoints(portraitBackdrop)
-		unitPortrait.Border:SetBackdrop(RUF.BACKDROP)
-		unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)
-		unitPortrait.Border:SetBackdropBorderColor(0, 0, 0, 1)
-		unitPortrait.Border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
+		unitPortrait.Border = border
 
 		if PortraitDB.Enabled then
 			unitFrame.Portrait = unitPortrait
@@ -90,25 +94,14 @@ function RUF:CreateUnitPortrait(unitFrame, unit)
 		return unitPortrait
 	end
 
-	local portraitBackdrop = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
-	portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-	portraitBackdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-	portraitBackdrop:SetBackdrop(RUF.BACKDROP)
-	portraitBackdrop:SetBackdropColor(26/255, 26/255, 26/255, 1)
-	portraitBackdrop:SetBackdropBorderColor(0, 0, 0, 0)
+	local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 
 	local unitPortrait = portraitBackdrop:CreateTexture(RUF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
 	unitPortrait:SetAllPoints(portraitBackdrop)
 	unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 	unitPortrait.showClass = PortraitDB.UseClassPortrait
 	unitPortrait.Backdrop = portraitBackdrop
-
-	unitPortrait.Border = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
-	unitPortrait.Border:SetAllPoints(portraitBackdrop)
-	unitPortrait.Border:SetBackdrop(RUF.BACKDROP)
-	unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)
-	unitPortrait.Border:SetBackdropBorderColor(0, 0, 0, 1)
-	unitPortrait.Border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
+	unitPortrait.Border = border
 
 	if PortraitDB.Enabled then
 		unitFrame.Portrait = unitPortrait

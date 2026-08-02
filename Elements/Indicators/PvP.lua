@@ -3,9 +3,7 @@ local _, RUF = ...
 function RUF:CreateUnitPvPIndicator(unitFrame, unit)
     local PvPIndicatorDB = RUF.db.profile.Units.player.Indicators.PvP
 
-    local PvPIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_PvPIndicator", "OVERLAY", nil, 1)
-    PvPIndicator:SetSize(PvPIndicatorDB.Size, PvPIndicatorDB.Size)
-    PvPIndicator:SetPoint(PvPIndicatorDB.Layout[1], unitFrame.HighLevelContainer, PvPIndicatorDB.Layout[2], PvPIndicatorDB.Layout[3], PvPIndicatorDB.Layout[4])
+    local PvPIndicator = RUF:CreateIndicatorTexture(unitFrame, unit, "_PvPIndicator", PvPIndicatorDB.Size, PvPIndicatorDB.Layout, "OVERLAY", 1)
 
     PvPIndicator.Badge = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_PvPIndicatorBadge", "OVERLAY")
     PvPIndicator.Badge:SetSize(PvPIndicatorDB.Size * 5 / 3, PvPIndicatorDB.Size * 26 / 15)
@@ -14,7 +12,7 @@ function RUF:CreateUnitPvPIndicator(unitFrame, unit)
     if PvPIndicatorDB.Enabled then
         unitFrame.PvPIndicator = PvPIndicator
     else
-        PvPIndicator:Hide()
+        RUF:DisableIndicatorElement(unitFrame, "PvPIndicator", PvPIndicator)
         PvPIndicator.Badge:Hide()
     end
 
@@ -30,9 +28,7 @@ function RUF:UpdateUnitPvPIndicator(unitFrame, unit)
         if not unitFrame:IsElementEnabled("PvPIndicator") then unitFrame:EnableElement("PvPIndicator") end
 
         if unitFrame.PvPIndicator then
-            unitFrame.PvPIndicator:ClearAllPoints()
-            unitFrame.PvPIndicator:SetSize(PvPIndicatorDB.Size, PvPIndicatorDB.Size)
-            unitFrame.PvPIndicator:SetPoint(PvPIndicatorDB.Layout[1], unitFrame.HighLevelContainer, PvPIndicatorDB.Layout[2], PvPIndicatorDB.Layout[3], PvPIndicatorDB.Layout[4])
+            RUF:PositionIndicatorTexture(unitFrame.PvPIndicator, unitFrame.HighLevelContainer, PvPIndicatorDB.Size, PvPIndicatorDB.Layout)
             unitFrame.PvPIndicator.Badge:ClearAllPoints()
             unitFrame.PvPIndicator.Badge:SetSize(PvPIndicatorDB.Size * 5 / 3, PvPIndicatorDB.Size * 26 / 15)
             unitFrame.PvPIndicator.Badge:SetPoint("CENTER", unitFrame.PvPIndicator, "CENTER", 0, 0)
@@ -40,11 +36,8 @@ function RUF:UpdateUnitPvPIndicator(unitFrame, unit)
         end
     else
         if not unitFrame.PvPIndicator then return end
-        if unitFrame:IsElementEnabled("PvPIndicator") then unitFrame:DisableElement("PvPIndicator") end
-        if unitFrame.PvPIndicator then
-            unitFrame.PvPIndicator:Hide()
-            unitFrame.PvPIndicator.Badge:Hide()
-            unitFrame.PvPIndicator = nil
-        end
+        RUF:DisableIndicatorElement(unitFrame, "PvPIndicator", unitFrame.PvPIndicator)
+        unitFrame.PvPIndicator.Badge:Hide()
+        unitFrame.PvPIndicator = nil
     end
 end

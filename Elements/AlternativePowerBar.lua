@@ -15,65 +15,9 @@ local function UpdateUnitPowerBarValues(unitFrame, event, unit)
     unitFrame.Status:SetValue(value)
 end
 
-
-function RUF:CreateUnitAlternativePowerBar(unitFrame, unit)
-    local RUFDB = RUF.db.profile
-    local AlternativePowerBarDB = RUFDB.Units["player"].AlternativePowerBar
-    local unitContainer = unitFrame.Container
-
-    local AlternativePowerBar = CreateFrame("Frame", RUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
-    AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
-    AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar:SetBackdrop(RUF.BACKDROP)
-    AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
-    AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
-    AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
-
-    AlternativePowerBar.Status = CreateFrame("StatusBar", RUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
-    AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
-    AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
-    AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar.Status:SetStatusBarTexture(RUF.Media.Foreground)
-    AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
-    if AlternativePowerBarDB.ColorByType then
-        local powerColor = RUFDB.General.Colors.Power[0]
-        if powerColor then AlternativePowerBar.Status:SetStatusBarColor(powerColor[1], powerColor[2], powerColor[3], powerColor[4]) end
-    else
-        AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
-    end
-    AlternativePowerBar.unit = unit
-
-    if AlternativePowerBarDB.Inverse then
-        AlternativePowerBar.Status:SetReverseFill(true)
-    else
-        AlternativePowerBar.Status:SetReverseFill(false)
-    end
-
-    if AlternativePowerBarDB.Enabled and RUF:RequiresAlternativePowerBar() then
-        AlternativePowerBar:Show()
-        AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
-        for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
-            AlternativePowerBar:RegisterUnitEvent(event, unit)
-        end
-        AlternativePowerBar:SetScript("OnEvent", UpdateUnitPowerBarValues)
-    else
-        AlternativePowerBar:Hide()
-        AlternativePowerBar:UnregisterAllEvents()
-        AlternativePowerBar:SetScript("OnEvent", nil)
-    end
-
-    unitFrame.AlternativePowerBar = AlternativePowerBar
-    return AlternativePowerBar
-end
-
-function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
-    local RUFDB = RUF.db.profile
-    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
-    local AlternativePowerBar = unitFrame.AlternativePowerBar
-    if not AlternativePowerBar then return end
-
+local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, RUFDB)
     AlternativePowerBar:ClearAllPoints()
-    AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitFrame.Container, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
+    AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
 
@@ -93,9 +37,10 @@ function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     else
         AlternativePowerBar.Status:SetReverseFill(false)
     end
+end
 
+local function ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
     if AlternativePowerBarDB.Enabled and RUF:RequiresAlternativePowerBar() then
-        AlternativePowerBar:Show()
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
         for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
@@ -107,4 +52,36 @@ function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         AlternativePowerBar:UnregisterAllEvents()
         AlternativePowerBar:SetScript("OnEvent", nil)
     end
+end
+
+function RUF:CreateUnitAlternativePowerBar(unitFrame, unit)
+    local RUFDB = RUF.db.profile
+    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
+    local unitContainer = unitFrame.Container
+
+    local AlternativePowerBar = CreateFrame("Frame", RUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
+    AlternativePowerBar:SetBackdrop(RUF.BACKDROP)
+    AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
+    AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
+
+    AlternativePowerBar.Status = CreateFrame("StatusBar", RUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
+    AlternativePowerBar.Status:SetStatusBarTexture(RUF.Media.Foreground)
+    AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
+    AlternativePowerBar.unit = unit
+
+    LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, RUFDB)
+    ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
+
+    unitFrame.AlternativePowerBar = AlternativePowerBar
+    return AlternativePowerBar
+end
+
+function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
+    local RUFDB = RUF.db.profile
+    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
+    local AlternativePowerBar = unitFrame.AlternativePowerBar
+    if not AlternativePowerBar then return end
+
+    LayoutAlternativePowerBar(AlternativePowerBar, unitFrame.Container, AlternativePowerBarDB, RUFDB)
+    ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
 end
