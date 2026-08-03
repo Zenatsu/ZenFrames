@@ -1,5 +1,5 @@
-local _, RUF = ...
-local oUF = RUF.oUF
+local _, ZF = ...
+local oUF = ZF.oUF
 
 local TypedDebuffTypes = {
 	Magic = oUF.Enum.DispelType.Magic,
@@ -16,10 +16,78 @@ for _, dispelIndex in pairs(TypedDebuffTypes) do
 	if color then TypedDebuffColorCurve:AddPoint(dispelIndex, color) end
 end
 
+local function BuildDispelColorCurve(container)
+	container.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+	container.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+	for _, dispelIndex in next, oUF.Enum.DispelType do
+		if oUF.colors.dispel[dispelIndex] then
+			container.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
+		end
+	end
+	if not oUF.colors.dispel[0] then container.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+end
+
+local function ResolveAuraContext(unitFrame, unit)
+	local AurasDB = ZF:GetUnitDB(unitFrame, unit).Auras
+	if not AurasDB then return nil end
+
+	local BuffsDB = AurasDB.Buffs
+	local DebuffsDB = AurasDB.Debuffs
+	local CustomDB = AurasDB.Custom
+	local BuffAnchorParent = BuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+	local DebuffAnchorParent = DebuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+	local CustomAuraFilter, CustomAnchorParent
+	BuffsDB.Filter = "HELPFUL"
+	DebuffsDB.Filter = "HARMFUL"
+	if CustomDB then
+		CustomAuraFilter = CustomDB.Type == "Debuffs" and "HARMFUL" or "HELPFUL"
+		CustomAnchorParent = CustomDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+		CustomDB.Filter = CustomAuraFilter
+	end
+
+	return AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, CustomAuraFilter, CustomAnchorParent
+end
+
+local function ComputeAuraContainerSize(auraDB, defaultPerRow)
+	local perRow = auraDB.Wrap or defaultPerRow
+	local rows = math.ceil(auraDB.Num / perRow)
+	local width = (auraDB.Size + auraDB.Layout[5]) * perRow - auraDB.Layout[5]
+	local height = (auraDB.Size + auraDB.Layout[5]) * rows - auraDB.Layout[5]
+	return width, height
+end
+
+local function ConfigurePrivateAuraContainer(unitFrame, unit, PrivateAurasDB)
+	local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
+	local PrivateAuraAnchorParent = PrivateAurasDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+
+	if not unitFrame.PrivateAuraContainer then
+		unitFrame.PrivateAuraContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
+	end
+
+	unitFrame.PrivateAuraContainer:ClearAllPoints()
+	unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], PrivateAuraAnchorParent, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
+	unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
+	unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
+	unitFrame.PrivateAuraContainer.size = PrivateAurasDB.Size
+	unitFrame.PrivateAuraContainer.width = nil
+	unitFrame.PrivateAuraContainer.height = nil
+	unitFrame.PrivateAuraContainer.spacing = PrivateAurasDB.Spacing
+	unitFrame.PrivateAuraContainer.spacingX = nil
+	unitFrame.PrivateAuraContainer.spacingY = nil
+	unitFrame.PrivateAuraContainer.growthX = PrivateAurasDB.GrowthX
+	unitFrame.PrivateAuraContainer.growthY = PrivateAurasDB.GrowthY
+	unitFrame.PrivateAuraContainer.initialAnchor = PrivateAurasDB.InitialAnchor
+	unitFrame.PrivateAuraContainer.num = PrivateAurasDB.Num
+	unitFrame.PrivateAuraContainer.maxCols = PrivateAurasDB.Num
+	unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
+	unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
+	unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+end
+
 local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 	if not button or not unit or not auraType then return end
 	local unitFrame = button:GetParent() and button:GetParent():GetParent()
-	local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
+	local AurasDB = ZF:GetUnitDB(unitFrame, unit).Auras
 	if not AurasDB then return end
 	local AuraDB = auraDB and AurasDB[auraDB] or auraType == "HELPFUL" and AurasDB.Buffs or AurasDB.Debuffs
 	if not AuraDB then return end
@@ -35,29 +103,21 @@ local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 	if button.Cooldown then
 		button.Cooldown:SetDrawEdge(false)
 		button.Cooldown:SetReverse(true)
-		RUF:ApplyCooldownText(button.Cooldown, nil, unit, unitFrame)
+		ZF:ApplyCooldownText(button.Cooldown, nil, unit, unitFrame)
 	end
 	if button.Count then
 		if AuraDB.Count.HideStacks then
 			button.Count:Hide()
 		else
-			local FontsDB = RUF.db.profile.General.Fonts
+			local FontsDB = ZF.db.profile.General.Fonts
 			button.Count:ClearAllPoints()
-			button.Count:SetFont(RUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
 			button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
-			if FontsDB.Shadow.Enabled then
-				button.Count:SetShadowColor(FontsDB.Shadow.Color[1], FontsDB.Shadow.Color[2], FontsDB.Shadow.Color[3], FontsDB.Shadow.Color[4])
-				button.Count:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
-			else
-				button.Count:SetShadowColor(0, 0, 0, 0)
-				button.Count:SetShadowOffset(0, 0)
-			end
-			button.Count:SetTextColor(unpack(AuraDB.Count.Color))
+			ZF:ApplyFontStringStyle(button.Count, ZF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag, AuraDB.Count.Color, FontsDB.Shadow)
 			button.Count:Show()
 		end
 	end
 	if not restyle and button.Overlay then
-		button.Overlay:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
+		button.Overlay:SetTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\AuraOverlay.png")
 		button.Overlay:ClearAllPoints()
 		button.Overlay:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
 		button.Overlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
@@ -67,9 +127,9 @@ end
 
 local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	if AuraDB.Blacklist then
-		local spellId = not RUF:IsSecretValue(aura.spellId) and aura.spellId
-		local name = not RUF:IsSecretValue(aura.name) and aura.name
-		if (spellId and RUF.AURA_BLACKLIST[spellId]) or (name and RUF.AURA_BLACKLIST[name]) then return false end
+		local spellId = not ZF:IsSecretValue(aura.spellId) and aura.spellId
+		local name = not ZF:IsSecretValue(aura.name) and aura.name
+		if (spellId and ZF.AURA_BLACKLIST[spellId]) or (name and ZF.AURA_BLACKLIST[name]) then return false end
 	end
 	if AuraDB.OnlyShowPlayer then return aura.isPlayerAura end
 	local setFilters = AuraDB.Filters
@@ -83,7 +143,7 @@ local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	if setFilters.Player and isPlayer then return true end
 	if auraType == "HARMFUL" and setFilters.Typed then
 		if C_UnitAuras.GetAuraDispelTypeColor(filterUnit, auraInstanceID, TypedDebuffColorCurve) then return true end
-		local dispelName = not RUF:IsSecretValue(aura.dispelName) and aura.dispelName
+		local dispelName = not ZF:IsSecretValue(aura.dispelName) and aura.dispelName
 		if dispelName and TypedDebuffTypes[dispelName] then return true end
 	end
 	if setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, auraType .. "|RAID_PLAYER_DISPELLABLE") then return true end
@@ -109,50 +169,14 @@ local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	end
 end
 
-function RUF:UpdateUnitAuras(unitFrame, unit)
+function ZF:UpdateUnitAuras(unitFrame, unit)
     if not unit or not unitFrame then return end
-    local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
+    local AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, CustomAuraFilter, CustomAnchorParent = ResolveAuraContext(unitFrame, unit)
     if not AurasDB then return end
-    local BuffsDB = AurasDB.Buffs
-    local DebuffsDB = AurasDB.Debuffs
-    local CustomDB = AurasDB.Custom
-	local BuffAnchorParent = BuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local DebuffAnchorParent = DebuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local CustomAuraFilter, CustomAnchorParent
-    BuffsDB.Filter = "HELPFUL"
-    DebuffsDB.Filter = "HARMFUL"
-	if CustomDB then
-		CustomAuraFilter = CustomDB.Type == "Debuffs" and "HARMFUL" or "HELPFUL"
-		CustomAnchorParent = CustomDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-		CustomDB.Filter = CustomAuraFilter
-	end
 
     if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
-        local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
-		local PrivateAuraAnchorParent = PrivateAurasDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-        if not unitFrame.PrivateAuraContainer then
-            unitFrame.PrivateAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
-        end
-
-        unitFrame.PrivateAuraContainer:ClearAllPoints()
-        unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], PrivateAuraAnchorParent, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
-        unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
-        unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
-        unitFrame.PrivateAuraContainer.size = PrivateAurasDB.Size
-        unitFrame.PrivateAuraContainer.width = nil
-        unitFrame.PrivateAuraContainer.height = nil
-        unitFrame.PrivateAuraContainer.spacing = PrivateAurasDB.Spacing
-        unitFrame.PrivateAuraContainer.spacingX = nil
-        unitFrame.PrivateAuraContainer.spacingY = nil
-        unitFrame.PrivateAuraContainer.growthX = PrivateAurasDB.GrowthX
-        unitFrame.PrivateAuraContainer.growthY = PrivateAurasDB.GrowthY
-        unitFrame.PrivateAuraContainer.initialAnchor = PrivateAurasDB.InitialAnchor
-        unitFrame.PrivateAuraContainer.num = PrivateAurasDB.Num
-        unitFrame.PrivateAuraContainer.maxCols = PrivateAurasDB.Num
-        unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
-        unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
-        unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+        ConfigurePrivateAuraContainer(unitFrame, unit, PrivateAurasDB)
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
@@ -170,14 +194,11 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
 
     if BuffsDB.Enabled then
         unitFrame.Buffs = unitFrame.BuffContainer
-        local buffPerRow = BuffsDB.Wrap or 4
-        local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
-        local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
-        local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
+        local buffContainerWidth, buffContainerHeight = ComputeAuraContainerSize(BuffsDB, 4)
         unitFrame.BuffContainer:ClearAllPoints()
         unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
         unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BuffAnchorParent, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-        unitFrame.BuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+        unitFrame.BuffContainer:SetFrameStrata(AurasDB.FrameStrata)
         unitFrame.BuffContainer.size = BuffsDB.Size
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
@@ -186,7 +207,7 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
-        RUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
+        ZF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
@@ -201,13 +222,10 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
 
     if DebuffsDB.Enabled then
         unitFrame.Debuffs = unitFrame.DebuffContainer
-        local debuffPerRow = DebuffsDB.Wrap or 4
-        local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
-        local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
-        local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
+        local debuffContainerWidth, debuffContainerHeight = ComputeAuraContainerSize(DebuffsDB, 4)
         unitFrame.DebuffContainer:ClearAllPoints()
         unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
-        unitFrame.DebuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
+        unitFrame.DebuffContainer:SetFrameStrata(AurasDB.FrameStrata)
         unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], DebuffAnchorParent, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
         unitFrame.DebuffContainer.size = DebuffsDB.Size
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
@@ -217,7 +235,7 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
-        RUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
+        ZF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
@@ -233,10 +251,7 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
     if unitFrame.CustomAuraContainer and CustomDB then
         if CustomDB.Enabled then
             unitFrame.CustomAuras = unitFrame.CustomAuraContainer
-            local customPerRow = CustomDB.Wrap or 3
-            local customRows = math.ceil(CustomDB.Num / customPerRow)
-            local customContainerWidth = (CustomDB.Size + CustomDB.Layout[5]) * customPerRow - CustomDB.Layout[5]
-            local customContainerHeight = (CustomDB.Size + CustomDB.Layout[5]) * customRows - CustomDB.Layout[5]
+            local customContainerWidth, customContainerHeight = ComputeAuraContainerSize(CustomDB, 3)
             unitFrame.CustomAuraContainer:ClearAllPoints()
             unitFrame.CustomAuraContainer:SetSize(customContainerWidth, customContainerHeight)
             unitFrame.CustomAuraContainer:SetFrameStrata(AurasDB.FrameStrata)
@@ -249,9 +264,9 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
             unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
             unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
             unitFrame.CustomAuraContainer.filter = CustomAuraFilter
-            RUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
+            ZF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
             unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
-				return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
+				return FilterAura(ZF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
             end
             unitFrame.CustomAuraContainer.createdButtons = unitFrame.CustomAuras.createdButtons or 0
             unitFrame.CustomAuraContainer.anchoredButtons = unitFrame.CustomAuras.anchoredButtons or 0
@@ -297,32 +312,17 @@ function RUF:UpdateUnitAuras(unitFrame, unit)
             end
         end
     end
-    if RUF.AURA_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.Auras) then RUF:CreateTestAuras(unitFrame, unit) end
+    if (unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.Auras) or unitFrame.isUnitPreview then ZF:CreateTestAuras(unitFrame, unit) end
 end
 
-function RUF:CreateUnitAuras(unitFrame, unit)
-	local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
-	local BuffsDB = AurasDB.Buffs
-	local DebuffsDB = AurasDB.Debuffs
-	local CustomDB = AurasDB.Custom
-	local BuffAnchorParent = BuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local DebuffAnchorParent = DebuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local CustomAuraFilter, CustomAnchorParent
-	BuffsDB.Filter = "HELPFUL"
-	DebuffsDB.Filter = "HARMFUL"
-	if CustomDB then
-		CustomAuraFilter = CustomDB.Type == "Debuffs" and "HARMFUL" or "HELPFUL"
-		CustomAnchorParent = CustomDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-		CustomDB.Filter = CustomAuraFilter
-	end
+function ZF:CreateUnitAuras(unitFrame, unit)
+	local AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, CustomAuraFilter, CustomAnchorParent = ResolveAuraContext(unitFrame, unit)
+	if not AurasDB then return end
 
 	if not unitFrame.BuffContainer then
-		unitFrame.BuffContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
+		unitFrame.BuffContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
 		unitFrame.BuffContainer:SetFrameStrata(AurasDB.FrameStrata)
-		local buffPerRow = BuffsDB.Wrap or 4
-		local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
-		local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
-		local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
+		local buffContainerWidth, buffContainerHeight = ComputeAuraContainerSize(BuffsDB, 4)
 		unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
 		unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BuffAnchorParent, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
 		unitFrame.BuffContainer.size = BuffsDB.Size
@@ -333,9 +333,9 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
 		unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
 		unitFrame.BuffContainer.filter = "HELPFUL"
-		RUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
+		ZF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
 		unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
-			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Buffs, filterUnit, aura, "HELPFUL")
+			return FilterAura(ZF:GetUnitDB(unitFrame, unit).Auras.Buffs, filterUnit, aura, "HELPFUL")
 		end
 		unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
 		unitFrame.BuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL", true) end
@@ -344,14 +344,7 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
 		unitFrame.BuffContainer.showType = BuffsDB.ShowType
 		unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
-		unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-		unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-		for _, dispelIndex in next, oUF.Enum.DispelType do
-			if(oUF.colors.dispel[dispelIndex]) then
-				unitFrame.BuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
-			end
-		end
-		if not oUF.colors.dispel[0] then unitFrame.BuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+		BuildDispelColorCurve(unitFrame.BuffContainer)
 
 		if BuffsDB.Enabled then
 			unitFrame.Buffs = unitFrame.BuffContainer
@@ -361,12 +354,9 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 	end
 
 	if not unitFrame.DebuffContainer then
-		unitFrame.DebuffContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
+		unitFrame.DebuffContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
 		unitFrame.DebuffContainer:SetFrameStrata(AurasDB.FrameStrata)
-		local debuffPerRow = DebuffsDB.Wrap or 3
-		local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
-		local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
-		local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
+		local debuffContainerWidth, debuffContainerHeight = ComputeAuraContainerSize(DebuffsDB, 4)
 		unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
 		unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], DebuffAnchorParent, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
 		unitFrame.DebuffContainer.size = DebuffsDB.Size
@@ -377,9 +367,9 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
 		unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
 		unitFrame.DebuffContainer.filter = "HARMFUL"
-		RUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
+		ZF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
 		unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
-			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Debuffs, filterUnit, aura, "HARMFUL")
+			return FilterAura(ZF:GetUnitDB(unitFrame, unit).Auras.Debuffs, filterUnit, aura, "HARMFUL")
 		end
 
 		unitFrame.DebuffContainer.anchoredButtons = 0
@@ -389,16 +379,7 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
 		unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
 		unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
-		unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-		unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-
-		for _, dispelIndex in next, oUF.Enum.DispelType do
-			if(oUF.colors.dispel[dispelIndex]) then
-				unitFrame.DebuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
-			end
-		end
-
-		if not oUF.colors.dispel[0] then unitFrame.DebuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+		BuildDispelColorCurve(unitFrame.DebuffContainer)
 
 		if DebuffsDB.Enabled then
 			unitFrame.Debuffs = unitFrame.DebuffContainer
@@ -408,12 +389,9 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 	end
 
 	if CustomDB and not unitFrame.CustomAuraContainer then
-		unitFrame.CustomAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_CustomAurasContainer", unitFrame)
+		unitFrame.CustomAuraContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_CustomAurasContainer", unitFrame)
 		unitFrame.CustomAuraContainer:SetFrameStrata(AurasDB.FrameStrata)
-		local customPerRow = CustomDB.Wrap or 3
-		local customRows = math.ceil(CustomDB.Num / customPerRow)
-		local customContainerWidth = (CustomDB.Size + CustomDB.Layout[5]) * customPerRow - CustomDB.Layout[5]
-		local customContainerHeight = (CustomDB.Size + CustomDB.Layout[5]) * customRows - CustomDB.Layout[5]
+		local customContainerWidth, customContainerHeight = ComputeAuraContainerSize(CustomDB, 3)
 		unitFrame.CustomAuraContainer:SetSize(customContainerWidth, customContainerHeight)
 		unitFrame.CustomAuraContainer:SetPoint(CustomDB.Layout[1], CustomAnchorParent, CustomDB.Layout[2], CustomDB.Layout[3], CustomDB.Layout[4])
 		unitFrame.CustomAuraContainer.size = CustomDB.Size
@@ -424,9 +402,9 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
 		unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
 		unitFrame.CustomAuraContainer.filter = CustomAuraFilter
-		RUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
+		ZF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
 		unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
-			return FilterAura(RUF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
+			return FilterAura(ZF:GetUnitDB(unitFrame, unit).Auras.Custom, filterUnit, aura, auraType)
 		end
 		unitFrame.CustomAuraContainer.anchoredButtons = 0
 		unitFrame.CustomAuraContainer.createdButtons = 0
@@ -436,16 +414,7 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.CustomAuraContainer.showType = CustomDB.ShowType
 		unitFrame.CustomAuraContainer.showBuffType = CustomAuraFilter == "HELPFUL" and CustomDB.ShowType
 		unitFrame.CustomAuraContainer.showDebuffType = CustomAuraFilter == "HARMFUL" and CustomDB.ShowType
-		unitFrame.CustomAuraContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-		unitFrame.CustomAuraContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-
-		for _, dispelIndex in next, oUF.Enum.DispelType do
-			if(oUF.colors.dispel[dispelIndex]) then
-				unitFrame.CustomAuraContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
-			end
-		end
-
-		if not oUF.colors.dispel[0] then unitFrame.CustomAuraContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+		BuildDispelColorCurve(unitFrame.CustomAuraContainer)
 
 		if CustomDB.Enabled then
 			unitFrame.CustomAuras = unitFrame.CustomAuraContainer
@@ -456,27 +425,7 @@ function RUF:CreateUnitAuras(unitFrame, unit)
 
     if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
-        local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
-		local PrivateAuraAnchorParent = PrivateAurasDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-
-        unitFrame.PrivateAuraContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
-        unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], PrivateAuraAnchorParent, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
-        unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
-        unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
-        unitFrame.PrivateAuraContainer.size = PrivateAurasDB.Size
-        unitFrame.PrivateAuraContainer.width = nil
-        unitFrame.PrivateAuraContainer.height = nil
-        unitFrame.PrivateAuraContainer.spacing = PrivateAurasDB.Spacing
-        unitFrame.PrivateAuraContainer.spacingX = nil
-        unitFrame.PrivateAuraContainer.spacingY = nil
-        unitFrame.PrivateAuraContainer.growthX = PrivateAurasDB.GrowthX
-        unitFrame.PrivateAuraContainer.growthY = PrivateAurasDB.GrowthY
-        unitFrame.PrivateAuraContainer.initialAnchor = PrivateAurasDB.InitialAnchor
-        unitFrame.PrivateAuraContainer.num = PrivateAurasDB.Num
-        unitFrame.PrivateAuraContainer.maxCols = PrivateAurasDB.Num
-        unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
-        unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
-        unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+        ConfigurePrivateAuraContainer(unitFrame, unit, PrivateAurasDB)
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
@@ -486,22 +435,22 @@ function RUF:CreateUnitAuras(unitFrame, unit)
     end
 end
 
-function RUF:UpdateUnitAurasStrata(unit)
+function ZF:UpdateUnitAurasStrata(unit)
     if not unit then return end
-    local normalizedUnit = RUF:GetNormalizedUnit(unit)
-    local unitFrame = RUF[unit:upper()]
-    local unitDB = RUF.db.profile.Units[normalizedUnit]
+    local normalizedUnit = ZF:GetNormalizedUnit(unit)
+    local unitFrame = ZF[unit:upper()]
+    local unitDB = ZF.db.profile.Units[normalizedUnit]
     if unit == "party" then
         if not unitDB or not unitDB.Auras then return end
-        for i = 1, RUF.MAX_PARTY_FRAMES do
-            RUF:UpdateUnitAurasStrata("party" .. i)
+        for i = 1, ZF.MAX_PARTY_FRAMES do
+            ZF:UpdateUnitAurasStrata("party" .. i)
         end
-        if RUF.PARTYPLAYER and unitDB.Auras.PrivateAuras and RUF.PARTYPLAYER.PrivateAuraContainer then RUF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+        if ZF.PARTYPLAYER and unitDB.Auras.PrivateAuras and ZF.PARTYPLAYER.PrivateAuraContainer then ZF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
         return
 	end
 	if unit == "augmentation" then
-		RUF:ForEachAugmentationRaidFrame(function(raidFrame, frameUnit)
-			local augmentationDB = RUF:GetUnitDB(raidFrame, frameUnit)
+		ZF:ForEachAugmentationRaidFrame(function(raidFrame, frameUnit)
+			local augmentationDB = ZF:GetUnitDB(raidFrame, frameUnit)
 			if raidFrame.BuffContainer then raidFrame.BuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
 			if raidFrame.DebuffContainer then raidFrame.DebuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
 			if raidFrame.CustomAuraContainer then raidFrame.CustomAuraContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
@@ -516,18 +465,88 @@ function RUF:UpdateUnitAurasStrata(unit)
     if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
-function RUF:CreateTestAuras(unitFrame, unit)
+local function CreateFakeAuraButton(container, auraDB, General, unit, unitFrame, index, iconTextureID, perRow, frameStrata)
+	local button = container["fake" .. index]
+	if not button then
+		button = CreateFrame("Button", nil, container, "BackdropTemplate")
+		button:SetBackdrop(ZF.BACKDROP)
+		button:SetBackdropColor(0, 0, 0, 0)
+		button:SetBackdropBorderColor(0, 0, 0, 1)
+		button:SetFrameStrata(frameStrata)
+
+		button.Icon = button:CreateTexture(nil, "BORDER")
+		button.Icon:SetAllPoints()
+
+		button.Count = button:CreateFontString(nil, "OVERLAY")
+		container["fake" .. index] = button
+	end
+
+	button:SetSize(auraDB.Size, auraDB.Size)
+	button.Count:ClearAllPoints()
+	button.Count:SetPoint(auraDB.Count.Layout[1], button, auraDB.Count.Layout[2], auraDB.Count.Layout[3], auraDB.Count.Layout[4])
+	ZF:ApplyFontStringStyle(button.Count, ZF.Media.Font, auraDB.Count.FontSize, General.Fonts.FontFlag, auraDB.Count.Color, General.Fonts.Shadow)
+
+	local row = math.floor((index - 1) / perRow)
+	local col = (index - 1) % perRow
+	local x = col * (auraDB.Size + auraDB.Layout[5])
+	local y = row * (auraDB.Size + auraDB.Layout[5])
+	if auraDB.GrowthDirection == "LEFT" then x = -x end
+	if auraDB.WrapDirection == "DOWN" then y = -y end
+
+	button:ClearAllPoints()
+	button:SetPoint(auraDB.Layout[1], container, auraDB.Layout[1], x, y)
+
+	button.Icon:SetTexture(iconTextureID)
+	button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+	button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+	button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+	button.Count:SetText(index)
+	if auraDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
+	button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+	ZF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
+	button.Duration:SetText("10m")
+	button:Show()
+end
+
+local function RefreshTestAuraContainer(container, auraDB, anchorParent, frameStrata, General, unit, unitFrame, iconTextureID, defaultPerRow)
+	if not container then return end
+	if auraDB.Enabled then
+		container:ClearAllPoints()
+		container:SetPoint(auraDB.Layout[1], anchorParent, auraDB.Layout[2], auraDB.Layout[3], auraDB.Layout[4])
+		container:SetFrameStrata(frameStrata)
+		container:Show()
+		for _, button in ipairs(container) do
+			if button then button:Hide() end
+		end
+
+		local perRow = auraDB.Wrap or defaultPerRow
+		for j = 1, auraDB.Num do
+			CreateFakeAuraButton(container, auraDB, General, unit, unitFrame, j, iconTextureID, perRow, frameStrata)
+		end
+
+		local maxFake = auraDB.Num
+		for j = maxFake + 1, (container.maxFake or maxFake) do
+			local button = container["fake" .. j]
+			if button then button:Hide() end
+		end
+		container.maxFake = auraDB.Num
+	else
+		container:Hide()
+	end
+end
+
+function ZF:CreateTestAuras(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local General = RUF.db.profile.General
-    local AurasDB = RUF:GetUnitDB(unitFrame, unit).Auras
+    local General = ZF.db.profile.General
+    local AurasDB = ZF:GetUnitDB(unitFrame, unit).Auras
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
     local CustomDB = AurasDB.Custom
-	local BuffAnchorParent = BuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local DebuffAnchorParent = DebuffsDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-	local CustomAnchorParent = CustomDB and CustomDB.AnchorParent == "Health" and unitFrame.Health or unitFrame
-    if RUF.AURA_TEST_MODE or (unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.Auras) then
+	local BuffAnchorParent = BuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+	local DebuffAnchorParent = DebuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+	local CustomAnchorParent = CustomDB and CustomDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
+    if (unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.Auras) or unitFrame.isUnitPreview then
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 
@@ -540,7 +559,7 @@ function RUF:CreateTestAuras(unitFrame, unit)
 					local button = unitFrame.PrivateAuraContainer["fake" .. j]
 					if not button then
 						button = CreateFrame("Frame", nil, unitFrame.PrivateAuraContainer, "BackdropTemplate")
-						button:SetBackdrop(RUF.BACKDROP)
+						button:SetBackdrop(ZF.BACKDROP)
 						button:SetBackdropColor(0, 0, 0, 0)
 						button:SetBackdropBorderColor(0, 0, 0, 1)
 
@@ -589,216 +608,10 @@ function RUF:CreateTestAuras(unitFrame, unit)
 			end
 		end
 
-        if unitFrame.BuffContainer then
-            if BuffsDB.Enabled then
-                unitFrame.BuffContainer:ClearAllPoints()
-                unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BuffAnchorParent, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-                unitFrame.BuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
-                unitFrame.BuffContainer:Show()
-                for _, button in ipairs(unitFrame.BuffContainer) do
-                    if button then button:Hide() end
-                end
-
-                for j = 1, BuffsDB.Num do
-                    local button = unitFrame.BuffContainer["fake" .. j]
-                    if not button then
-                        button = CreateFrame("Button", nil, unitFrame.BuffContainer, "BackdropTemplate")
-                        button:SetBackdrop(RUF.BACKDROP)
-                        button:SetBackdropColor(0, 0, 0, 0)
-                        button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
-
-                        button.Icon = button:CreateTexture(nil, "BORDER")
-                        button.Icon:SetAllPoints()
-
-                        button.Count = button:CreateFontString(nil, "OVERLAY")
-                        unitFrame.BuffContainer["fake" .. j] = button
-                    end
-
-                    button:SetSize(BuffsDB.Size, BuffsDB.Size)
-                    button.Count:ClearAllPoints()
-                    button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
-                    button.Count:SetFont(RUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
-                    if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
-                        button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                    else
-                        button.Count:SetShadowColor(0, 0, 0, 0)
-                        button.Count:SetShadowOffset(0, 0)
-                    end
-                    button.Count:SetTextColor(unpack(BuffsDB.Count.Color))
-
-                    local row = math.floor((j - 1) / BuffsDB.Wrap)
-                    local col = (j - 1) % BuffsDB.Wrap
-                    local x = col * (BuffsDB.Size + BuffsDB.Layout[5])
-                    local y = row * (BuffsDB.Size + BuffsDB.Layout[5])
-                    if BuffsDB.GrowthDirection == "LEFT" then x = -x end
-                    if BuffsDB.WrapDirection == "DOWN" then y = -y end
-
-                    button:ClearAllPoints()
-                    button:SetPoint(BuffsDB.Layout[1], unitFrame.BuffContainer, BuffsDB.Layout[1], x, y)
-
-                    button.Icon:SetTexture(135769)
-                    button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-                    button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-                    button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                    button.Count:SetText(j)
-                    if BuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
-                    button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-					RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
-                    button.Duration:SetText("10m")
-                    button:Show()
-                end
-
-                local maxFake = BuffsDB.Num
-                for j = maxFake + 1, (unitFrame.BuffContainer.maxFake or maxFake) do
-                    local button = unitFrame.BuffContainer["fake" .. j]
-                    if button then button:Hide() end
-                end
-                unitFrame.BuffContainer.maxFake = BuffsDB.Num
-            else
-                unitFrame.BuffContainer:Hide()
-            end
-        end
-
-        if unitFrame.DebuffContainer then
-            if DebuffsDB.Enabled then
-                unitFrame.DebuffContainer:ClearAllPoints()
-                unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], DebuffAnchorParent, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-                unitFrame.DebuffContainer:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
-                unitFrame.DebuffContainer:Show()
-                for _, button in ipairs(unitFrame.DebuffContainer) do
-                    if button then button:Hide() end
-                end
-
-                for j = 1, DebuffsDB.Num do
-                    local button = unitFrame.DebuffContainer["fake" .. j]
-                    if not button then
-                        button = CreateFrame("Button", nil, unitFrame.DebuffContainer, "BackdropTemplate")
-                        button:SetBackdrop(RUF.BACKDROP)
-                        button:SetBackdropColor(0, 0, 0, 0)
-                        button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata(RUF:GetUnitDB(unitFrame, unit).Auras.FrameStrata)
-                        button.Icon = button:CreateTexture(nil, "BORDER")
-                        button.Icon:SetAllPoints()
-
-                        button.Count = button:CreateFontString(nil, "OVERLAY")
-                        unitFrame.DebuffContainer["fake" .. j] = button
-                    end
-
-                    button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
-                    button.Count:ClearAllPoints()
-                    button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
-                    button.Count:SetFont(RUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
-                    if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
-                        button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                    else
-                        button.Count:SetShadowColor(0, 0, 0, 0)
-                        button.Count:SetShadowOffset(0, 0)
-                    end
-                    button.Count:SetTextColor(unpack(DebuffsDB.Count.Color))
-
-                    local row = math.floor((j - 1) / DebuffsDB.Wrap)
-                    local col = (j - 1) % DebuffsDB.Wrap
-                    local x = col * (DebuffsDB.Size + DebuffsDB.Layout[5])
-                    local y = row * (DebuffsDB.Size + DebuffsDB.Layout[5])
-                    if DebuffsDB.GrowthDirection == "LEFT" then x = -x end
-                    if DebuffsDB.WrapDirection == "DOWN" then y = -y end
-
-                    button:ClearAllPoints()
-                    button:SetPoint(DebuffsDB.Layout[1], unitFrame.DebuffContainer, DebuffsDB.Layout[1], x, y)
-                    button.Icon:SetTexture(135768)
-                    button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-                    button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-                    button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                    button.Count:SetText(j)
-                    if DebuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
-                    button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-						RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
-                    button.Duration:SetText("10m")
-                    button:Show()
-                end
-
-                local maxFake = DebuffsDB.Num
-                for j = maxFake + 1, (unitFrame.DebuffContainer.maxFake or maxFake) do
-                    local button = unitFrame.DebuffContainer["fake" .. j]
-                    if button then button:Hide() end
-                end
-                unitFrame.DebuffContainer.maxFake = DebuffsDB.Num
-            else
-                unitFrame.DebuffContainer:Hide()
-            end
-        end
-
-        if unitFrame.CustomAuraContainer and CustomDB then
-            if CustomDB.Enabled then
-                unitFrame.CustomAuraContainer:ClearAllPoints()
-                unitFrame.CustomAuraContainer:SetPoint(CustomDB.Layout[1], CustomAnchorParent, CustomDB.Layout[2], CustomDB.Layout[3], CustomDB.Layout[4])
-                unitFrame.CustomAuraContainer:SetFrameStrata(AurasDB.FrameStrata)
-                unitFrame.CustomAuraContainer:Show()
-                for _, button in ipairs(unitFrame.CustomAuraContainer) do
-                    if button then button:Hide() end
-                end
-
-                for j = 1, CustomDB.Num do
-                    local button = unitFrame.CustomAuraContainer["fake" .. j]
-                    if not button then
-                        button = CreateFrame("Button", nil, unitFrame.CustomAuraContainer, "BackdropTemplate")
-                        button:SetBackdrop(RUF.BACKDROP)
-                        button:SetBackdropColor(0, 0, 0, 0)
-                        button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata(AurasDB.FrameStrata)
-                        button.Icon = button:CreateTexture(nil, "BORDER")
-                        button.Icon:SetAllPoints()
-
-                        button.Count = button:CreateFontString(nil, "OVERLAY")
-                        unitFrame.CustomAuraContainer["fake" .. j] = button
-                    end
-
-                    button:SetSize(CustomDB.Size, CustomDB.Size)
-                    button.Count:ClearAllPoints()
-                    button.Count:SetPoint(CustomDB.Count.Layout[1], button, CustomDB.Count.Layout[2], CustomDB.Count.Layout[3], CustomDB.Count.Layout[4])
-                    button.Count:SetFont(RUF.Media.Font, CustomDB.Count.FontSize, General.Fonts.FontFlag)
-                    if General.Fonts.Shadow.Enabled then
-                        button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Color))
-                        button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                    else
-                        button.Count:SetShadowColor(0, 0, 0, 0)
-                        button.Count:SetShadowOffset(0, 0)
-                    end
-                    button.Count:SetTextColor(unpack(CustomDB.Count.Color))
-
-                    local row = math.floor((j - 1) / CustomDB.Wrap)
-                    local col = (j - 1) % CustomDB.Wrap
-                    local x = col * (CustomDB.Size + CustomDB.Layout[5])
-                    local y = row * (CustomDB.Size + CustomDB.Layout[5])
-                    if CustomDB.GrowthDirection == "LEFT" then x = -x end
-                    if CustomDB.WrapDirection == "DOWN" then y = -y end
-
-                    button:ClearAllPoints()
-                    button:SetPoint(CustomDB.Layout[1], unitFrame.CustomAuraContainer, CustomDB.Layout[1], x, y)
-                    button.Icon:SetTexture(CustomDB.Type == "Debuffs" and 135768 or 135769)
-                    button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-                    button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-                    button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                    button.Count:SetText(j)
-                    if CustomDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
-                    button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-						RUF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
-                    button.Duration:SetText("10m")
-                    button:Show()
-                end
-
-                local maxFake = CustomDB.Num
-                for j = maxFake + 1, (unitFrame.CustomAuraContainer.maxFake or maxFake) do
-                    local button = unitFrame.CustomAuraContainer["fake" .. j]
-                    if button then button:Hide() end
-                end
-                unitFrame.CustomAuraContainer.maxFake = CustomDB.Num
-            else
-                unitFrame.CustomAuraContainer:Hide()
-            end
+        RefreshTestAuraContainer(unitFrame.BuffContainer, BuffsDB, BuffAnchorParent, AurasDB.FrameStrata, General, unit, unitFrame, 135769, 4)
+        RefreshTestAuraContainer(unitFrame.DebuffContainer, DebuffsDB, DebuffAnchorParent, AurasDB.FrameStrata, General, unit, unitFrame, 135768, 4)
+        if CustomDB then
+            RefreshTestAuraContainer(unitFrame.CustomAuraContainer, CustomDB, CustomAnchorParent, AurasDB.FrameStrata, General, unit, unitFrame, CustomDB.Type == "Debuffs" and 135768 or 135769, 3)
         end
     else
         if unitFrame.BuffContainer then

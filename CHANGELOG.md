@@ -1,7 +1,25 @@
+# CHANGELOG
+
+## V1.0.2
+
+- Major refactoring and cleanup of core code and the settings menu.
+- Fixed party frames' Sort By option sometimes throwing an error.
+- Added a proper profile migration system for smoother updates.
+- Removed leftover dead code and unused third-party hooks.
+
+## V1.0.1
+
+- Major refactoring of various bits of code.
+- Fixed party frame inheriting frame data upon player leaving party.
+- Fixed missing threat indicator options in taret, focus, party, and raid frames.
+- Added libGlow and changed widget selection border to be a pixel glow ("Marching ants")
+- Fixed Color reset buttons from creating empty containers
+
 ## V1.0.0
+
 - Major refactor of the origional UUF addon.
 - Modified the import function to handle missing data.
-- Saved Var's of old UUFDB should import into RUFDB without friction
+- Saved Var's of old UUFDB should import into ZFDB without friction
 - Added Designer feature for nameplates, inspiried by platynator.
   - Old Units nav group merged into Designer.
   - Various indicators turned into widgets that can be moved around

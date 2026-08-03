@@ -1,6 +1,6 @@
-local _, RUF = ...
+local _, ZF = ...
 
-RUF.DesignerStyle = {
+ZF.DesignerStyle = {
 
     -- Sizes and spacing.
     Layout = {
@@ -8,10 +8,25 @@ RUF.DesignerStyle = {
         CanvasWidth   = nil,
         TabStripHeight = 60,
         TabStripHeightSecondRow = 20,
-        OptionsHeight = 280,
+        OptionsHeight = 480,--was 280
         OptionsWidth  = nil,
         OverlayBleed  = 4,
         OverlayMinHit = 16,
+        WindowWidth   = 1100,
+        WindowHeight  = 600,
+    },
+
+    Movers = {
+        NudgeStep = 1,
+        NudgeStepFine = 0.1,
+    },
+
+    -- Shared slider min/max/step triples, so every settings panel tunes from one place.
+    Sliders = {
+        Position  = {-255, 255, 0.1}, -- element X/Y offsets
+        FontSize  = {8, 64, 1},
+        Dimension = {1, 3000, 0.1},   -- frame width/height
+        Opacity   = {0, 1, 0.01},
     },
 
     -- Shared colors
@@ -19,6 +34,7 @@ RUF.DesignerStyle = {
         Selected     = {1, 0.82, 0, 1},     -- gold: selected widget outline
         Hovered      = {1, 1, 1, 0.7},      -- soft white: hovered widget outline
         Idle         = {1, 1, 1, 0},        -- alpha 0 when no widget selected
+        MoverBorder  = {1, 0.82, 0, 1},      -- gold Mover Border
         SelectedText = "|cFFFFD100",        -- gold
         ErrorText    = "|cFFFF4040",        -- red
     },
@@ -36,7 +52,7 @@ RUF.DesignerStyle = {
     -- Panel drawn behind the widget-options
      OptionsPanel = {
         Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
-            edgeFile = RUF.LSM:Fetch("border", "Blizzard Tooltip"),
+            edgeFile = ZF.LSM:Fetch("border", "Blizzard Tooltip"),
             edgeSize = 16,
             insets = {left = 5, right = 5, top = 5, bottom = 5} },
         Fill   = {0, 0, 0, 0.35},

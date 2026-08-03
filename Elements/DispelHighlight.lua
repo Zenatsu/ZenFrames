@@ -1,5 +1,5 @@
-local _, RUF = ...
-local oUF = RUF.oUF
+local _, ZF = ...
+local oUF = ZF.oUF
 
 local dispelTypeMap = {
     Magic = oUF.Enum.DispelType.Magic,
@@ -16,11 +16,30 @@ local DispelEventFrame = CreateFrame("Frame")
 DispelEventFrame:RegisterEvent("SPELLS_CHANGED")
 DispelEventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
 DispelEventFrame:SetScript("OnEvent", function()
-	DispelTypes = RUF.LD and RUF.LD:GetMyDispelTypes()
-	for unitFrame in pairs(DispelHighlightFrames) do RUF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end
+	DispelTypes = ZF.LD and ZF.LD:GetMyDispelTypes()
+	for unitFrame in pairs(DispelHighlightFrames) do ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end
 end)
 
-function RUF:UpdateDispelColorCurve(unitFrame)
+local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
+	texture:ClearAllPoints()
+	if DispelHighlightDB.Style == "GRADIENT" then
+		texture:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+		texture:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+		texture:SetTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png")
+		texture:SetAlpha(1)
+	else
+		local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
+		if barTexture then
+			texture:SetAllPoints(barTexture)
+		else
+			texture:SetAllPoints(unitFrame.Health)
+		end
+		texture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		texture:SetAlpha(0.75)
+	end
+end
+
+function ZF:UpdateDispelColorCurve(unitFrame)
     if not unitFrame.dispelColorCurve then return end
     unitFrame.dispelColorCurve:ClearPoints()
     for dispelType, index in pairs(dispelTypeMap) do
@@ -29,29 +48,14 @@ function RUF:UpdateDispelColorCurve(unitFrame)
             unitFrame.dispelColorCurve:AddPoint(index, color)
         end
     end
-    unitFrame.dispelColorCurveGeneration = RUF.dispelColorGeneration
+    unitFrame.dispelColorCurveGeneration = ZF.dispelColorGeneration
 end
 
-function RUF:CreateUnitDispelHighlight(unitFrame, unit)
-	local DispelHighlightDB = RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+function ZF:CreateUnitDispelHighlight(unitFrame, unit)
+	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 	if not unitFrame.DispelHighlight then
-		local DispelHighlight = unitFrame.Health:CreateTexture(RUF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
-		DispelHighlight:ClearAllPoints()
-		if DispelHighlightDB.Style == "GRADIENT" then
-			DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-			DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-			DispelHighlight:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png")
-			DispelHighlight:SetAlpha(1)
-		else
-			local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
-			if barTexture then
-				DispelHighlight:SetAllPoints(barTexture)
-			else
-				DispelHighlight:SetAllPoints(unitFrame.Health)
-			end
-			DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
-			DispelHighlight:SetAlpha(0.75)
-		end
+		local DispelHighlight = unitFrame.Health:CreateTexture(ZF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
+		ApplyDispelHighlightStyle(DispelHighlight, unitFrame, DispelHighlightDB)
 		DispelHighlight:SetBlendMode("BLEND")
 		DispelHighlight:Hide()
 
@@ -60,59 +64,44 @@ function RUF:CreateUnitDispelHighlight(unitFrame, unit)
 		if not unitFrame.dispelColorCurve then
 			unitFrame.dispelColorCurve = C_CurveUtil.CreateColorCurve()
 			unitFrame.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			RUF:UpdateDispelColorCurve(unitFrame)
+			ZF:UpdateDispelColorCurve(unitFrame)
 		end
 	end
 
-	RUF:UpdateUnitDispelHighlight(unitFrame, unit)
+	ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 end
 
-function RUF:UpdateUnitDispelHighlight(unitFrame, unit)
+function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
-	local DispelHighlightDB = RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 	if unitFrame.DispelHighlight then
 		if DispelHighlightDB.Enabled then
-			RUF:RegisterDispelHighlightEvents(unitFrame, unit)
-			unitFrame.DispelHighlight:ClearAllPoints()
-			if DispelHighlightDB.Style == "GRADIENT" then
-				unitFrame.DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-				unitFrame.DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-				unitFrame.DispelHighlight:SetTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Gradient.png")
-				unitFrame.DispelHighlight:SetAlpha(1)
-			else
-				local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
-				if barTexture then
-					unitFrame.DispelHighlight:SetAllPoints(barTexture)
-				else
-					unitFrame.DispelHighlight:SetAllPoints(unitFrame.Health)
-				end
-				unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
-				unitFrame.DispelHighlight:SetAlpha(0.75)
-			end
-			RUF:UpdateUnitDispelState(unitFrame, unit)
+			ZF:RegisterDispelHighlightEvents(unitFrame, unit)
+			ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
+			ZF:UpdateUnitDispelState(unitFrame, unit)
 		else
-			RUF:UnregisterDispelHighlightEvents(unitFrame)
+			ZF:UnregisterDispelHighlightEvents(unitFrame)
 			unitFrame.DispelHighlight:Hide()
 		end
 	end
 end
 
-function RUF:UpdateUnitDispelState(unitFrame, unit)
+function ZF:UpdateUnitDispelState(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
-	if not RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight.Enabled then
+	if not ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight.Enabled then
 		unitFrame.DispelHighlight:Hide()
 		return
 	end
 	local unitToken = unit == "partyplayer" and "player" or unit
 
-	local LibDispel = RUF.LD
+	local LibDispel = ZF.LD
 	if not LibDispel then
 		unitFrame.DispelHighlight:Hide()
 		return
 	end
 
-	if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= RUF.dispelColorGeneration then
-		RUF:UpdateDispelColorCurve(unitFrame)
+	if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= ZF.dispelColorGeneration then
+		ZF:UpdateDispelColorCurve(unitFrame)
 	end
 
 	if not UnitIsUnit(unitToken, "player") and not UnitIsFriend("player", unitToken) then
@@ -143,23 +132,23 @@ function RUF:UpdateUnitDispelState(unitFrame, unit)
 	end
 end
 
-function RUF:RegisterDispelHighlightEvents(unitFrame, unit)
+function ZF:RegisterDispelHighlightEvents(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
     if unit == "raid" then return end
-    if not RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight.Enabled then return end
+    if not ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight.Enabled then return end
     local unitToken = unit == "partyplayer" and "player" or unit
 
     unitFrame.DispelHighlightUnit = unit
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function() RUF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function() ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end)
     end
 
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unitToken)
 	DispelHighlightFrames[unitFrame] = true
 end
 
-function RUF:UnregisterDispelHighlightEvents(unitFrame)
+function ZF:UnregisterDispelHighlightEvents(unitFrame)
     if not unitFrame.DispelHighlightHandler then return end
 
     unitFrame.DispelHighlightHandler:UnregisterAllEvents()

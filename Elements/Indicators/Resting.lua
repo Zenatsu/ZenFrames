@@ -1,11 +1,9 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitRestingIndicator(unitFrame, unit)
-    local RestingDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Resting
+function ZF:CreateUnitRestingIndicator(unitFrame, unit)
+    local RestingDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Resting
 
-    local Resting = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit).."_RestingIndicator", "OVERLAY")
-    Resting:SetSize(RestingDB.Size, RestingDB.Size)
-    Resting:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
+    local Resting = ZF:CreateIndicatorTexture(unitFrame, unit, "_RestingIndicator", RestingDB.Size, RestingDB.Layout)
 
     if RestingDB.Enabled then
         unitFrame.RestingIndicator = Resting
@@ -13,32 +11,32 @@ function RUF:CreateUnitRestingIndicator(unitFrame, unit)
             Resting:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Resting:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            Resting:SetTexture(RUF.StatusTextures["Resting"][RestingDB.Texture])
+            Resting:SetTexture(ZF.StatusTextures["Resting"][RestingDB.Texture])
             Resting:SetTexCoord(0, 1, 0, 1)
         end
         if IsResting() then Resting:Show() end
+    else
+        ZF:DisableIndicatorElement(unitFrame, "RestingIndicator", Resting)
     end
 
     return Resting
 end
 
-function RUF:UpdateUnitRestingIndicator(unitFrame, unit)
-    local RestingDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Resting
+function ZF:UpdateUnitRestingIndicator(unitFrame, unit)
+    local RestingDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Resting
 
     if RestingDB.Enabled then
-        unitFrame.RestingIndicator = unitFrame.RestingIndicator or RUF:CreateUnitRestingIndicator(unitFrame, unit)
+        unitFrame.RestingIndicator = unitFrame.RestingIndicator or ZF:CreateUnitRestingIndicator(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:EnableElement("RestingIndicator") end
 
         if unitFrame.RestingIndicator then
-            unitFrame.RestingIndicator:ClearAllPoints()
-            unitFrame.RestingIndicator:SetSize(RestingDB.Size, RestingDB.Size)
-            unitFrame.RestingIndicator:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
+            ZF:PositionIndicatorTexture(unitFrame.RestingIndicator, unitFrame.HighLevelContainer, RestingDB.Size, RestingDB.Layout)
             if RestingDB.Texture == "DEFAULT" then
                 unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
             else
-                unitFrame.RestingIndicator:SetTexture(RUF.StatusTextures["Resting"][RestingDB.Texture])
+                unitFrame.RestingIndicator:SetTexture(ZF.StatusTextures["Resting"][RestingDB.Texture])
                 unitFrame.RestingIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if IsResting() then
@@ -49,10 +47,7 @@ function RUF:UpdateUnitRestingIndicator(unitFrame, unit)
         end
     else
         if not unitFrame.RestingIndicator then return end
-        if unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:DisableElement("RestingIndicator") end
-        if unitFrame.RestingIndicator then
-            unitFrame.RestingIndicator:Hide()
-            unitFrame.RestingIndicator = nil
-        end
+        ZF:DisableIndicatorElement(unitFrame, "RestingIndicator", unitFrame.RestingIndicator)
+        unitFrame.RestingIndicator = nil
     end
 end

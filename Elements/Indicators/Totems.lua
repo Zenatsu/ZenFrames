@@ -1,77 +1,83 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local totemPriorities = STANDARD_TOTEM_PRIORITIES
 if UnitClassBase("player") == "SHAMAN" then totemPriorities = SHAMAN_TOTEM_PRIORITIES end
 
-function RUF:CreateUnitTotems(unitFrame, unit)
+local function PositionTotem(totem, TotemsDB, index, parent)
+    local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
+    if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
+    totem:ClearAllPoints()
+    totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+    totem:SetPoint(TotemsDB.Layout[1], parent, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
+end
+
+local function CreateTotemButton(unitFrame, unit, index)
+    local totem = CreateFrame("Button", ZF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
+    totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
+    totem:SetAttribute("type2", "destroytotem")
+    totem:SetAttribute("typerelease2", "destroytotem")
+    totem:SetAlpha(0)
+
+    totem.Border = totem:CreateTexture(nil, "BACKGROUND")
+    totem.Border:SetAllPoints()
+    totem.Border:SetColorTexture(0, 0, 0, 1)
+
+    totem.Icon = totem:CreateTexture(nil, "OVERLAY")
+    totem.Icon:SetPoint("TOPLEFT", totem, "TOPLEFT", 1, -1)
+    totem.Icon:SetPoint("BOTTOMRIGHT", totem, "BOTTOMRIGHT", -1, 1)
+    totem.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+
+    totem.Cooldown = CreateFrame("Cooldown", nil, totem, "CooldownFrameTemplate")
+    totem.Cooldown:SetPoint("TOPLEFT", totem, "TOPLEFT", 1, -1)
+    totem.Cooldown:SetPoint("BOTTOMRIGHT", totem, "BOTTOMRIGHT", -1, 1)
+    totem.Cooldown:SetSwipeColor(0, 0, 0, 0.8)
+    totem.Cooldown:SetDrawEdge(false)
+    totem.Cooldown:SetDrawSwipe(true)
+    totem.Cooldown:SetHideCountdownNumbers(false)
+    totem.Cooldown:SetReverse(true)
+    ZF:ApplyCooldownText(totem.Cooldown)
+
+    return totem
+end
+
+function ZF:CreateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
-    local TotemsDB = RUF.db.profile.Units.player.Indicators.Totems
+    local TotemsDB = ZF.db.profile.Units.player.Indicators.Totems
     if not TotemsDB.Enabled then return end
 
-    local Totems = {}
+    local totems = {}
     for index = 1, #totemPriorities do
-        local Totem = CreateFrame("Button", RUF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
-        local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
-        if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
-        Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-        Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
-        Totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
-        Totem:SetAttribute("type2", "destroytotem")
-        Totem:SetAttribute("typerelease2", "destroytotem")
-        Totem:SetAlpha(0)
-
-        Totem.Border = Totem:CreateTexture(nil, "BACKGROUND")
-        Totem.Border:SetAllPoints()
-        Totem.Border:SetColorTexture(0, 0, 0, 1)
-
-        Totem.Icon = Totem:CreateTexture(nil, "OVERLAY")
-        Totem.Icon:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
-        Totem.Icon:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
-        Totem.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-
-        Totem.Cooldown = CreateFrame("Cooldown", nil, Totem, "CooldownFrameTemplate")
-        Totem.Cooldown:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
-        Totem.Cooldown:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
-        Totem.Cooldown:SetSwipeColor(0, 0, 0, 0.8)
-        Totem.Cooldown:SetDrawEdge(false)
-        Totem.Cooldown:SetDrawSwipe(true)
-        Totem.Cooldown:SetHideCountdownNumbers(false)
-        Totem.Cooldown:SetReverse(true)
-        RUF:ApplyCooldownText(Totem.Cooldown)
-
-        Totems[index] = Totem
+        local totem = CreateTotemButton(unitFrame, unit, index)
+        PositionTotem(totem, TotemsDB, index, unitFrame.HighLevelContainer)
+        totems[index] = totem
     end
 
     for slot = 1, #totemPriorities do
-        Totems[totemPriorities[slot]]:SetAttribute("totem-slot2", slot)
-        Totems[totemPriorities[slot]]:SetAttribute("totem-slot", slot)
+        totems[totemPriorities[slot]]:SetAttribute("totem-slot2", slot)
+        totems[totemPriorities[slot]]:SetAttribute("totem-slot", slot)
     end
 
-    Totems.PostUpdate = function(self, slot)
-        RUF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
+    totems.PostUpdate = function(self, slot)
+        ZF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
     end
 
-    unitFrame.Totems = Totems
-    return Totems
+    unitFrame.Totems = totems
+    return totems
 end
 
-function RUF:UpdateUnitTotems(unitFrame, unit)
+function ZF:UpdateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
-    local TotemsDB = RUF.db.profile.Units.player.Indicators.Totems
+    local TotemsDB = ZF.db.profile.Units.player.Indicators.Totems
 
     if TotemsDB.Enabled then
-        unitFrame.Totems = unitFrame.Totems or RUF:CreateUnitTotems(unitFrame, unit)
+        unitFrame.Totems = unitFrame.Totems or ZF:CreateUnitTotems(unitFrame, unit)
         if not unitFrame.Totems then return end
 
         for index = 1, #unitFrame.Totems do
-            local Totem = unitFrame.Totems[index]
-            local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
-            if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
-            Totem:ClearAllPoints()
-            Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-            Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
-            RUF:ApplyCooldownText(Totem.Cooldown)
-            Totem:Show()
+            local totem = unitFrame.Totems[index]
+            PositionTotem(totem, TotemsDB, index, unitFrame.HighLevelContainer)
+            ZF:ApplyCooldownText(totem.Cooldown)
+            totem:Show()
         end
 
         if not unitFrame:IsElementEnabled("Totems") then unitFrame:EnableElement("Totems") end

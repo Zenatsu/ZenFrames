@@ -1,38 +1,33 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitResurrectIndicator(unitFrame, unit)
-	local ResurrectDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
+function ZF:CreateUnitResurrectIndicator(unitFrame, unit)
+	local ResurrectDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Resurrect
 	if not ResurrectDB then return end
 
-	local ResurrectIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_ResurrectIndicator", "OVERLAY")
-	ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
-	ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], unitFrame.HighLevelContainer, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
+	local ResurrectIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_ResurrectIndicator", ResurrectDB.Size, ResurrectDB.Layout)
 	ResurrectIndicator:SetAtlas("RaidFrame-Icon-Rez")
 
 	if ResurrectDB.Enabled then
 		unitFrame.ResurrectIndicator = ResurrectIndicator
 	else
-		ResurrectIndicator:Hide()
+		ZF:DisableIndicatorElement(unitFrame, "ResurrectIndicator", ResurrectIndicator)
 	end
 
 	return ResurrectIndicator
 end
 
-function RUF:UpdateUnitResurrectIndicator(unitFrame, unit)
-	local ResurrectDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ResurrectIndicator
+function ZF:UpdateUnitResurrectIndicator(unitFrame, unit)
+	local ResurrectDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Resurrect
 	if not ResurrectDB then return end
 
 	if ResurrectDB.Enabled then
-		unitFrame.ResurrectIndicator = unitFrame.ResurrectIndicator or RUF:CreateUnitResurrectIndicator(unitFrame, unit)
+		unitFrame.ResurrectIndicator = unitFrame.ResurrectIndicator or ZF:CreateUnitResurrectIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ResurrectIndicator") then unitFrame:EnableElement("ResurrectIndicator") end
 
-		unitFrame.ResurrectIndicator:ClearAllPoints()
-		unitFrame.ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
-		unitFrame.ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], unitFrame.HighLevelContainer, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
+		ZF:PositionIndicatorTexture(unitFrame.ResurrectIndicator, unitFrame.HighLevelContainer, ResurrectDB.Size, ResurrectDB.Layout)
 		unitFrame.ResurrectIndicator:ForceUpdate()
 	elseif unitFrame.ResurrectIndicator then
-		if unitFrame:IsElementEnabled("ResurrectIndicator") then unitFrame:DisableElement("ResurrectIndicator") end
-		unitFrame.ResurrectIndicator:Hide()
+		ZF:DisableIndicatorElement(unitFrame, "ResurrectIndicator", unitFrame.ResurrectIndicator)
 		unitFrame.ResurrectIndicator = nil
 	end
 end

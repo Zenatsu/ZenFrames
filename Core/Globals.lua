@@ -1,76 +1,72 @@
-local _, RUF = ...
-local oUF = RUF.oUF
-RUFG = RUFG or {}
-RUF.AURA_TEST_MODE = false
-RUF.CASTBAR_TEST_MODE = false
-RUF.BOSS_TEST_MODE = false
-RUF.PARTY_TEST_MODE = false
-RUF.RAID_TEST_MODE = false
-RUF.BOSS_FRAMES = {}
-RUF.MAX_BOSS_FRAMES = 5
-RUF.PARTY_FRAMES = {}
-RUF.MAX_PARTY_FRAMES = 4
-RUF.RAID_FRAMES = {}
-RUF.AUGMENTATION_RAID_FRAMES = {}
-RUF.RAID_TEST_FRAMES = {}
-RUF.RAID_HEADERS = {}
-RUF.AUGMENTATION_RAID_FRAME_COUNT = 0
-RUF.MAX_RAID_FRAMES = 40
-RUF.MAX_RAID_GROUPS = 8
-RUF.MAX_RAID_FRAMES_PER_GROUP = 5
+local addonName, ZF = ...
+local oUF = ZF.oUF
+ZFG = ZFG or {}
+ZF.BOSS_FRAMES = {}
+ZF.MAX_BOSS_FRAMES = 5
+ZF.PARTY_FRAMES = {}
+ZF.MAX_PARTY_FRAMES = 4
+ZF.RAID_FRAMES = {}
+ZF.RAID_PREVIEW_FRAMES = {}
+ZF.AUGMENTATION_RAID_FRAMES = {}
+ZF.RAID_HEADERS = {}
+ZF.AUGMENTATION_RAID_FRAME_COUNT = 0
+ZF.MAX_RAID_FRAMES = 40
+ZF.MAX_RAID_GROUPS = 8
+ZF.MAX_RAID_FRAMES_PER_GROUP = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
-RUF.LSM = LibStub("LibSharedMedia-3.0")
-RUF.LDS = LibStub("LibDualSpec-1.0")
-RUF.AG = LibStub("AceGUI-3.0")
-RUF.LD = LibStub("LibDispel-1.0")
-RUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
-RUF.INFOBUTTON = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
-RUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Title")
-RUF.ADDON_VERSION = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Version")
-RUF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata("RehaltedUnitFrames", "Author")
-RUF.ADDON_LOGO = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Logo:11:12|t"
-RUF.PRETTY_ADDON_NAME = RUF.ADDON_LOGO .. " " .. RUF.ADDON_NAME
+ZF.LSM = LibStub("LibSharedMedia-3.0")
+ZF.LDS = LibStub("LibDualSpec-1.0")
+ZF.AG = LibStub("AceGUI-3.0")
+ZF.LD = LibStub("LibDispel-1.0")
+ZF.LG = LibStub("LibCustomGlow-1.0")
+ZF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
+ZF.INFOBUTTON = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\InfoButton.png:16:16|t "
+ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
+ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
+ZF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata(addonName, "Author")
+ZF.ADDON_LOGO = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ZFLogo:11:12|t"
+ZF.PRETTY_ADDON_NAME = ZF.ADDON_LOGO .. " " .. ZF.ADDON_NAME
 
-RUF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
-RUF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Dragonflight.tga")
-RUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Skyline.tga")
-RUF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Stripes.png")
-RUF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png")
+ZF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\BetterBlizzard.blp")
+ZF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Dragonflight.tga")
+ZF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Skyline.tga")
+ZF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Stripes.png")
+ZF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png")
 
-RUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
-RUF.LSM:Register("font", "Avante", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
-RUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
-RUF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
-RUF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
-RUF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
+ZF.LSM:Register("font", "Expressway", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\Expressway.ttf")
+ZF.LSM:Register("font", "Avante", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\Avante.ttf")
+ZF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
+ZF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
+ZF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
+ZF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
 
-RUF.StatusTextures = {
+ZF.StatusTextures = {
     Combat = {
-        ["COMBAT0"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
-        ["COMBAT1"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
-        ["COMBAT2"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
-        ["COMBAT3"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
-        ["COMBAT4"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
-        ["COMBAT5"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
-        ["COMBAT6"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
-        ["COMBAT7"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
-        ["COMBAT8"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat8.png",
+        ["COMBAT0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
+        ["COMBAT1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
+        ["COMBAT2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
+        ["COMBAT3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
+        ["COMBAT4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
+        ["COMBAT5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
+        ["COMBAT6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
+        ["COMBAT7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
+        ["COMBAT8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat8.png",
     },
     Resting = {
-        ["RESTING0"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
-        ["RESTING1"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
-        ["RESTING2"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
-        ["RESTING3"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
-        ["RESTING4"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
-        ["RESTING5"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
-        ["RESTING6"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
-        ["RESTING7"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
-        ["RESTING8"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting8.png",
+        ["RESTING0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
+        ["RESTING1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
+        ["RESTING2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
+        ["RESTING3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
+        ["RESTING4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
+        ["RESTING5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
+        ["RESTING6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
+        ["RESTING7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
+        ["RESTING8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting8.png",
     },
 }
 
-RUF.ClassificationTextures = {
+ZF.ClassificationTextures = {
     ["CLASSIFICATION0"] = {
         ["elite"] = "nameplates-icon-elite-gold",
         ["rare"] = "nameplates-icon-elite-silver",
@@ -84,67 +80,67 @@ RUF.ClassificationTextures = {
         ["worldboss"] = "vignettekillboss",
     },
     ["CLASSIFICATION2"] = {
-        ["elite"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
+        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
+        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
+        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
+        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
     },
     ["CLASSIFICATION3"] = {
-        ["elite"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
+        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png",
+        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png",
+        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png",
+        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
     },
 }
 
-RUF.QuestTextures = {
+ZF.QuestTextures = {
     ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
-    ["QUEST0"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
-    ["QUEST1"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+    ["QUEST0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest01.png",
+    ["QUEST1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest02.png",
 }
 
-RUF.RoleTextures = {
+ZF.RoleTextures = {
     ["Blizzard"] = {
-        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
+        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
     },
     ["Color"] = {
-        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\DPS.tga",
+        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\DPS.tga",
     },
     ["White"] = {
-        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.png",
-        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.png",
-        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.png",
+        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Tank.png",
+        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Healer.png",
+        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\DPS.png",
     },
     ["ElvUI"] = {
-        ["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
+        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
     },
 	["Square"] = {
-		["TANK"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png",
-		["HEALER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png",
-		["DAMAGER"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png",
+		["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Tank.png",
+		["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Healer.png",
+		["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\DPS.png",
 	},
 }
 
-RUF.ReadyCheckTextures = {
+ZF.ReadyCheckTextures = {
 	["White"] = {
-		["READY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
+		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
+		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
+		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
 	},
     ["HiRes"] = {
-		["READY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
+		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
+		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
+		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
 	},
 }
 
-RUF.InterruptSpellIDs = {
+ZF.InterruptSpellIDs = {
 	["DEATHKNIGHT"] = {47528},
 	["DEMONHUNTER"] = {183752},
 	["DRUID"] = {106839, 78675, 38675},
@@ -160,10 +156,10 @@ RUF.InterruptSpellIDs = {
 	["WARRIOR"] = {6552},
 }
 
-function RUF:PrettyPrint(MSG) print(RUF.ADDON_NAME .. ":|r " .. MSG) end
+function ZF:PrettyPrint(MSG) print(ZF.ADDON_NAME .. ":|r " .. MSG) end
 
-function RUF:GetInterruptSpellID()
-	local playerInterrupt = RUF.InterruptSpellIDs[UnitClassBase("player")]
+function ZF:GetInterruptSpellID()
+	local playerInterrupt = ZF.InterruptSpellIDs[UnitClassBase("player")]
 	if not playerInterrupt then return end
 	for i = 1, #playerInterrupt do
 		local spellID = playerInterrupt[i]
@@ -175,8 +171,8 @@ function RUF:GetInterruptSpellID()
 	end
 end
 
-function RUF:IsInterruptOnCooldown()
-	local spellID = RUF:GetInterruptSpellID()
+function ZF:IsInterruptOnCooldown()
+	local spellID = ZF:GetInterruptSpellID()
 	if not spellID then return false end
 	if C_Spell.GetSpellCooldown then
 		local cooldownInfo = C_Spell.GetSpellCooldown(spellID)
@@ -185,38 +181,38 @@ function RUF:IsInterruptOnCooldown()
 	return false
 end
 
-function RUF:FetchFrameName(unit)
+function ZF:FetchFrameName(unit)
     local UnitToFrame = {
-        ["player"] = "RUF_Player",
-        ["target"] = "RUF_Target",
-        ["targettarget"] = "RUF_TargetTarget",
-        ["focus"] = "RUF_Focus",
-        ["focustarget"] = "RUF_FocusTarget",
-        ["pet"] = "RUF_Pet",
-        ["augmentation"] = "RUF_Augmentation",
-        ["boss"] = "RUF_Boss",
-        ["party"] = "RUF_Party",
-        ["partyplayer"] = "RUF_PartyPlayer",
-        ["raid"] = "RUF_Raid",
+        ["player"] = "ZF_Player",
+        ["target"] = "ZF_Target",
+        ["targettarget"] = "ZF_TargetTarget",
+        ["focus"] = "ZF_Focus",
+        ["focustarget"] = "ZF_FocusTarget",
+        ["pet"] = "ZF_Pet",
+        ["augmentation"] = "ZF_Augmentation",
+        ["boss"] = "ZF_Boss",
+        ["party"] = "ZF_Party",
+        ["partyplayer"] = "ZF_PartyPlayer",
+        ["raid"] = "ZF_Raid",
     }
     if not unit then return end
-    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "RUF_Boss" .. unitID end
-    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "RUF_Party" .. unitID end
-    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "RUF_Raid" .. unitID end
-    if RUF.DESIGNER_PREVIEW_ACTIVE and UnitToFrame[unit] then return UnitToFrame[unit] .. "DesignerPreview" end
+    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "ZF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "ZF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "ZF_Raid" .. unitID end
+    if ZF.DESIGNER_PREVIEW_ACTIVE and UnitToFrame[unit] then return UnitToFrame[unit] .. "DesignerPreview" end
     return UnitToFrame[unit]
 end
 
-function RUF:ResolveLSM()
-    local LSM = RUF.LSM
-    local General = RUF.db.profile.General
-    RUF.Media = RUF.Media or {}
-    RUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
-    RUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
-    RUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
+function ZF:ResolveLSM()
+    local LSM = ZF.LSM
+    local General = ZF.db.profile.General
+    ZF.Media = ZF.Media or {}
+    ZF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
+    ZF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
+    ZF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
-function RUF:GetCooldownDurationComponents(displayStyle, minValue)
+function ZF:GetCooldownDurationComponents(displayStyle, minValue)
     if displayStyle == "clock" then
         if minValue >= 86400 then
             return {{div = 86400}, {div = 3600, mod = 24}}
@@ -233,9 +229,9 @@ function RUF:GetCooldownDurationComponents(displayStyle, minValue)
     end
 end
 
-function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
+function ZF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     if not icon then return end
-    local CooldownTextDB = RUF.db.profile.General.CooldownText
+    local CooldownTextDB = ZF.db.profile.General.CooldownText
     for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
         if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
     end
@@ -243,12 +239,12 @@ function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
         CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
         icon:SetCountdownFormatter(CooldownDurationFormatter)
     end
-	if CooldownTextDB.Advanced and unit then CooldownTextDB = RUF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
+	if CooldownTextDB.Advanced and unit then CooldownTextDB = ZF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
     if not textRegion then
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
-					RUF:ApplyCooldownText(icon, region, unit, unitFrame)
+					ZF:ApplyCooldownText(icon, region, unit, unitFrame)
                     return
                 end
             end
@@ -256,15 +252,15 @@ function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
         return
     end
 
-    local FontsDB = RUF.db.profile.General.Fonts
+    local FontsDB = ZF.db.profile.General.Fonts
     if CooldownTextDB.ScaleByIconSize then
         local iconWidth = icon:GetWidth()
         local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
         local fontSize = CooldownTextDB.FontSize * scaleFactor
         if fontSize < 1 then fontSize = 12 end
-        textRegion:SetFont(RUF.Media.Font, fontSize, FontsDB.FontFlag)
+        textRegion:SetFont(ZF.Media.Font, fontSize, FontsDB.FontFlag)
     else
-        textRegion:SetFont(RUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
+        textRegion:SetFont(ZF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
     end
     textRegion:ClearAllPoints()
     textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
@@ -277,7 +273,7 @@ function RUF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     end
 end
 
-function RUF:SetTestPredictionBar(bar, value, maxValue, enabled)
+function ZF:SetTestPredictionBar(bar, value, maxValue, enabled)
     if not bar then return end
     if not enabled then bar:Hide() return end
     bar:SetMinMaxValues(0, maxValue)
@@ -286,19 +282,19 @@ function RUF:SetTestPredictionBar(bar, value, maxValue, enabled)
 end
 
 local function SetupSlashCommands()
-    SLASH_RUF1 = "/ruf"
-    SLASH_RUF2 = "/RehaltedUnitFrames"
-    SLASH_RUF3 = "/uf"
-    SlashCmdList["RUF"] = function() RUF:CreateGUI() end
-    if RUF.db.global.DisplayLoginMessage then RUF:PrettyPrint("'|cFF990007/ruf|r' for in-game configuration.") end
+    SLASH_ZF1 = "/zf"
+    SLASH_ZF2 = "/ZenFrames"
+    SLASH_ZF3 = "/uf"
+    SlashCmdList["ZF"] = function() ZF:CreateGUI() end
+    if ZF.db.global.DisplayLoginMessage then ZF:PrettyPrint("'|cFF990007/zf|r' for in-game configuration.") end
 
     -- RL command
-    SLASH_RUFRELOAD1 = "/rl"
-    SlashCmdList["RUFRELOAD"] = function() C_UI.Reload() end
+    SLASH_ZFRELOAD1 = "/rl"
+    SlashCmdList["ZFRELOAD"] = function() C_UI.Reload() end
 end
 
-function RUF:LoadCustomColors()
-    local General = RUF.db.profile.General
+function ZF:LoadCustomColors()
+    local General = ZF.db.profile.General
 
     -- Map power type enums to their string names
     local PowerTypesToString = {
@@ -342,7 +338,7 @@ function RUF:LoadCustomColors()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
-    local DefaultStatusColors = RUF:GetDefaultDB().profile.General.Colors.Status
+    local DefaultStatusColors = ZF:GetDefaultDB().profile.General.Colors.Status
     local StatusColors = General.Colors.Status or DefaultStatusColors
     local tappedColor = StatusColors.Tapped or DefaultStatusColors.Tapped
     local disconnectedColor = StatusColors.Disconnected or DefaultStatusColors.Disconnected
@@ -351,7 +347,7 @@ function RUF:LoadCustomColors()
     oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
     oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
 
-    local DefaultThreatColors = RUF:GetDefaultDB().profile.General.Colors.Threat
+    local DefaultThreatColors = ZF:GetDefaultDB().profile.General.Colors.Threat
     local ThreatColors = General.Colors.Threat or DefaultThreatColors
     for threatStatus, defaultColor in pairs(DefaultThreatColors) do
         local color = ThreatColors[threatStatus] or defaultColor
@@ -372,7 +368,7 @@ function RUF:LoadCustomColors()
                 oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
             end
         end
-        RUF.dispelColorGeneration = (RUF.dispelColorGeneration or 0) + 1
+        ZF.dispelColorGeneration = (ZF.dispelColorGeneration or 0) + 1
     end
 
     for _, obj in next, oUF.objects do
@@ -382,39 +378,25 @@ function RUF:LoadCustomColors()
     end
 end
 
-local function AddAnchorsToBCDM()
-    if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
-    if select(4, GetBuildInfo()) >= 121000 then return end
-    local RUF_Anchors = {
-        ["RUF_Player"] = "|cFFFFD100Rehalted|rUnitFrames: Player Frame",
-        ["RUF_Target"] = "|cFFFFD100Rehalted|rUnitFrames: Target Frame",
-        ["RUF_Pet"] = "|cFFFFD100Rehalted|rUnitFrames: Pet Frame",
-    }
-    if BCDMG then
-        BCDMG:AddAnchors("RehaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, RUF_Anchors)
-    end
-end
-
-function RUF:Init()
+function ZF:Init()
     SetupSlashCommands()
-    RUF:ResolveLSM()
-    RUF:LoadCustomColors()
-    RUF:SetTagUpdateInterval()
-    AddAnchorsToBCDM()
+    ZF:ResolveLSM()
+    ZF:LoadCustomColors()
+    ZF:SetTagUpdateInterval()
 end
 
-function RUF:CopyTable(originalTable, destinationTable)
+function ZF:CopyTable(originalTable, destinationTable)
     for key, value in pairs(originalTable) do
         if type(value) == "table" then
             destinationTable[key] = destinationTable[key] or {}
-            RUF:CopyTable(value, destinationTable[key])
+            ZF:CopyTable(value, destinationTable[key])
         else
             destinationTable[key] = value
         end
     end
 end
 
-function RUF:SetJustification(anchorFrom)
+function ZF:SetJustification(anchorFrom)
     if anchorFrom == "TOPLEFT" or anchorFrom == "LEFT" or anchorFrom == "BOTTOMLEFT" then
         return "LEFT"
     elseif anchorFrom == "TOPRIGHT" or anchorFrom == "RIGHT" or anchorFrom == "BOTTOMRIGHT" then
@@ -424,21 +406,21 @@ function RUF:SetJustification(anchorFrom)
     end
 end
 
-function RUF:GetUnitColor(unit)
+function ZF:GetUnitColor(unit)
     if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
         local _, class = UnitClass(unit)
         local classColor = class and RAID_CLASS_COLORS[class]
         if classColor then return classColor.r, classColor.g, classColor.b end
     end
     local reaction = UnitReaction(unit, "player")
-    if reaction and RUF.db.profile.General.Colors.Reaction[reaction] then
-        local r, g, b = unpack(RUF.db.profile.General.Colors.Reaction[reaction])
+    if reaction and ZF.db.profile.General.Colors.Reaction[reaction] then
+        local r, g, b = unpack(ZF.db.profile.General.Colors.Reaction[reaction])
         return r, g, b
     end
     return 1, 1, 1
 end
 
-function RUF:GetClassColor(unitFrame)
+function ZF:GetClassColor(unitFrame)
     local _, class = UnitClass(unitFrame.unit)
     local classColor = RAID_CLASS_COLORS[class]
     if classColor then
@@ -446,29 +428,28 @@ function RUF:GetClassColor(unitFrame)
     end
 end
 
-function RUF:GetNormalizedUnit(unit)
+function ZF:GetNormalizedUnit(unit)
     local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit
 end
 
-function RUF:GetUnitDB(unitFrame, unit, units)
-	units = units or RUF.db.profile.Units
-	local normalizedUnit = unitFrame and unitFrame.isAugmentationRaidFrame and "augmentation" or RUF:GetNormalizedUnit(unit)
-	return normalizedUnit == "augmentation" and units.raid.augmentation or units[normalizedUnit]
+function ZF:GetUnitDB(unitFrame, unit, units)
+	units = units or ZF.db.profile.Units
+	local normalizedUnit = unitFrame and unitFrame.isAugmentationRaidFrame and "augmentation" or ZF:GetNormalizedUnit(unit)
+	return units[normalizedUnit]
 end
 
-function RUF:ForEachUnitDB(callback)
-	for unit, unitDB in pairs(RUF.db.profile.Units) do callback(unitDB, unit) end
-	callback(RUF.db.profile.Units.raid.augmentation, "augmentation")
+function ZF:ForEachUnitDB(callback)
+	for unit, unitDB in pairs(ZF.db.profile.Units) do callback(unitDB, unit) end
 end
 
-function RUF:IsAugmentationEvoker()
+function ZF:IsAugmentationEvoker()
 	if UnitClassBase("player") ~= "EVOKER" then return false end
 	local specializationIndex = C_SpecializationInfo.GetSpecialization()
 	return specializationIndex and C_SpecializationInfo.GetSpecializationInfo(specializationIndex) == 1473 or false
 end
 
-function RUF:RequiresAlternativePowerBar()
+function ZF:RequiresAlternativePowerBar()
     local SpecsNeedingAltPower = {
         PRIEST = { 258 },           -- Shadow
         MAGE   = { 62, 63, 64 },        -- Fire, Frost
@@ -487,7 +468,7 @@ function RUF:RequiresAlternativePowerBar()
     return false
 end
 
-RUF.LayoutConfig = {
+ZF.LayoutConfig = {
     TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
     TOP         = { anchor="TOP",       offsetMultiplier=0   },
     TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
@@ -499,37 +480,12 @@ RUF.LayoutConfig = {
     RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
 
-function RUF:SetTagUpdateInterval()
-    oUF.Tags:SetEventUpdateTimer(RUF.TAG_UPDATE_INTERVAL)
+function ZF:SetTagUpdateInterval()
+    oUF.Tags:SetEventUpdateTimer(ZF.TAG_UPDATE_INTERVAL)
 end
 
-function RUF:OpenURL(title, urlText)
-    StaticPopupDialogs["RUF_URL_POPUP"] = {
-        text = title or "",
-        button1 = CLOSE,
-        hasEditBox = true,
-        editBoxWidth = 300,
-        OnShow = function(self)
-            self.EditBox:SetText(urlText or "")
-            self.EditBox:SetFocus()
-            self.EditBox:HighlightText()
-        end,
-        OnAccept = function(self) end,
-        EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
-    local urlDialog = StaticPopup_Show("RUF_URL_POPUP")
-    if urlDialog then
-        urlDialog:SetFrameStrata("TOOLTIP")
-    end
-    return urlDialog
-end
-
-function RUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
-    StaticPopupDialogs["RUF_PROMPT_DIALOG"] = {
+function ZF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
+    StaticPopupDialogs["ZF_PROMPT_DIALOG"] = {
         text = text or "",
         button1 = acceptText or ACCEPT,
         button2 = cancelText or CANCEL,
@@ -549,7 +505,7 @@ function RUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
         preferredIndex = 3,
         showAlert = true,
     }
-    local promptDialog = StaticPopup_Show("RUF_PROMPT_DIALOG", title, text)
+    local promptDialog = StaticPopup_Show("ZF_PROMPT_DIALOG", title, text)
     if promptDialog then
         promptDialog.data = { onAccept = onAccept, onCancel = onCancel }
         promptDialog:SetFrameStrata("TOOLTIP")
@@ -557,7 +513,7 @@ function RUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
     return promptDialog
 end
 
-function RUFG:UpdateAllTags()
+function ZFG:UpdateAllTags()
     for _, obj in next, oUF.objects do
         if obj.UpdateTags then
             obj:UpdateTags()
@@ -566,7 +522,7 @@ function RUFG:UpdateAllTags()
 end
 
 -- Thanks Details / Plater for this.
-function RUF:CleanTruncateUTF8String(text)
+function ZF:CleanTruncateUTF8String(text)
     local DetailsFramework = _G.DF
     if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
         return DetailsFramework:CleanTruncateUTF8String(text)
@@ -574,11 +530,11 @@ function RUF:CleanTruncateUTF8String(text)
     return text
 end
 
-function RUF:IsSecretValue(value)
+function ZF:IsSecretValue(value)
     return issecretvalue and issecretvalue(value)
 end
 
-function RUF:GetSecondaryPowerType()
+function ZF:GetSecondaryPowerType()
     local class = select(2, UnitClass("player"))
     local spec = C_SpecializationInfo.GetSpecialization()
 
@@ -602,8 +558,8 @@ function RUF:GetSecondaryPowerType()
     return nil
 end
 
-function RUF:HasActiveSecondaryPowerBar(unitFrame, unit)
-	local SecondaryPowerBarDB = RUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
+function ZF:HasActiveSecondaryPowerBar(unitFrame, unit)
+	local SecondaryPowerBarDB = ZF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
     return SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and (unitFrame.Runes or unitFrame.ClassPower)
 end
 
@@ -614,8 +570,8 @@ local function NormalizeBarPosition(value, fallback)
     return fallback
 end
 
-function RUF:GetConfiguredPowerBarPosition(unit, unitFrame)
-	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+function ZF:GetConfiguredPowerBarPosition(unit, unitFrame)
+	local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
     if not PowerBarDB then return "BOTTOM" end
     if PowerBarDB.Position then
         return NormalizeBarPosition(PowerBarDB.Position, "BOTTOM")
@@ -626,8 +582,8 @@ function RUF:GetConfiguredPowerBarPosition(unit, unitFrame)
     return "BOTTOM"
 end
 
-function RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
-	local UnitDB = RUF:GetUnitDB(unitFrame, unit)
+function ZF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
+	local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local SecondaryPowerBarDB = UnitDB.SecondaryPowerBar
     if not SecondaryPowerBarDB then return "TOP" end
     if SecondaryPowerBarDB.Position then
@@ -639,33 +595,33 @@ function RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
     return "TOP"
 end
 
-function RUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
-    if not RUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
+function ZF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+    if not ZF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
 
-	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+	local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
     if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power) then
         return 0
     end
 
-	if RUF:GetConfiguredPowerBarPosition(unit, unitFrame) ~= RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) then
+	if ZF:GetConfiguredPowerBarPosition(unit, unitFrame) ~= ZF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) then
         return 0
     end
 
     return PowerBarDB.Height + 1
 end
 
-function RUF:UpdateHealthBarLayout(unitFrame, unit)
-	local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
-	local SecondaryPowerBarDB = RUF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
+function ZF:UpdateHealthBarLayout(unitFrame, unit)
+	local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
+	local SecondaryPowerBarDB = ZF:GetUnitDB(unitFrame, unit).SecondaryPowerBar
 
     local topDepth = 0
     local bottomDepth = 0
 
     local hasPrimaryPower = PowerBarDB and PowerBarDB.Enabled and unitFrame.Power
-    local hasSecondaryPower = RUF:HasActiveSecondaryPowerBar(unitFrame, unit)
+    local hasSecondaryPower = ZF:HasActiveSecondaryPowerBar(unitFrame, unit)
 
     if hasPrimaryPower then
-		if RUF:GetConfiguredPowerBarPosition(unit, unitFrame) == "TOP" then
+		if ZF:GetConfiguredPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + PowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + PowerBarDB.Height + 1
@@ -673,7 +629,7 @@ function RUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 
     if hasSecondaryPower then
-		if RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) == "TOP" then
+		if ZF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame) == "TOP" then
             topDepth = topDepth + SecondaryPowerBarDB.Height + 1
         else
             bottomDepth = bottomDepth + SecondaryPowerBarDB.Height + 1
@@ -693,7 +649,7 @@ function RUF:UpdateHealthBarLayout(unitFrame, unit)
 end
 
 
-RUF.AURA_FILTERS = {
+ZF.AURA_FILTERS = {
     Buffs = {
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the |cFFFFD100player|r."},
         {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the |cFFFFD100player|r or their vehicle."},
@@ -733,7 +689,7 @@ RUF.AURA_FILTERS = {
     }
 }
 
-RUF.AURA_BLACKLIST = {
+ZF.AURA_BLACKLIST = {
     -- Rogue Poisons
     [2823] = true,      -- Deadly Poison
     [315584] = true,    -- Instant Poison
@@ -774,20 +730,11 @@ RUF.AURA_BLACKLIST = {
     [95809] = true,     -- Hunter Pet Insanity
 }
 
-RUF.SCMAnchors = {
-    ["Player"] = "RUF_Player",
-    ["Target"] = "RUF_Target",
-    ["Pet"] = "RUF_Pet",
-    ["Focus"] = "RUF_Focus",
-    ["Focus Target"] = "RUF_FocusTarget",
-    ["Target of Target"] = "RUF_TargetTarget",
-}
-
-function RUF:RefreshProfiles()
-	RUF:ResolveLSM()
-	RUF:LoadCustomColors()
-	RUF:UpdateAllUnitFrames()
-	RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
+function ZF:RefreshProfiles()
+	ZF:ResolveLSM()
+	ZF:LoadCustomColors()
+	ZF:UpdateAllUnitFrames()
+	ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end)
 end
 
 local function MergeMatchingKeys(source, target)
@@ -804,31 +751,29 @@ local function MergeMatchingKeys(source, target)
 end
 
 -- Overwrites current select unit with target unit's settings. Non-reverseable.
-function RUF:CopyUnitSettings(sourceUnit, targetUnit)
-	local sourceDB = RUF:GetUnitDB(nil, sourceUnit)
-	local targetDB = RUF:GetUnitDB(nil, targetUnit)
+function ZF:CopyUnitSettings(sourceUnit, targetUnit)
+	local sourceDB = ZF:GetUnitDB(nil, sourceUnit)
+	local targetDB = ZF:GetUnitDB(nil, targetUnit)
 	if sourceDB == targetDB then return end
 
 	local preservedX, preservedY = targetDB.Frame.Layout[3], targetDB.Frame.Layout[4]
 	MergeMatchingKeys(sourceDB, targetDB)
 	targetDB.Frame.Layout[3], targetDB.Frame.Layout[4] = preservedX, preservedY
 
-	if targetUnit == "boss" and RUF.BOSS_TEST_MODE or targetUnit == "party" and RUF.PARTY_TEST_MODE or targetUnit == "raid" and RUF.RAID_TEST_MODE then
-		RUF:UpdateTestEnvironment(targetUnit, "all")
-	elseif targetUnit == "party" or targetUnit == "raid" then
-		RUF:UpdateGroupFrame(targetUnit)
+	if targetUnit == "party" or targetUnit == "raid" then
+		ZF:UpdateGroupFrame(targetUnit)
 	elseif targetUnit == "boss" then
-		RUF:UpdateBossFrame()
+		ZF:UpdateBossFrame()
 	elseif targetUnit == "augmentation" then
-		RUF:UpdateAugmentationRaidFrames()
+		ZF:UpdateAugmentationRaidFrames()
 	else
-		local liveFrame = RUF[targetUnit:upper()]
-		if liveFrame then RUF:UpdateUnitFrame(liveFrame, targetUnit) end
+		local liveFrame = ZF[targetUnit:upper()]
+		if liveFrame then ZF:UpdateUnitFrame(liveFrame, targetUnit) end
 	end
-	RUF:UpdateUnitTags(targetUnit)
+	ZF:UpdateUnitTags(targetUnit)
 
-	if RUF.DESIGNER_OPTIONS_CONTAINER and RUF:GetDesignerUnit() == targetUnit then
-		RUF:UpdateDesignerPreviewFrame()
-		RUF:AnchorDesignerOverlays()
+	if ZF.DESIGNER_OPTIONS_CONTAINER and ZF:GetDesignerUnit() == targetUnit then
+		ZF:UpdateDesignerPreviewFrame()
+		ZF:AnchorDesignerOverlays()
 	end
 end

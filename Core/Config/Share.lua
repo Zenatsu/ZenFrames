@@ -1,7 +1,8 @@
-local _, RUF = ...
+local _, ZF = ...
 local Serialize = LibStub:GetLibrary("AceSerializer-3.0")
 local Compress = LibStub:GetLibrary("LibDeflate")
-local RUF_IMPORT_PREFIX = "!RUF_"
+local ZF_IMPORT_PREFIX = "!ZF_"
+local UUF_IMPORT_PREFIX = "!UUF_"
 
 local function MergeInto(target, source)
     for key, value in pairs(source) do
@@ -78,15 +79,23 @@ local function BuildEncodedProfile(profileData)
     local serializedInfo = Serialize:Serialize(profileData)
     local compressedInfo = Compress:CompressDeflate(serializedInfo)
     local encodedInfo = Compress:EncodeForPrint(compressedInfo)
-    return RUF_IMPORT_PREFIX .. encodedInfo
+    return ZF_IMPORT_PREFIX .. encodedInfo
 end
 
 local function ParseEncodedProfile(encodedInfo)
-    if type(encodedInfo) ~= "string" or encodedInfo:sub(1, #RUF_IMPORT_PREFIX) ~= RUF_IMPORT_PREFIX then
+    if type(encodedInfo) ~= "string" then
         return nil
     end
 
-    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#RUF_IMPORT_PREFIX + 1))
+    local prefix = (encodedInfo:sub(1, #ZF_IMPORT_PREFIX) == ZF_IMPORT_PREFIX) and ZF_IMPORT_PREFIX 
+        or (encodedInfo:sub(1, #UUF_IMPORT_PREFIX) == UUF_IMPORT_PREFIX) and UUF_IMPORT_PREFIX
+        or nil
+        
+    if not prefix then
+        return nil
+    end
+
+    local decodedInfo = Compress:DecodeForPrint(encodedInfo:sub(#prefix + 1))
     if not decodedInfo then
         return nil
     end
@@ -109,37 +118,37 @@ local function ApplyImportedProfileToCurrent(profile)
         return
     end
 
-    MergeInto(RUF.db.profile, profile)
+    MergeInto(ZF.db.profile, profile)
 
-    RUFG.RefreshProfiles()
-    RUF:UpdateAllUnitFrames()
+    ZFG.RefreshProfiles()
+    ZF:UpdateAllUnitFrames()
 end
 
-function RUF:ExportSavedVariables()
-    local profileData = { profile = RUF.db.profile, }
+function ZF:ExportSavedVariables()
+    local profileData = { profile = ZF.db.profile, }
     return BuildEncodedProfile(profileData)
 end
 
-function RUF:ExportDefaultsTable()
+function ZF:ExportDefaultsTable()
     return "local Defaults = " .. SerializeLuaValue({
-        global = RUF.db.global,
-        profile = RUF.db.profile,
+        global = ZF.db.global,
+        profile = ZF.db.profile,
     }, 0, {})
 end
 
-function RUF:ImportSavedVariables(encodedInfo, profileName)
+function ZF:ImportSavedVariables(encodedInfo, profileName)
     local data = ParseEncodedProfile(encodedInfo)
     if not data then
-        RUF:PrettyPrint("Invalid Import String.")
+        ZF:PrettyPrint("Invalid Import String.")
         return
     end
 
     if profileName then
-        RUF.db:SetProfile(profileName)
+        ZF.db:SetProfile(profileName)
         ApplyImportedProfileToCurrent(data.profile)
     else
-        StaticPopupDialogs["RUF_IMPORT_NEW_PROFILE"] = {
-            text = RUF.ADDON_NAME.." - ".."Profile Name?",
+        StaticPopupDialogs["ZF_IMPORT_NEW_PROFILE"] = {
+            text = ZF.ADDON_NAME.." - ".."Profile Name?",
             button1 = "Import",
             button2 = "Cancel",
             hasEditBox = true,
@@ -151,36 +160,36 @@ function RUF:ImportSavedVariables(encodedInfo, profileName)
                 local editBox = self.EditBox
                 local newProfileName = editBox:GetText() or string.format("Imported_%s-%s-%s", date("%d"), date("%m"), date("%Y"))
                 if not newProfileName or newProfileName == "" then
-                    RUF:PrettyPrint("Please enter a valid profile name.")
+                    ZF:PrettyPrint("Please enter a valid profile name.")
                     return
                 end
 
-                RUF.db:SetProfile(newProfileName)
+                ZF.db:SetProfile(newProfileName)
                 ApplyImportedProfileToCurrent(data.profile)
             end,
         }
-        StaticPopup_Show("RUF_IMPORT_NEW_PROFILE")
+        StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
     end
 
 end
 
-function RUFG:ExportRUF(profileKey)
-    local profile = RUF.db.profiles[profileKey]
+function ZFG:ExportZF(profileKey)
+    local profile = ZF.db.profiles[profileKey]
     if not profile then return nil end
 
     local profileData = { profile = profile, }
     return BuildEncodedProfile(profileData)
 end
 
-function RUFG:ImportRUF(importString, profileKey)
+function ZFG:ImportZF(importString, profileKey)
     local profileData = ParseEncodedProfile(importString)
     if not profileData then
-        RUF:PrettyPrint("Invalid Import String.")
+        ZF:PrettyPrint("Invalid Import String.")
         return
     end
 
     if type(profileData.profile) == "table" then
-        RUF.db.profiles[profileKey] = profileData.profile
-        RUF.db:SetProfile(profileKey)
+        ZF.db.profiles[profileKey] = profileData.profile
+        ZF.db:SetProfile(profileKey)
     end
 end

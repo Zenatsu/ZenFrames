@@ -1,65 +1,50 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
-    local LeaderAssistantDB = RUF:GetUnitDB(unitFrame, unit).Indicators.LeaderAssistantIndicator
+function ZF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
+    local LeaderAssistantDB = ZF:GetUnitDB(unitFrame, unit).Indicators.LeaderAssistant
+    if not LeaderAssistantDB then return end
 
-    if LeaderAssistantDB then
-        local Leader = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_LeaderIndicator", "OVERLAY")
-        Leader:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
-        Leader:SetPoint(LeaderAssistantDB.Layout[1], unitFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
-
-        local Assistant = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_AssistantIndicator", "OVERLAY")
-        Assistant:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
-        Assistant:SetPoint(LeaderAssistantDB.Layout[1], unitFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
-
-        if LeaderAssistantDB.Enabled then
-            unitFrame.LeaderIndicator = Leader
-            unitFrame.AssistantIndicator = Assistant
-        else
-            unitFrame.LeaderIndicator = nil
-            unitFrame.AssistantIndicator = nil
-        end
-        return Leader, Assistant
-    end
-end
-
-function RUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
-    local LeaderAssistantDB = RUF:GetUnitDB(unitFrame, unit).Indicators.LeaderAssistantIndicator
+    local Leader = ZF:CreateIndicatorTexture(unitFrame, unit, "_LeaderIndicator", LeaderAssistantDB.Size, LeaderAssistantDB.Layout)
+    local Assistant = ZF:CreateIndicatorTexture(unitFrame, unit, "_AssistantIndicator", LeaderAssistantDB.Size, LeaderAssistantDB.Layout)
 
     if LeaderAssistantDB.Enabled then
-        unitFrame.LeaderIndicator = unitFrame.LeaderIndicator or RUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
-        unitFrame.AssistantIndicator = unitFrame.AssistantIndicator or RUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
+        unitFrame.LeaderIndicator = Leader
+        unitFrame.AssistantIndicator = Assistant
+    else
+        ZF:DisableIndicatorElement(unitFrame, "LeaderIndicator", Leader)
+        ZF:DisableIndicatorElement(unitFrame, "AssistantIndicator", Assistant)
+    end
+
+    return Leader, Assistant
+end
+
+function ZF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
+    local LeaderAssistantDB = ZF:GetUnitDB(unitFrame, unit).Indicators.LeaderAssistant
+
+    if LeaderAssistantDB.Enabled then
+        if not unitFrame.LeaderIndicator or not unitFrame.AssistantIndicator then
+            ZF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
+        end
 
         if not unitFrame:IsElementEnabled("LeaderIndicator") then unitFrame:EnableElement("LeaderIndicator") end
         if not unitFrame:IsElementEnabled("AssistantIndicator") then unitFrame:EnableElement("AssistantIndicator") end
 
         if unitFrame.LeaderIndicator then
-            unitFrame.LeaderIndicator:ClearAllPoints()
-            unitFrame.LeaderIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
-            unitFrame.LeaderIndicator:SetPoint(LeaderAssistantDB.Layout[1], unitFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+            ZF:PositionIndicatorTexture(unitFrame.LeaderIndicator, unitFrame.HighLevelContainer, LeaderAssistantDB.Size, LeaderAssistantDB.Layout)
             unitFrame.LeaderIndicator:Show()
             unitFrame.LeaderIndicator:ForceUpdate()
         end
 
         if unitFrame.AssistantIndicator then
-            unitFrame.AssistantIndicator:ClearAllPoints()
-            unitFrame.AssistantIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
-            unitFrame.AssistantIndicator:SetPoint(LeaderAssistantDB.Layout[1], unitFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+            ZF:PositionIndicatorTexture(unitFrame.AssistantIndicator, unitFrame.HighLevelContainer, LeaderAssistantDB.Size, LeaderAssistantDB.Layout)
             unitFrame.AssistantIndicator:Show()
             unitFrame.AssistantIndicator:ForceUpdate()
         end
     else
         if not unitFrame.LeaderIndicator and not unitFrame.AssistantIndicator then return end
-        if unitFrame:IsElementEnabled("LeaderIndicator") then unitFrame:DisableElement("LeaderIndicator") end
-        if unitFrame:IsElementEnabled("AssistantIndicator") then unitFrame:DisableElement("AssistantIndicator") end
-        if unitFrame.LeaderIndicator then
-            unitFrame.LeaderIndicator:Hide()
-            unitFrame.LeaderIndicator = nil
-        end
-
-        if unitFrame.AssistantIndicator then
-            unitFrame.AssistantIndicator:Hide()
-            unitFrame.AssistantIndicator = nil
-        end
+        ZF:DisableIndicatorElement(unitFrame, "LeaderIndicator", unitFrame.LeaderIndicator)
+        ZF:DisableIndicatorElement(unitFrame, "AssistantIndicator", unitFrame.AssistantIndicator)
+        unitFrame.LeaderIndicator = nil
+        unitFrame.AssistantIndicator = nil
     end
 end

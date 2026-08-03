@@ -1,43 +1,38 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitReadyCheckIndicator(unitFrame, unit)
-	local ReadyCheckDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ReadyCheckIndicator
+function ZF:CreateUnitReadyCheckIndicator(unitFrame, unit)
+	local ReadyCheckDB = ZF:GetUnitDB(unitFrame, unit).Indicators.ReadyCheck
 	if not ReadyCheckDB then return end
 
-	local ReadyCheckIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_ReadyCheckIndicator", "OVERLAY")
-	ReadyCheckIndicator:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
-	ReadyCheckIndicator:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-	ReadyCheckIndicator.readyTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
-	ReadyCheckIndicator.notReadyTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
-	ReadyCheckIndicator.waitingTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
+	local ReadyCheckIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_ReadyCheckIndicator", ReadyCheckDB.Size, ReadyCheckDB.Layout)
+	ReadyCheckIndicator.readyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
+	ReadyCheckIndicator.notReadyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
+	ReadyCheckIndicator.waitingTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
 
 	if ReadyCheckDB.Enabled then
 		unitFrame.ReadyCheckIndicator = ReadyCheckIndicator
 	else
-		ReadyCheckIndicator:Hide()
+		ZF:DisableIndicatorElement(unitFrame, "ReadyCheckIndicator", ReadyCheckIndicator)
 	end
 
 	return ReadyCheckIndicator
 end
 
-function RUF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
-	local ReadyCheckDB = RUF:GetUnitDB(unitFrame, unit).Indicators.ReadyCheckIndicator
+function ZF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
+	local ReadyCheckDB = ZF:GetUnitDB(unitFrame, unit).Indicators.ReadyCheck
 	if not ReadyCheckDB then return end
 
 	if ReadyCheckDB.Enabled then
-		unitFrame.ReadyCheckIndicator = unitFrame.ReadyCheckIndicator or RUF:CreateUnitReadyCheckIndicator(unitFrame, unit)
-		if not unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:EnableElement("ReadyCheckIndicator", RUF:GetNormalizedUnit(unit)) end
+		unitFrame.ReadyCheckIndicator = unitFrame.ReadyCheckIndicator or ZF:CreateUnitReadyCheckIndicator(unitFrame, unit)
+		if not unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:EnableElement("ReadyCheckIndicator", ZF:GetNormalizedUnit(unit)) end
 
-		unitFrame.ReadyCheckIndicator:ClearAllPoints()
-		unitFrame.ReadyCheckIndicator:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
-		unitFrame.ReadyCheckIndicator:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-		unitFrame.ReadyCheckIndicator.readyTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
-		unitFrame.ReadyCheckIndicator.notReadyTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
-		unitFrame.ReadyCheckIndicator.waitingTexture = RUF.ReadyCheckTextures[ReadyCheckDB.Texture] and RUF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
+		ZF:PositionIndicatorTexture(unitFrame.ReadyCheckIndicator, unitFrame.HighLevelContainer, ReadyCheckDB.Size, ReadyCheckDB.Layout)
+		unitFrame.ReadyCheckIndicator.readyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
+		unitFrame.ReadyCheckIndicator.notReadyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
+		unitFrame.ReadyCheckIndicator.waitingTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
 		if unitFrame.ReadyCheckIndicator.ForceUpdate then unitFrame.ReadyCheckIndicator:ForceUpdate() end
 	elseif unitFrame.ReadyCheckIndicator then
-		if unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:DisableElement("ReadyCheckIndicator") end
-		unitFrame.ReadyCheckIndicator:Hide()
+		ZF:DisableIndicatorElement(unitFrame, "ReadyCheckIndicator", unitFrame.ReadyCheckIndicator)
 		unitFrame.ReadyCheckIndicator = nil
 	end
 end

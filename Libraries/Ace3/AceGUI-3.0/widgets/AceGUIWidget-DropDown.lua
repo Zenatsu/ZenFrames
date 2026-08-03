@@ -711,6 +711,7 @@ do
 
 		local text = _G[dropdown:GetName() .. "Text"]
 		self.text = text
+		text:SetJustifyH("LEFT")
 		text.obj = self
 		text:ClearAllPoints()
 		text:SetPoint("RIGHT", right, "RIGHT" ,-43, 2)

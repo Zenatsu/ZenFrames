@@ -1,6 +1,6 @@
-local _, RUF = ...
+local _, ZF = ...
 local StatusBarInterpolation = Enum.StatusBarInterpolation
-local oUF = RUF.oUF
+local oUF = ZF.oUF
 
 local function SetHealthBackgroundColor(unitFrame, unit, HealthBarDB, forceUpdate)
 	local backgroundUnit = unitFrame.unit or unit
@@ -23,32 +23,32 @@ local function SetHealthBackgroundColor(unitFrame, unit, HealthBarDB, forceUpdat
         unitFrame.HealthBackground:SetStatusBarColor(r, g, b, HealthBarDB.BackgroundOpacity)
     elseif HealthBarDB.ColorBackgroundByClass then
         local unitToColor = backgroundUnit ~= "pet" and backgroundUnit or "player"
-        local r, g, b = RUF:GetUnitColor(unitToColor)
+        local r, g, b = ZF:GetUnitColor(unitToColor)
         unitFrame.HealthBackground:SetStatusBarColor(r, g, b, HealthBarDB.BackgroundOpacity)
     else
         unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
     end
 end
 
-function RUF:CreateUnitHealthBar(unitFrame, unit)
-    local FrameDB = RUF:GetUnitDB(unitFrame, unit).Frame
-    local HealthBarDB = RUF:GetUnitDB(unitFrame, unit).HealthBar
+function ZF:CreateUnitHealthBar(unitFrame, unit)
+    local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+    local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
     local unitContainer = unitFrame.Container
 
     if not unitFrame.HealthBar then
         if not unitFrame.HealthBackground then
-            unitFrame.HealthBackground = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
+            unitFrame.HealthBackground = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
             unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-            unitFrame.HealthBackground:SetStatusBarTexture(RUF.Media.Background)
+            unitFrame.HealthBackground:SetStatusBarTexture(ZF.Media.Background)
             unitFrame.HealthBackground:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
             SetHealthBackgroundColor(unitFrame, unit, HealthBarDB, true)
         end
 
-        local HealthBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
+        local HealthBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
         HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-        HealthBar:SetStatusBarTexture(RUF.Media.Foreground)
+        HealthBar:SetStatusBarTexture(ZF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         HealthBar.colorClass = HealthBarDB.ColorByClass
@@ -59,7 +59,7 @@ function RUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
 		HealthBar.PostUpdateColor = function(healthBar, unit, color)
 			if color and color ~= oUF.colors.health then return end
-			local currentHealthBarDB = RUF:GetUnitDB(unitFrame, unit).HealthBar
+			local currentHealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
 			if unit == "pet" and currentHealthBarDB.ColorByClass then
 				local unitColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 				if unitColor then healthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, currentHealthBarDB.ForegroundOpacity) return end
@@ -81,7 +81,7 @@ function RUF:CreateUnitHealthBar(unitFrame, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true), unitFrame.Health.smoothing)
-			SetHealthBackgroundColor(unitFrame, unit, RUF:GetUnitDB(unitFrame, unit).HealthBar)
+			SetHealthBackgroundColor(unitFrame, unit, ZF:GetUnitDB(unitFrame, unit).HealthBar)
         end
 
         if HealthBarDB.Inverse then
@@ -95,14 +95,14 @@ function RUF:CreateUnitHealthBar(unitFrame, unit)
     end
 end
 
-function RUF:UpdateUnitHealthBar(unitFrame, unit)
-    local FrameDB = RUF:GetUnitDB(unitFrame, unit).Frame
-    local HealthBarDB = RUF:GetUnitDB(unitFrame, unit).HealthBar
-    local DispelHighlightDB = RUF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+function ZF:UpdateUnitHealthBar(unitFrame, unit)
+    local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+    local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
+    local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 
     if unitFrame then
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
-        RUF:PlaceUnitFrame(unitFrame, unit)
+        ZF:PlaceUnitFrame(unitFrame, unit)
     end
 
     if unitFrame.Health then
@@ -114,7 +114,7 @@ function RUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health.colorTapping = HealthBarDB.ColorWhenTapped
         unitFrame.Health.colorDisconnected = HealthBarDB.ColorWhenDisconnected
         unitFrame.Health.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
-        unitFrame.Health:SetStatusBarTexture(RUF.Media.Foreground)
+        unitFrame.Health:SetStatusBarTexture(ZF.Media.Foreground)
         if unit == "pet" and HealthBarDB.ColorByClass then
             unitFrame.Health.colorClass = false
             unitFrame.Health.colorReaction = false
@@ -125,7 +125,7 @@ function RUF:UpdateUnitHealthBar(unitFrame, unit)
     if unitFrame.HealthBackground then
         unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         SetHealthBackgroundColor(unitFrame, unit, HealthBarDB, true)
-        unitFrame.HealthBackground:SetStatusBarTexture(RUF.Media.Background)
+        unitFrame.HealthBackground:SetStatusBarTexture(ZF.Media.Background)
     end
 
     if HealthBarDB.Inverse then
@@ -137,7 +137,7 @@ function RUF:UpdateUnitHealthBar(unitFrame, unit)
     end
 
     if unitFrame.DispelHighlight then
-        RUF:UpdateUnitDispelHighlight(unitFrame, unit)
+        ZF:UpdateUnitDispelHighlight(unitFrame, unit)
     end
 
     unitFrame.Health:ForceUpdate()

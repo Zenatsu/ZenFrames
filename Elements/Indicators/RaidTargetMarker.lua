@@ -1,44 +1,36 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    local RaidTargetMarkerDB = RUF:GetUnitDB(unitFrame, unit).Indicators.RaidTargetMarker
+function ZF:CreateUnitRaidTargetMarker(unitFrame, unit)
+    local RaidTargetMarkerDB = ZF:GetUnitDB(unitFrame, unit).Indicators.RaidTargetMarker
 
-    local RaidTargetMarker = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_RaidTargetMarkerIndicator", "OVERLAY")
-    RaidTargetMarker:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
-    RaidTargetMarker:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], RaidTargetMarkerDB.Layout[3], RaidTargetMarkerDB.Layout[4])
+    local RaidTargetMarker = ZF:CreateIndicatorTexture(unitFrame, unit, "_RaidTargetMarkerIndicator", RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Layout)
 
     if RaidTargetMarkerDB.Enabled then
         unitFrame.RaidTargetIndicator = RaidTargetMarker
         unitFrame.RaidTargetIndicator:Show()
     else
-        if unitFrame:IsElementEnabled("RaidTargetIndicator") then unitFrame:DisableElement("RaidTargetIndicator") end
-        RaidTargetMarker:Hide()
+        ZF:DisableIndicatorElement(unitFrame, "RaidTargetIndicator", RaidTargetMarker)
     end
 
     return RaidTargetMarker
 end
 
-function RUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    local RaidTargetMarkerDB = RUF:GetUnitDB(unitFrame, unit).Indicators.RaidTargetMarker
+function ZF:UpdateUnitRaidTargetMarker(unitFrame, unit)
+    local RaidTargetMarkerDB = ZF:GetUnitDB(unitFrame, unit).Indicators.RaidTargetMarker
 
     if RaidTargetMarkerDB.Enabled then
-        unitFrame.RaidTargetIndicator = unitFrame.RaidTargetIndicator or RUF:CreateUnitRaidTargetMarker(unitFrame, unit)
+        unitFrame.RaidTargetIndicator = unitFrame.RaidTargetIndicator or ZF:CreateUnitRaidTargetMarker(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("RaidTargetIndicator") then unitFrame:EnableElement("RaidTargetIndicator") end
 
         if unitFrame.RaidTargetIndicator then
-            unitFrame.RaidTargetIndicator:ClearAllPoints()
-            unitFrame.RaidTargetIndicator:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
-            unitFrame.RaidTargetIndicator:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], RaidTargetMarkerDB.Layout[3], RaidTargetMarkerDB.Layout[4])
+            ZF:PositionIndicatorTexture(unitFrame.RaidTargetIndicator, unitFrame.HighLevelContainer, RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Layout)
             unitFrame.RaidTargetIndicator:Show()
             unitFrame.RaidTargetIndicator:ForceUpdate()
         end
     else
         if not unitFrame.RaidTargetIndicator then return end
-        if unitFrame:IsElementEnabled("RaidTargetIndicator") then unitFrame:DisableElement("RaidTargetIndicator") end
-        if unitFrame.RaidTargetIndicator then
-            unitFrame.RaidTargetIndicator:Hide()
-            unitFrame.RaidTargetIndicator = nil
-        end
+        ZF:DisableIndicatorElement(unitFrame, "RaidTargetIndicator", unitFrame.RaidTargetIndicator)
+        unitFrame.RaidTargetIndicator = nil
     end
 end

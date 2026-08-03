@@ -1,37 +1,32 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitSummonIndicator(unitFrame, unit)
-	local SummonDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Summon
-	if not SummonDB then return end
+function ZF:CreateUnitSummonIndicator(unitFrame, unit)
+    local SummonDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Summon
+    if not SummonDB then return end
 
-	local SummonIndicator = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_SummonIndicator", "OVERLAY")
-	SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-	SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+    local SummonIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_SummonIndicator", SummonDB.Size, SummonDB.Layout)
 
-	if SummonDB.Enabled then
-		unitFrame.SummonIndicator = SummonIndicator
-	else
-		SummonIndicator:Hide()
-	end
+    if SummonDB.Enabled then
+        unitFrame.SummonIndicator = SummonIndicator
+    else
+        ZF:DisableIndicatorElement(unitFrame, "SummonIndicator", SummonIndicator)
+    end
 
-	return SummonIndicator
+    return SummonIndicator
 end
 
-function RUF:UpdateUnitSummonIndicator(unitFrame, unit)
-	local SummonDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Summon
-	if not SummonDB then return end
+function ZF:UpdateUnitSummonIndicator(unitFrame, unit)
+    local SummonDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Summon
+    if not SummonDB then return end
 
-	if SummonDB.Enabled then
-		unitFrame.SummonIndicator = unitFrame.SummonIndicator or RUF:CreateUnitSummonIndicator(unitFrame, unit)
-		if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
+    if SummonDB.Enabled then
+        unitFrame.SummonIndicator = unitFrame.SummonIndicator or ZF:CreateUnitSummonIndicator(unitFrame, unit)
+        if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
 
-		unitFrame.SummonIndicator:ClearAllPoints()
-		unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-		unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-		unitFrame.SummonIndicator:ForceUpdate()
-	elseif unitFrame.SummonIndicator then
-		if unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:DisableElement("SummonIndicator") end
-		unitFrame.SummonIndicator:Hide()
-		unitFrame.SummonIndicator = nil
-	end
+        ZF:PositionIndicatorTexture(unitFrame.SummonIndicator, unitFrame.HighLevelContainer, SummonDB.Size, SummonDB.Layout)
+        unitFrame.SummonIndicator:ForceUpdate()
+    elseif unitFrame.SummonIndicator then
+        ZF:DisableIndicatorElement(unitFrame, "SummonIndicator", unitFrame.SummonIndicator)
+        unitFrame.SummonIndicator = nil
+    end
 end

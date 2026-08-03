@@ -1,19 +1,21 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitContainer(unitFrame, unit)
-    if not unitFrame.Container then
-        unitFrame.Container = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_Container", unitFrame, "BackdropTemplate")
-        unitFrame.Container:SetBackdrop(RUF.BACKDROP)
-        unitFrame.Container:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
-        unitFrame.Container:SetAllPoints(unitFrame)
+local HIGH_LEVEL_CONTAINER_FRAME_LEVEL = 999
 
-        if not unitFrame.HighLevelContainer then
-            unitFrame.HighLevelContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_HighLevelContainer", unitFrame)
-            unitFrame.HighLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 0, 0)
-            unitFrame.HighLevelContainer:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 0, 0)
-            unitFrame.HighLevelContainer:SetFrameLevel(999)
-            unitFrame.HighLevelContainer:SetFrameStrata("MEDIUM")
-        end
-    end
+function ZF:CreateUnitContainer(unitFrame, unit)
+    if unitFrame.Container then return end
+
+    unitFrame.Container = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_Container", unitFrame, "BackdropTemplate")
+    unitFrame.Container:SetBackdrop(ZF.BACKDROP)
+    unitFrame.Container:SetBackdropColor(0, 0, 0, 0)
+    unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
+    unitFrame.Container:SetAllPoints(unitFrame)
+
+    if unitFrame.HighLevelContainer then return end
+
+    unitFrame.HighLevelContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_HighLevelContainer", unitFrame)
+    unitFrame.HighLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 0, 0)
+    unitFrame.HighLevelContainer:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 0, 0)
+    unitFrame.HighLevelContainer:SetFrameLevel(HIGH_LEVEL_CONTAINER_FRAME_LEVEL)
+    unitFrame.HighLevelContainer:SetFrameStrata("MEDIUM")
 end

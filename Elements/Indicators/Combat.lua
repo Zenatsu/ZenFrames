@@ -1,11 +1,9 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Combat
+function ZF:CreateUnitCombatIndicator(unitFrame, unit)
+    local CombatDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Combat
 
-    local Combat = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit).."_CombatIndicator", "OVERLAY")
-    Combat:SetSize(CombatDB.Size, CombatDB.Size)
-    Combat:SetPoint(CombatDB.Layout[1], unitFrame.HighLevelContainer, CombatDB.Layout[2], CombatDB.Layout[3], CombatDB.Layout[4])
+    local Combat = ZF:CreateIndicatorTexture(unitFrame, unit, "_CombatIndicator", CombatDB.Size, CombatDB.Layout)
 
     if CombatDB.Enabled then
         unitFrame.CombatIndicator = Combat
@@ -13,32 +11,32 @@ function RUF:CreateUnitCombatIndicator(unitFrame, unit)
             Combat:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Combat:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            Combat:SetTexture(RUF.StatusTextures["Combat"][CombatDB.Texture])
+            Combat:SetTexture(ZF.StatusTextures["Combat"][CombatDB.Texture])
             Combat:SetTexCoord(0, 1, 0, 1)
         end
         if UnitAffectingCombat(unitFrame.unit) then Combat:Show() end
+    else
+        ZF:DisableIndicatorElement(unitFrame, "CombatIndicator", Combat)
     end
 
     return Combat
 end
 
-function RUF:UpdateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Indicators.Combat
+function ZF:UpdateUnitCombatIndicator(unitFrame, unit)
+    local CombatDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Combat
 
     if CombatDB.Enabled then
-        unitFrame.CombatIndicator = unitFrame.CombatIndicator or RUF:CreateUnitCombatIndicator(unitFrame, unit)
+        unitFrame.CombatIndicator = unitFrame.CombatIndicator or ZF:CreateUnitCombatIndicator(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("CombatIndicator") then unitFrame:EnableElement("CombatIndicator") end
 
         if unitFrame.CombatIndicator then
-            unitFrame.CombatIndicator:ClearAllPoints()
-            unitFrame.CombatIndicator:SetSize(CombatDB.Size, CombatDB.Size)
-            unitFrame.CombatIndicator:SetPoint(CombatDB.Layout[1], unitFrame.HighLevelContainer, CombatDB.Layout[2], CombatDB.Layout[3], CombatDB.Layout[4])
+            ZF:PositionIndicatorTexture(unitFrame.CombatIndicator, unitFrame.HighLevelContainer, CombatDB.Size, CombatDB.Layout)
             if CombatDB.Texture == "DEFAULT" then
                 unitFrame.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
             else
-                unitFrame.CombatIndicator:SetTexture(RUF.StatusTextures["Combat"][CombatDB.Texture])
+                unitFrame.CombatIndicator:SetTexture(ZF.StatusTextures["Combat"][CombatDB.Texture])
                 unitFrame.CombatIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if UnitAffectingCombat(unitFrame.unit) then
@@ -49,10 +47,7 @@ function RUF:UpdateUnitCombatIndicator(unitFrame, unit)
         end
     else
         if not unitFrame.CombatIndicator then return end
-        if unitFrame:IsElementEnabled("CombatIndicator") then unitFrame:DisableElement("CombatIndicator") end
-        if unitFrame.CombatIndicator then
-            unitFrame.CombatIndicator:Hide()
-            unitFrame.CombatIndicator = nil
-        end
+        ZF:DisableIndicatorElement(unitFrame, "CombatIndicator", unitFrame.CombatIndicator)
+        unitFrame.CombatIndicator = nil
     end
 end

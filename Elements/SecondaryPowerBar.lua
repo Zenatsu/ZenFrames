@@ -1,4 +1,4 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local playerClass = UnitClassBase("player")
 local isDeathKnight = playerClass == "DEATHKNIGHT"
@@ -12,8 +12,8 @@ secondaryPowerEvents:SetScript("OnEvent", function(_, event, unit)
     if event == "PLAYER_SPECIALIZATION_CHANGED" and unit ~= "player" then return end
 
     C_Timer.After(0.1, function()
-        if RUF.PLAYER then
-            RUF:UpdateUnitSecondaryPowerBar(RUF.PLAYER, "player")
+        if ZF.PLAYER then
+            ZF:UpdateUnitSecondaryPowerBar(ZF.PLAYER, "player")
         end
     end)
 end)
@@ -37,31 +37,41 @@ local function DisableSecondaryPowerElement(unitFrame, elementName, secondaryPow
     unitFrame[elementName] = nil
 end
 
-function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
-    local unitDB = RUF:GetUnitDB(unitFrame, unit)
+local function UnpackColor(color)
+    return color[1], color[2], color[3], color[4] or 1
+end
+
+-- Runes always come in a fixed set of 6; every other secondary power type
+local function GetSecondaryPowerMaxCount(powerType)
+    if isDeathKnight then return 6 end
+    return UnitPowerMax("player", powerType)
+end
+
+function ZF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+    local unitDB = ZF:GetUnitDB(unitFrame, unit)
     local secondaryPowerDB = unitDB.SecondaryPowerBar
     if not secondaryPowerDB.Enabled then return end
 
-    local powerType = RUF:GetSecondaryPowerType()
+    local powerType = ZF:GetSecondaryPowerType()
     if not isDeathKnight and not powerType then return end
 
-    local maxPower = isDeathKnight and 6 or UnitPowerMax("player", powerType)
+    local maxPower = GetSecondaryPowerMaxCount(powerType)
     if not maxPower or maxPower < 1 then return end
 
     local secondaryPower = {Ticks = {}}
 
     secondaryPower.ContainerBackground = unitFrame.Container:CreateTexture(nil, "BACKGROUND")
-    secondaryPower.ContainerBackground:SetTexture(RUF.Media.Background)
+    secondaryPower.ContainerBackground:SetTexture(ZF.Media.Background)
 
     for index = 1, maxPower do
         local bar = CreateFrame("StatusBar", nil, unitFrame.Container)
-        bar:SetStatusBarTexture(RUF.Media.Foreground)
+        bar:SetStatusBarTexture(ZF.Media.Foreground)
         bar:SetMinMaxValues(0, 1)
         bar:Hide()
 
         bar.Background = bar:CreateTexture(nil, "BACKGROUND")
         bar.Background:SetAllPoints(bar)
-        bar.Background:SetTexture(RUF.Media.Background)
+        bar.Background:SetTexture(ZF.Media.Background)
 
         secondaryPower[index] = bar
     end
@@ -88,12 +98,7 @@ function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         if secondaryPowerDB.ColorByType then return end
 
         for index = 1, #element do
-            element[index]:SetStatusBarColor(
-                secondaryPowerDB.Foreground[1],
-                secondaryPowerDB.Foreground[2],
-                secondaryPowerDB.Foreground[3],
-                secondaryPowerDB.Foreground[4] or 1
-            )
+            element[index]:SetStatusBarColor(UnpackColor(secondaryPowerDB.Foreground))
         end
     end
 
@@ -108,13 +113,13 @@ function RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     return secondaryPower
 end
 
-function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
+function ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     if not unitFrame then return end
 
-    local unitDB = RUF:GetUnitDB(unitFrame, unit)
+    local unitDB = ZF:GetUnitDB(unitFrame, unit)
     local frameDB = unitDB.Frame
     local secondaryPowerDB = unitDB.SecondaryPowerBar
-    local powerType = RUF:GetSecondaryPowerType()
+    local powerType = ZF:GetSecondaryPowerType()
     local elementName = isDeathKnight and "Runes" or "ClassPower"
 
     if not secondaryPowerDB.Enabled or (not isDeathKnight and not powerType) then
@@ -124,14 +129,14 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         end
 
         if unitFrame.Power then
-            RUF:UpdateUnitPowerBar(unitFrame, unit)
+            ZF:UpdateUnitPowerBar(unitFrame, unit)
         else
-            RUF:UpdateHealthBarLayout(unitFrame, unit)
+            ZF:UpdateHealthBarLayout(unitFrame, unit)
         end
         return
     end
 
-    local maxPower = isDeathKnight and 6 or UnitPowerMax("player", powerType)
+    local maxPower = GetSecondaryPowerMaxCount(powerType)
     if not maxPower or maxPower < 1 then return end
 
     local secondaryPower = unitFrame[elementName]
@@ -141,7 +146,7 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     if not secondaryPower then
-        secondaryPower = RUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+        secondaryPower = ZF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         if not secondaryPower then return end
 
         if not unitFrame:IsElementEnabled(elementName) then
@@ -151,21 +156,16 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
 
     local totalWidth = frameDB.Width - 2
     local segmentWidth = totalWidth / maxPower
-	local position = RUF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
-    local stackOffset = RUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+	local position = ZF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
+    local stackOffset = ZF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
     local anchorPoint = position == "TOP" and "TOPLEFT" or "BOTTOMLEFT"
     local anchorY = position == "TOP" and (-1 - stackOffset) or (1 + stackOffset)
 
     secondaryPower.ContainerBackground:ClearAllPoints()
     secondaryPower.ContainerBackground:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
     secondaryPower.ContainerBackground:SetSize(totalWidth, secondaryPowerDB.Height)
-    secondaryPower.ContainerBackground:SetTexture(RUF.Media.Background)
-    secondaryPower.ContainerBackground:SetVertexColor(
-        secondaryPowerDB.Background[1],
-        secondaryPowerDB.Background[2],
-        secondaryPowerDB.Background[3],
-        secondaryPowerDB.Background[4] or 1
-    )
+    secondaryPower.ContainerBackground:SetTexture(ZF.Media.Background)
+    secondaryPower.ContainerBackground:SetVertexColor(UnpackColor(secondaryPowerDB.Background))
     secondaryPower.ContainerBackground:Show()
 
     secondaryPower.OverlayFrame:SetAllPoints(unitFrame.Container)
@@ -187,14 +187,9 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         bar:ClearAllPoints()
         bar:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + ((index - 1) * segmentWidth), anchorY)
         bar:SetSize(segmentWidth, secondaryPowerDB.Height)
-        bar:SetStatusBarTexture(RUF.Media.Foreground)
-        bar.Background:SetTexture(RUF.Media.Background)
-        bar.Background:SetVertexColor(
-            secondaryPowerDB.Background[1],
-            secondaryPowerDB.Background[2],
-            secondaryPowerDB.Background[3],
-            secondaryPowerDB.Background[4] or 1
-        )
+        bar:SetStatusBarTexture(ZF.Media.Foreground)
+        bar.Background:SetTexture(ZF.Media.Background)
+        bar.Background:SetVertexColor(UnpackColor(secondaryPowerDB.Background))
         bar:Show()
     end
 
@@ -216,8 +211,8 @@ function RUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     if unitFrame.Power then
-        RUF:UpdateUnitPowerBar(unitFrame, unit)
+        ZF:UpdateUnitPowerBar(unitFrame, unit)
     else
-        RUF:UpdateHealthBarLayout(unitFrame, unit)
+        ZF:UpdateHealthBarLayout(unitFrame, unit)
     end
 end
