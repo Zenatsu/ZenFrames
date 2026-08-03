@@ -1,11 +1,6 @@
 local _, RUF = ...
 local oUF = RUF.oUF
 RUFG = RUFG or {}
-RUF.AURA_TEST_MODE = false
-RUF.CASTBAR_TEST_MODE = false
-RUF.BOSS_TEST_MODE = false
-RUF.PARTY_TEST_MODE = false
-RUF.RAID_TEST_MODE = false
 RUF.BOSS_FRAMES = {}
 RUF.MAX_BOSS_FRAMES = 5
 RUF.PARTY_FRAMES = {}
@@ -13,7 +8,6 @@ RUF.MAX_PARTY_FRAMES = 4
 RUF.RAID_FRAMES = {}
 RUF.RAID_PREVIEW_FRAMES = {}
 RUF.AUGMENTATION_RAID_FRAMES = {}
-RUF.RAID_TEST_FRAMES = {}
 RUF.RAID_HEADERS = {}
 RUF.AUGMENTATION_RAID_FRAME_COUNT = 0
 RUF.MAX_RAID_FRAMES = 40
@@ -505,31 +499,6 @@ function RUF:SetTagUpdateInterval()
     oUF.Tags:SetEventUpdateTimer(RUF.TAG_UPDATE_INTERVAL)
 end
 
-function RUF:OpenURL(title, urlText)
-    StaticPopupDialogs["RUF_URL_POPUP"] = {
-        text = title or "",
-        button1 = CLOSE,
-        hasEditBox = true,
-        editBoxWidth = 300,
-        OnShow = function(self)
-            self.EditBox:SetText(urlText or "")
-            self.EditBox:SetFocus()
-            self.EditBox:HighlightText()
-        end,
-        OnAccept = function(self) end,
-        EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
-    local urlDialog = StaticPopup_Show("RUF_URL_POPUP")
-    if urlDialog then
-        urlDialog:SetFrameStrata("TOOLTIP")
-    end
-    return urlDialog
-end
-
 function RUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
     StaticPopupDialogs["RUF_PROMPT_DIALOG"] = {
         text = text or "",
@@ -815,9 +784,7 @@ function RUF:CopyUnitSettings(sourceUnit, targetUnit)
 	MergeMatchingKeys(sourceDB, targetDB)
 	targetDB.Frame.Layout[3], targetDB.Frame.Layout[4] = preservedX, preservedY
 
-	if targetUnit == "boss" and RUF.BOSS_TEST_MODE or targetUnit == "party" and RUF.PARTY_TEST_MODE or targetUnit == "raid" and RUF.RAID_TEST_MODE then
-		RUF:UpdateTestEnvironment(targetUnit, "all")
-	elseif targetUnit == "party" or targetUnit == "raid" then
+	if targetUnit == "party" or targetUnit == "raid" then
 		RUF:UpdateGroupFrame(targetUnit)
 	elseif targetUnit == "boss" then
 		RUF:UpdateBossFrame()

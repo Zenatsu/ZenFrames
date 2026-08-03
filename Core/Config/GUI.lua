@@ -44,9 +44,7 @@ local function CreateDesignerPreviewToggle(containerParent, key, updateCallback)
 end
 
 local function UpdateUnitSettings(unit, updateCallback, element)
-	if unit == "boss" and RUF.BOSS_TEST_MODE or unit == "party" and RUF.PARTY_TEST_MODE or unit == "raid" and RUF.RAID_TEST_MODE then
-		RUF:UpdateTestEnvironment(unit, element or "all")
-	elseif unit == "boss" then
+	if unit == "boss" then
 		RUF:UpdateBossFrame()
 	elseif unit == "party" then
 		RUF:UpdateGroupFrame("party")
@@ -200,7 +198,6 @@ local RoleTextures = {
 }
 
 local function DisableAurasTestMode(unit)
-	RUF.AURA_TEST_MODE = false
 	if unit == "augmentation" then
 		RUF:ForEachAugmentationRaidFrame(function(unitFrame, frameUnit)
 			if frameUnit then RUF:CreateTestAuras(unitFrame, frameUnit) end
@@ -213,11 +210,6 @@ local function DisableAurasTestMode(unit)
 end
 
 local function DisableAllTestModes()
-	RUF.AURA_TEST_MODE = false
-	RUF.CASTBAR_TEST_MODE = false
-	RUF.BOSS_TEST_MODE = false
-	RUF.PARTY_TEST_MODE = false
-	RUF.RAID_TEST_MODE = false
 	RUF.MOVERS_UNLOCKED = false
 	RUF:ForEachUnitDB(function(_, unit)
 		if unit == "party" or unit == "raid" or unit == "augmentation" then
@@ -2156,11 +2148,7 @@ end
 local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
 	local TagDB = GetUnitDB(unit).Tags[tagDB]
 	local function UpdateTag()
-		if unit == "boss" and RUF.BOSS_TEST_MODE or unit == "party" and RUF.PARTY_TEST_MODE or unit == "raid" and RUF.RAID_TEST_MODE then
-			RUF:UpdateTestEnvironment(unit, "Tags")
-		else
-			RUF:UpdateUnitTags(unit, tagDB)
-		end
+		RUF:UpdateUnitTags(unit, tagDB)
         if updateCallback then updateCallback() end
 	end
 

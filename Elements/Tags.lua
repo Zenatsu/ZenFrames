@@ -86,7 +86,7 @@ function RUF:UpdateUnitTags(unit, tagName)
 		for i = 1, RUF.MAX_PARTY_FRAMES do UpdateFrameTags(RUF["PARTY" .. i], "party" .. i) end
 		UpdateFrameTags(RUF.PARTYPLAYER, "partyplayer")
 	elseif unit == "raid" then
-		RUF:ForEachRaidFrame(UpdateFrameTags, true, RUF.RAID_TEST_MODE)
+		RUF:ForEachRaidFrame(UpdateFrameTags, true)
 	elseif unit == "augmentation" then
 		RUF:ForEachAugmentationRaidFrame(UpdateFrameTags, false)
 	else

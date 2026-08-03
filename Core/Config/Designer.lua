@@ -640,16 +640,4 @@ function RUF:SetDesignerSelection(entry)
     end
 end
 
-function RUF:RefreshDesignerStyle()
-    for _, overlay in pairs(overlays) do
-        overlay:SetBackdrop(STYLE.Overlays.Backdrop)
-        overlay:SetBackdropColor(unpack(STYLE.Overlays.Fill))
-        UpdateOverlayVisual(overlay)
-    end
-    if overLayer and overLayer.Status then
-        overLayer.Status:SetFont(RUF.Media.Font, STYLE.StatusText.Size, STYLE.StatusText.Outline)
-    end
-    for key, decor in pairs(decorFrames) do ApplyDecorStyle(key, decor) end
-end
-
 _G.RUFDebug = RUF -- For /run debugging commands

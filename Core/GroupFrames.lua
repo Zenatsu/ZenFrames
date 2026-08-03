@@ -24,11 +24,11 @@ function RUF:RegisterRaidFrame(unitFrame)
 	raidFrames[#raidFrames + 1] = unitFrame
 end
 
-function RUF:ForEachRaidFrame(callback, includeInactive, includeTestFrames, ...)
+function RUF:ForEachRaidFrame(callback, includeInactive, ...)
 	for _, raidFrame in ipairs(RUF.RAID_FRAMES) do
-		if raidFrame and (not raidFrame.isTestFrame or includeTestFrames) then
+		if raidFrame then
 			local assignedUnit = raidFrame:GetAttribute("unit")
-			local unit = assignedUnit or includeInactive and (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex or raidFrame.RUFConfiguredUnit)
+			local unit = assignedUnit or includeInactive and raidFrame.RUFConfiguredUnit
 			callback(raidFrame, unit, assignedUnit, ...)
 		end
 	end
@@ -96,7 +96,7 @@ end
 
 function RUF:UpdateAugmentationRaidFrames()
 	local AugmentationDB = RUF.db.profile.Units.raid.augmentation
-	local isAugmentation = AugmentationDB.Enabled and RUF:IsAugmentationEvoker() and not RUF.RAID_TEST_MODE
+	local isAugmentation = AugmentationDB.Enabled and RUF:IsAugmentationEvoker()
 	if not RUF.AUGMENTATION_RAID_HEADER then
 		if isAugmentation then RUF:SpawnUnitFrame("raid") end
 		return
@@ -322,7 +322,7 @@ function RUF:UpdateGroupFrame(groupType)
 				RUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
 				if raidFrame.DispelHighlightUnit then RUF:UnregisterDispelHighlightEvents(raidFrame) end
 				raidFrame.RUFGroupUnit = nil
-			end, true, RUF.RAID_TEST_MODE)
+			end, true)
 		end
 		return
 	end
@@ -362,10 +362,9 @@ function RUF:UpdateGroupFrame(groupType)
 				if raidFrame.DispelHighlightUnit then RUF:UnregisterDispelHighlightEvents(raidFrame) end
 				raidFrame.RUFGroupUnit = nil
 			end
-		end, true, RUF.RAID_TEST_MODE)
+		end, true)
 	end
 	RUF:LayoutGroupFrames(groupType)
-	if groupType == "party" and RUF.PARTY_TEST_MODE or groupType == "raid" and RUF.RAID_TEST_MODE then RUF:UpdateTestEnvironment(groupType, "all") end
 end
 
 function RUF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
@@ -421,7 +420,7 @@ function RUF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
 				if raidFrame.DispelHighlightUnit then RUF:UnregisterDispelHighlightEvents(raidFrame) end
 				raidFrame.RUFGroupUnit = nil
 			end
-		end, false, RUF.RAID_TEST_MODE)
+		end, false)
 	end
 	if groupType == "party" then RUF:LayoutGroupFrames(groupType) end
 end
@@ -439,8 +438,8 @@ function RUF:LayoutGroupFrames(groupType)
 			if Frame.SortBy == "NAME" then
 				return (UnitName(firstFrame.unit) or firstFrame.unit or "") < (UnitName(secondFrame.unit) or secondFrame.unit or "")
 			elseif Frame.SortBy == "ROLE" then
-				local firstRole = RUF.PARTY_TEST_MODE and firstFrame.testRole or UnitGroupRolesAssigned(firstFrame.unit)
-				local secondRole = RUF.PARTY_TEST_MODE and secondFrame.testRole or UnitGroupRolesAssigned(secondFrame.unit)
+				local firstRole = UnitGroupRolesAssigned(firstFrame.unit)
+				local secondRole = UnitGroupRolesAssigned(secondFrame.unit)
 				if firstRole ~= secondRole then
 					for _, orderedRole in ipairs(Frame.RoleOrder or {}) do
 						if firstRole == orderedRole then return true end
