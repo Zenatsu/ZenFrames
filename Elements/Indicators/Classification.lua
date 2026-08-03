@@ -1,8 +1,5 @@
 local _, ZF = ...
 
--- The "CLASSIFICATION0"/"CLASSIFICATION1" texture sets are Blizzard atlases;
--- every other set is a plain file-path texture, so the two need different
--- setter calls even though they're keyed the same way.
 local function UpdateClassificationTexture(ClassificationIndicator, _, classification)
     local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
     local texture = ZF.ClassificationTextures[ClassificationIndicatorDB.Texture][classification]

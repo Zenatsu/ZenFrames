@@ -14,10 +14,6 @@ local function ShiftButtonPoint(button, yOffset)
     button:SetPoint(point, relativeTo, relativePoint, offsetX, (offsetY or 0) + yOffset)
 end
 
--- Blizzard re-lays out the whole menu (via the hooked Layout call) any time
--- a button is added/removed, so this has to run every time too: push the
--- logout-ish buttons down to make room, push everything else up, then dock
--- our button under Macros (or hide it if Macros isn't present this menu).
 local function RepositionGameMenu()
     if not GameMenuFrame or not GameMenuFrame.ZF then return end
     local menuHeight = GameMenuFrame:GetHeight()

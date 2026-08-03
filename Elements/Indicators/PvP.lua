@@ -1,8 +1,5 @@
 local _, ZF = ...
 
--- The badge overlay is proportioned relative to the main icon's size rather
--- than having its own DB fields - shared so create and every later
--- reposition use the exact same ratio.
 local function PositionPvPBadge(badge, indicator, size)
     badge:ClearAllPoints()
     badge:SetSize(size * 5 / 3, size * 26 / 15)

@@ -204,8 +204,6 @@ local function DisableAurasTestMode(unit)
 	elseif unit == "boss" then
 		ZF:ResetBossFrames()
 	elseif unit == "party" or unit == "raid" then
-		-- intentional no-op, preserves pre-refactor behavior (the old
-		-- element == "Auras" call always early-returned for party/raid)
 	else
 		ZF:CreateTestAuras(ZF[unit:upper()], unit)
 	end
@@ -553,12 +551,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local FrameDB = GetUnitDB(unit).Frame
     local HealthBarDB = GetUnitDB(unit).HealthBar
 
-    -- Category flags standing in for the "47 unit == checks" this section
-    -- used to be built from - not every branch below uses every flag, some
-    -- widgets really are single-unit-only (raid's Groups, party's Role
-    -- Order, augmentation's Units Per Column) and keep their own guard
-    -- rather than being folded into a flag that would only ever be true
-    -- for that one unit anyway.
     local isRaidLike = unit == "raid" or unit == "augmentation"
     local isGroupUnit = unit == "party" or isRaidLike
     local isGridUnit = unit == "boss" or isGroupUnit
@@ -626,13 +618,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
-    -- Declared before any callback references it (that used to be the bug:
-    -- the Sort By dropdown's callback called this before its `local
-    -- function` existed yet, so it silently resolved to a nonexistent
-    -- global). Widget refs are tracked directly rather than indexed out of
-    -- LayoutContainer.children by a hardcoded position, since that position
-    -- would silently go stale the moment a widget gets added or reordered
-    -- above it.
     local RoleOrderDropdowns = {}
     local function RefreshSortOrders()
         if unit ~= "party" then return end
@@ -3444,7 +3429,7 @@ function ZF:CreateGUI()
             DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
                 local selected = ZF:GetDesignerSelectedEntry()
                 if not (selected and selected.designerTab == DesignerTab) then
-                    ZF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
+                    ZF:ClearDesignerSelection()
                 end
                 ZF:BuildDesignerSectionOptions(ZF.DESIGNER_OPTIONS_CONTAINER, unit, DesignerTab) end)
 

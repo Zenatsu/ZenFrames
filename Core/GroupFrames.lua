@@ -5,10 +5,6 @@ local GroupRosterEventFrame = CreateFrame("Frame")
 local BlizzardRaidHiddenParent = CreateFrame("Frame", "ZF_BlizzardRaidHiddenParent", UIParent)
 BlizzardRaidHiddenParent:Hide()
 
--- Shared by every "clear this raid/party slot back to inert" path below -
--- unregisters the three unit-driven systems (range fading, target glow,
--- dispel highlight) and clears the group-unit bookkeeping field this file
--- uses to detect real reassignment vs. a no-op update.
 local function ClearGroupFrameUnit(unitFrame)
     ZF:UnregisterRangeFrame(unitFrame)
     ZF:UnregisterTargetGlowIndicatorFrame(unitFrame)
@@ -16,9 +12,6 @@ local function ClearGroupFrameUnit(unitFrame)
     unitFrame.ZFGroupUnit = nil
 end
 
--- Growth direction ("RIGHT", "UP", ...) to the SecureGroupHeader point/
--- offset attributes that make each successive child stack outward in that
--- direction, with `spacing` pixels between them.
 local function ComputeUnitGrowthAnchor(unitGrowth, spacing)
     local point = unitGrowth == "RIGHT" and "RIGHT" or unitGrowth == "UP" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "LEFT"
     local xOffset = unitGrowth == "RIGHT" and -spacing or unitGrowth == "LEFT" and spacing or 0
@@ -26,8 +19,6 @@ local function ComputeUnitGrowthAnchor(unitGrowth, spacing)
     return point, xOffset, yOffset
 end
 
--- Which corner of the container a group/column anchors from, given both its
--- own growth direction and the direction groups stack in.
 local function ComputeGroupAnchorPoint(unitGrowth, groupGrowth)
     local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
     local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"

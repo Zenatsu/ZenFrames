@@ -3,9 +3,6 @@ local AG = ZF.AG
 ZF.GUIWidgets = {}
 local Widgets = ZF.GUIWidgets
 
--- Recursively disables/re-enables an AceGUI widget and every descendant in
--- its `.children` tree, except `exemptWidget` (typically the toggle that
--- triggered the disable, which must stay clickable to re-enable the rest).
 function Widgets.DeepDisable(widget, disabled, exemptWidget)
     if widget == exemptWidget then return end
     if widget.SetDisabled then widget:SetDisabled(disabled) end
@@ -15,8 +12,6 @@ function Widgets.DeepDisable(widget, disabled, exemptWidget)
     end
 end
 
--- A full-width info label prefixed with ZF.INFOBUTTON, used throughout the
--- Designer to explain a section before its controls.
 function Widgets.CreateInformationTag(parent, description, justification)
     local label = AG:Create("Label")
     label:SetText(ZF.INFOBUTTON .. description)

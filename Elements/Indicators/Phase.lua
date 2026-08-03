@@ -1,7 +1,5 @@
 local _, ZF = ...
 
--- Sits a few levels above the container so it isn't hidden behind health
--- bar overlays, and takes mouse input for its (future) tooltip.
 local PHASE_INDICATOR_FRAME_LEVEL_OFFSET = 5
 
 function ZF:CreateUnitPhaseIndicator(unitFrame, unit)

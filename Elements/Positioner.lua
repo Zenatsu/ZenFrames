@@ -1,8 +1,5 @@
 local _, ZF = ...
 
--- Checked in priority order: third-party cooldown managers first (if
--- installed, since they provide their own anchor frame), Blizzard's own
--- Essential Cooldown Viewer as the fallback everyone has.
 local COOLDOWN_VIEWER_ANCHORS = {
     { addon = "SkironCooldownManager", frameName = "SCM_GroupAnchor_1" },
     { addon = "Coolinator", frameName = "CoolinatorPrimaryGroupAnchor" },

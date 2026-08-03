@@ -282,11 +282,11 @@ function ZF:SetTestPredictionBar(bar, value, maxValue, enabled)
 end
 
 local function SetupSlashCommands()
-    SLASH_ZF1 = "/ruf"
+    SLASH_ZF1 = "/zf"
     SLASH_ZF2 = "/ZenFrames"
     SLASH_ZF3 = "/uf"
     SlashCmdList["ZF"] = function() ZF:CreateGUI() end
-    if ZF.db.global.DisplayLoginMessage then ZF:PrettyPrint("'|cFF990007/ruf|r' for in-game configuration.") end
+    if ZF.db.global.DisplayLoginMessage then ZF:PrettyPrint("'|cFF990007/zf|r' for in-game configuration.") end
 
     -- RL command
     SLASH_ZFRELOAD1 = "/rl"

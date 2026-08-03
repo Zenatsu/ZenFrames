@@ -8,10 +8,6 @@ local Builders = ZF.GUIBuilders
 Builders.AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT" } }
 Builders.FrameStrataList = { { ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" } }
 
--- Creates the enable checkbox and returns a local Refresh() closure the caller owns.
--- Caller appends every panel that should grey out when disabled into the returned
--- `panels` table (in any order, even after this call returns), then calls Refresh()
--- once after building the rest of the section to set the initial state.
 function Builders.CreateEnableToggle(parent, label, db, updateCallback, opts)
     opts = opts or {}
     local Toggle = AG:Create("CheckBox")
@@ -35,12 +31,6 @@ function Builders.CreateEnableToggle(parent, label, db, updateCallback, opts)
     return Toggle, Refresh, panels
 end
 
--- Anchor From/To dropdowns + X/Y position sliders, optionally + a Size slider.
--- opts.includeSize (bool) draws the Size slider and narrows X/Y to 0.33 width to share
--- the row with it; without it X/Y each take 0.5 width. opts.xyWidth/opts.sizeWidth override
--- those widths; opts.sizeKey/opts.sizeLabel let callers whose DB field is named FontSize
--- (text elements) reuse this instead of the default .Size (icon/indicator elements);
--- opts.groupLabel overrides the "Layout & Positioning" inline group title.
 function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, opts)
     opts = opts or {}
     local Container = GUIWidgets.CreateInlineGroup(parent, opts.groupLabel or "Layout & Positioning")

@@ -3,8 +3,6 @@ local _, ZF = ...
 local totemPriorities = STANDARD_TOTEM_PRIORITIES
 if UnitClassBase("player") == "SHAMAN" then totemPriorities = SHAMAN_TOTEM_PRIORITIES end
 
--- Shared by both the initial layout (CreateUnitTotems) and every later
--- reposition (UpdateUnitTotems) - growth direction just mirrors the offset.
 local function PositionTotem(totem, TotemsDB, index, parent)
     local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
     if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end

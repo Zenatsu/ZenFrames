@@ -6,33 +6,11 @@ local function RenameKey(tbl, oldKey, newKey)
     tbl[oldKey] = nil
 end
 
--- Ordered migration steps for ZFDB profiles. Each step migrates a profile
--- from exactly `fromVersion` to `fromVersion + 1`. Add new steps here
--- (append only) whenever a Defaults.lua key gets renamed or restructured -
--- never edit or reorder a step once it has shipped, since a stale profile
--- sitting below that version may still need to run it exactly as written.
---
--- profile.DBVersion must NEVER be added to Core/Defaults.lua's default
--- table - AceDB's copyDefaults only backfills keys that are nil, so a
--- default value there would make every profile look "already current"
--- before this code ever gets a chance to run.
 local MigrationSteps = {
-    -- Placeholder no-op step: proves the pipeline (snapshot/pcall/version
-    -- bump) end-to-end before any real Defaults.lua rename exists yet.
-    -- Safe to leave in place once real steps are appended after it - it
-    -- only ever runs once per profile, the first time that profile is seen
-    -- post-upgrade.
     {
         fromVersion = 0,
         migrate = function(_profile) end,
     },
-    -- Breakaway rewrite renames (Phase 3): augmentation promoted out of
-    -- raid to a top-level unit, the LeaderAssistant/ReadyCheck/Resurrect
-    -- indicator keys dropped their redundant "Indicator" suffix, and
-    -- AnchorParent's two unrelated meanings split into AnchorToFrame
-    -- (Frame - a real global frame name to anchor to) and AnchorRegion
-    -- (Auras.* - "Frame" or "Health", which region of this same unit to
-    -- anchor to).
     {
         fromVersion = 1,
         migrate = function(profile)
@@ -91,9 +69,6 @@ local function MigrateProfile(profileName, profile)
         local snapshot = CopyTable(profile)
         local ok, err = pcall(step.migrate, profile)
         if not ok then
-            -- Leave DBVersion untouched so this step is retried next login
-            -- instead of being marked done, and roll back whatever partial
-            -- changes it made before failing.
             RestoreSnapshot(profile, snapshot)
             print(string.format(
                 "|cffff4040ZenFrames:|r migration step %d failed for profile '%s' (%s) - will retry next login.",
@@ -107,10 +82,6 @@ local function MigrateProfile(profileName, profile)
     end
 end
 
--- Runs over every stored profile (not just the active one) directly on the
--- raw SavedVariables table, before AceDB:New() ever touches it - an
--- unselected profile can still resurface later via /reload or a character
--- switch, so it needs to already be migrated by then.
 function ZF:MigrateAllProfiles(rawDB)
     if type(rawDB) ~= "table" or type(rawDB.profiles) ~= "table" then return end
     for profileName, profile in pairs(rawDB.profiles) do
@@ -118,11 +89,6 @@ function ZF:MigrateAllProfiles(rawDB)
     end
 end
 
--- global.GlobalProfileName was a redundant duplicate of global.GlobalProfile
--- (Core.lua used to fall back from one to the other). Not a per-profile
--- concept, so it isn't versioned like MigrationSteps above - it's naturally
--- idempotent instead: once GlobalProfileName is cleared, later logins find
--- nothing left to migrate.
 function ZF:MigrateGlobalSettings(rawDB)
     if type(rawDB) ~= "table" or type(rawDB.global) ~= "table" then return end
     local global = rawDB.global

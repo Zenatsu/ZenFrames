@@ -116,9 +116,6 @@ function ZF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     if previewFrame.Health then
         previewFrame.Health:SetMinMaxValues(0,100)
          previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
-        -- Health:SetValue is a raw StatusBar call, not a real oUF health event, so the
-        -- Health.PostUpdate hook that normally drives HealthBackground's own fill never
-        -- fires here -- set it directly or the background never shows in the preview.
         if previewFrame.HealthBackground then
             previewFrame.HealthBackground:SetMinMaxValues(0, 100)
             previewFrame.HealthBackground:SetValue(100 - STYLE.Preview.SampleHealth)

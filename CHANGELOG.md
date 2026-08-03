@@ -19,7 +19,7 @@
 
 - Major refactor of the origional UUF addon.
 - Modified the import function to handle missing data.
-- Saved Var's of old UUFDB should import into RUFDB without friction
+- Saved Var's of old UUFDB should import into ZFDB without friction
 - Added Designer feature for nameplates, inspiried by platynator.
   - Old Units nav group merged into Designer.
   - Various indicators turned into widgets that can be moved around

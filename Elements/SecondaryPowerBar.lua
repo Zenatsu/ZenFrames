@@ -37,15 +37,11 @@ local function DisableSecondaryPowerElement(unitFrame, elementName, secondaryPow
     unitFrame[elementName] = nil
 end
 
--- Returns r, g, b, a ready to splat into SetVertexColor/SetStatusBarColor -
--- color tables in this addon's DB don't always carry an alpha entry.
 local function UnpackColor(color)
     return color[1], color[2], color[3], color[4] or 1
 end
 
 -- Runes always come in a fixed set of 6; every other secondary power type
--- (combo points, chi, soul shards, etc.) depends on the player's current
--- max for that power.
 local function GetSecondaryPowerMaxCount(powerType)
     if isDeathKnight then return 6 end
     return UnitPowerMax("player", powerType)

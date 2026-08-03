@@ -1,7 +1,5 @@
 local _, ZF = ...
 
--- Sits above every other indicator/element so nothing else needs a
--- frame-level tug-of-war to render on top of the unit frame.
 local HIGH_LEVEL_CONTAINER_FRAME_LEVEL = 999
 
 function ZF:CreateUnitContainer(unitFrame, unit)
