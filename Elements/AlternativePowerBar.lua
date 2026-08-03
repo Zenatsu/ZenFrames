@@ -1,4 +1,4 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local ALTERNATIVE_POWER_BAR_EVENTS = {
     "UNIT_POWER_UPDATE",
@@ -15,7 +15,7 @@ local function UpdateUnitPowerBarValues(unitFrame, event, unit)
     unitFrame.Status:SetValue(value)
 end
 
-local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, RUFDB)
+local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, ZFDB)
     AlternativePowerBar:ClearAllPoints()
     AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
@@ -26,7 +26,7 @@ local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, Alt
     AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     if AlternativePowerBarDB.ColorByType then
-        local powerColor = RUFDB.General.Colors.Power[0]
+        local powerColor = ZFDB.General.Colors.Power[0]
         if powerColor then AlternativePowerBar.Status:SetStatusBarColor(powerColor[1], powerColor[2], powerColor[3], powerColor[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
@@ -40,7 +40,7 @@ local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, Alt
 end
 
 local function ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
-    if AlternativePowerBarDB.Enabled and RUF:RequiresAlternativePowerBar() then
+    if AlternativePowerBarDB.Enabled and ZF:RequiresAlternativePowerBar() then
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
         for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
@@ -54,34 +54,34 @@ local function ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, Alt
     end
 end
 
-function RUF:CreateUnitAlternativePowerBar(unitFrame, unit)
-    local RUFDB = RUF.db.profile
-    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
+function ZF:CreateUnitAlternativePowerBar(unitFrame, unit)
+    local ZFDB = ZF.db.profile
+    local AlternativePowerBarDB = ZFDB.Units[ZF:GetNormalizedUnit(unit)].AlternativePowerBar
     local unitContainer = unitFrame.Container
 
-    local AlternativePowerBar = CreateFrame("Frame", RUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
-    AlternativePowerBar:SetBackdrop(RUF.BACKDROP)
+    local AlternativePowerBar = CreateFrame("Frame", ZF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
+    AlternativePowerBar:SetBackdrop(ZF.BACKDROP)
     AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
     AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
 
-    AlternativePowerBar.Status = CreateFrame("StatusBar", RUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
-    AlternativePowerBar.Status:SetStatusBarTexture(RUF.Media.Foreground)
+    AlternativePowerBar.Status = CreateFrame("StatusBar", ZF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
+    AlternativePowerBar.Status:SetStatusBarTexture(ZF.Media.Foreground)
     AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
     AlternativePowerBar.unit = unit
 
-    LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, RUFDB)
+    LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, AlternativePowerBarDB, ZFDB)
     ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
 
     unitFrame.AlternativePowerBar = AlternativePowerBar
     return AlternativePowerBar
 end
 
-function RUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
-    local RUFDB = RUF.db.profile
-    local AlternativePowerBarDB = RUFDB.Units[RUF:GetNormalizedUnit(unit)].AlternativePowerBar
+function ZF:UpdateUnitAlternativePowerBar(unitFrame, unit)
+    local ZFDB = ZF.db.profile
+    local AlternativePowerBarDB = ZFDB.Units[ZF:GetNormalizedUnit(unit)].AlternativePowerBar
     local AlternativePowerBar = unitFrame.AlternativePowerBar
     if not AlternativePowerBar then return end
 
-    LayoutAlternativePowerBar(AlternativePowerBar, unitFrame.Container, AlternativePowerBarDB, RUFDB)
+    LayoutAlternativePowerBar(AlternativePowerBar, unitFrame.Container, AlternativePowerBarDB, ZFDB)
     ApplyAlternativePowerBarVisibility(AlternativePowerBar, unit, AlternativePowerBarDB)
 end

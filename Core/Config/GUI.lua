@@ -1,26 +1,25 @@
-local _, RUF = ...
-local LSM = RUF.LSM
-local AG = RUF.AG
-local GUIWidgets = RUF.GUIWidgets
-local GUIBuilders = RUF.GUIBuilders
-local STYLE = RUF.DesignerStyle
-local RUFGUI = {}
+local _, ZF = ...
+local LSM = ZF.LSM
+local AG = ZF.AG
+local GUIWidgets = ZF.GUIWidgets
+local GUIBuilders = ZF.GUIBuilders
+local STYLE = ZF.DesignerStyle
+local ZFGUI = {}
 local isGUIOpen = false
 local Container
 local lastSelectedUnitTabs = {}
 local designerLastTab = {}
 local generalLastTab = "GlobalToggles"
-local decorFrames = {}
 
 local function GetUnitDB(unit)
-	return RUF:GetUnitDB(nil, unit)
+	return ZF:GetUnitDB(nil, unit)
 end
 
 local function GetDefaultUnitDB(unit)
-	return RUF:GetUnitDB(nil, unit, RUF:GetDefaultDB().profile.Units)
+	return ZF:GetUnitDB(nil, unit, ZF:GetDefaultDB().profile.Units)
 end
 
-function RUF:SaveSubTab(unit, tabName, subTabValue)
+function ZF:SaveSubTab(unit, tabName, subTabValue)
     if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
     if not lastSelectedUnitTabs[unit].subTabs then lastSelectedUnitTabs[unit].subTabs = {} end
     lastSelectedUnitTabs[unit].subTabs[tabName] = subTabValue
@@ -30,35 +29,35 @@ local function GetSavedSubTab(unit, tabName, defaultValue)
     return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].subTabs and lastSelectedUnitTabs[unit].subTabs[tabName] or defaultValue
 end
 
-RUF.DESIGNER_PREVIEW_TOGGLES = { Auras = false, DispelHighlight = false, HealPrediction = false, CastBar = false }
+ZF.DESIGNER_PREVIEW_TOGGLES = { Auras = false, DispelHighlight = false, HealPrediction = false, CastBar = false }
 
 local function CreateDesignerPreviewToggle(containerParent, key, updateCallback)
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Preview")
-    Toggle:SetValue(RUF.DESIGNER_PREVIEW_TOGGLES[key])
+    Toggle:SetValue(ZF.DESIGNER_PREVIEW_TOGGLES[key])
     Toggle:SetCallback("OnValueChanged", function(_, _, value)
-        RUF.DESIGNER_PREVIEW_TOGGLES[key] = value
+        ZF.DESIGNER_PREVIEW_TOGGLES[key] = value
         updateCallback() end)
     containerParent:AddChild(Toggle)
     return Toggle
 end
 
-local function UpdateUnitSettings(unit, updateCallback, element)
+local function UpdateUnitSettings(unit, updateCallback)
 	if unit == "boss" then
-		RUF:UpdateBossFrame()
+		ZF:UpdateBossFrame()
 	elseif unit == "party" then
-		RUF:UpdateGroupFrame("party")
+		ZF:UpdateGroupFrame("party")
 	elseif unit == "raid" then
-		RUF:UpdateGroupFrame("raid")
+		ZF:UpdateGroupFrame("raid")
 	elseif unit == "augmentation" then
-		RUF:UpdateAugmentationRaidFrames()
+		ZF:UpdateAugmentationRaidFrames()
 	elseif updateCallback then
 		updateCallback()
 	end
 
-    if RUF.DESIGNER_OPTIONS_CONTAINER and RUF:GetDesignerUnit() == unit then
-        RUF:UpdateDesignerPreviewFrame()
-        RUF:AnchorDesignerOverlays()
+    if ZF.DESIGNER_OPTIONS_CONTAINER and ZF:GetDesignerUnit() == unit then
+        ZF:UpdateDesignerPreviewFrame()
+        ZF:AnchorDesignerOverlays()
     end
 end
 
@@ -163,67 +162,70 @@ local Threat = {
 local StatusTextures = {
     Combat = {
         ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
-        ["COMBAT0"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
-        ["COMBAT1"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga:18:18|t",
-        ["COMBAT2"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga:18:18|t",
-        ["COMBAT3"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga:18:18|t",
-        ["COMBAT4"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga:18:18|t",
-        ["COMBAT5"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga:18:18|t",
-        ["COMBAT6"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga:18:18|t",
-        ["COMBAT7"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga:18:18|t",
-        ["COMBAT8"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat8.png:18:18|t",
+        ["COMBAT0"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
+        ["COMBAT1"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga:18:18|t",
+        ["COMBAT2"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga:18:18|t",
+        ["COMBAT3"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga:18:18|t",
+        ["COMBAT4"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga:18:18|t",
+        ["COMBAT5"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga:18:18|t",
+        ["COMBAT6"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga:18:18|t",
+        ["COMBAT7"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga:18:18|t",
+        ["COMBAT8"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat8.png:18:18|t",
     },
 
     Resting = {
         ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:18:18:0:0:64:64:0:32:0:27|t",
-        ["RESTING0"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga:18:18|t",
-        ["RESTING1"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga:18:18|t",
-        ["RESTING2"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga:18:18|t",
-        ["RESTING3"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga:18:18|t",
-        ["RESTING4"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga:18:18|t",
-        ["RESTING5"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga:18:18|t",
-        ["RESTING6"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga:18:18|t",
-        ["RESTING7"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
-        ["RESTING8"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting8.png:18:18|t",
+        ["RESTING0"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga:18:18|t",
+        ["RESTING1"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga:18:18|t",
+        ["RESTING2"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga:18:18|t",
+        ["RESTING3"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga:18:18|t",
+        ["RESTING4"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga:18:18|t",
+        ["RESTING5"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga:18:18|t",
+        ["RESTING6"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga:18:18|t",
+        ["RESTING7"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
+        ["RESTING8"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting8.png:18:18|t",
     }
 }
 
 local RoleTextures = {
 	["Default"] = "|A:UI-LFG-RoleIcon-Tank-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-Healer-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-DPS-Micro-Raid:18:18|a",
-	["Blizzard"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t",
-	["Color"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Color\\DPS.tga:18:18|t",
-	["White"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.png:18:18|t",
-	["ElvUI"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t",
-	["Square"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t",
+	["Blizzard"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t",
+	["Color"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Tank.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Healer.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\DPS.tga:18:18|t",
+	["White"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Tank.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Healer.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\DPS.png:18:18|t",
+	["ElvUI"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t",
+	["Square"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t",
 }
 
 local function DisableAurasTestMode(unit)
 	if unit == "augmentation" then
-		RUF:ForEachAugmentationRaidFrame(function(unitFrame, frameUnit)
-			if frameUnit then RUF:CreateTestAuras(unitFrame, frameUnit) end
+		ZF:ForEachAugmentationRaidFrame(function(unitFrame, frameUnit)
+			if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
 		end, false)
-	elseif unit == "party" or unit == "raid" or unit == "boss" then
-		RUF:UpdateTestEnvironment(unit, "Auras")
+	elseif unit == "boss" then
+		ZF:ResetBossFrames()
+	elseif unit == "party" or unit == "raid" then
+		-- intentional no-op, preserves pre-refactor behavior (the old
+		-- element == "Auras" call always early-returned for party/raid)
 	else
-		RUF:CreateTestAuras(RUF[unit:upper()], unit)
+		ZF:CreateTestAuras(ZF[unit:upper()], unit)
 	end
 end
 
 local function DisableAllTestModes()
-	RUF.MOVERS_UNLOCKED = false
-	RUF:ForEachUnitDB(function(_, unit)
+	ZF.MOVERS_UNLOCKED = false
+	ZF:ForEachUnitDB(function(_, unit)
 		if unit == "party" or unit == "raid" or unit == "augmentation" then
 			DisableAurasTestMode(unit)
-		elseif RUF[unit:upper()] then
-			RUF:CreateTestAuras(RUF[unit:upper()], unit)
-			RUF:CreateTestCastBar(RUF[unit:upper()], unit)
+		elseif ZF[unit:upper()] then
+			ZF:CreateTestAuras(ZF[unit:upper()], unit)
+			ZF:CreateTestCastBar(ZF[unit:upper()], unit)
 		end
 	end)
-	RUF:UpdateTestEnvironment("boss", "all")
-	RUF:UpdateTestEnvironment("party", "all")
-	RUF:UpdateTestEnvironment("raid", "all")
-    RUF:HideDesignerPreview()
-	for _, frameMover in pairs(RUF.MOVERS or {}) do frameMover:Hide() end
+	ZF:ResetBossFrames()
+	ZF:ResetPartyFrames()
+	ZF:ResetRaidFrames()
+    ZF:HideDesignerPreview()
+	for _, frameMover in pairs(ZF.MOVERS or {}) do frameMover:Hide() end
 end
 
 local function GenerateSupportText(parentFrame)
@@ -258,7 +260,7 @@ local function BuildMainNavigationTree()
         {text = "Raid", value = "DesignerRaid"},
         {text = "Boss", value = "DesignerBoss"},
     }
-    if RUF:IsAugmentationEvoker() then table.insert(designerUnitSubmenu, 2, {text = "Augmentation", value = "DesignerAug"}) end
+    if ZF:IsAugmentationEvoker() then table.insert(designerUnitSubmenu, 2, {text = "Augmentation", value = "DesignerAug"}) end
     return {
 		{text = "General", value = "General" },
         {text = "Unit Designer", value = "Designer", children = designerUnitSubmenu},
@@ -269,99 +271,79 @@ end
 
 
 local function CreateFontSettings(containerParent)
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
+    local FontContainer = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
 
-    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFD100SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(FontContainer, "Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFD100SharedMedia|r.")
+
+    local function RefreshFontsAndTags()
+        ZF:ResolveLSM()
+        ZF:UpdateAllUnitFrames()
+        ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end)
+    end
 
     local FontDropdown = AG:Create("LSM30_Font")
     FontDropdown:SetList(LSM:HashTable("font"))
     FontDropdown:SetLabel("Font")
-    FontDropdown:SetValue(RUF.db.profile.General.Fonts.Font)
+    FontDropdown:SetValue(ZF.db.profile.General.Fonts.Font)
     FontDropdown:SetRelativeWidth(0.5)
-	FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) RUF.db.profile.General.Fonts.Font = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    Container:AddChild(FontDropdown)
+	FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) ZF.db.profile.General.Fonts.Font = value RefreshFontsAndTags() end)
+    FontContainer:AddChild(FontDropdown)
 
     local FontFlagDropdown = AG:Create("Dropdown")
     FontFlagDropdown:SetList({[""] = "None", ["OUTLINE"] = "Outline", ["THICKOUTLINE"] = "Thick Outline", ["MONOCHROME"] = "Monochrome", ["MONOCHROMEOUTLINE"] = "Monochrome Outline", ["MONOCHROMETHICKOUTLINE"] = "Monochrome Thick Outline", ["OUTLINE, SLUG"] = "Outline Slug"})
     FontFlagDropdown:SetLabel("Font Flag")
-    FontFlagDropdown:SetValue(RUF.db.profile.General.Fonts.FontFlag)
+    FontFlagDropdown:SetValue(ZF.db.profile.General.Fonts.FontFlag)
     FontFlagDropdown:SetRelativeWidth(0.5)
-	FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) RUF.db.profile.General.Fonts.FontFlag = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    Container:AddChild(FontFlagDropdown)
+	FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) ZF.db.profile.General.Fonts.FontFlag = value RefreshFontsAndTags() end)
+    FontContainer:AddChild(FontFlagDropdown)
 
     local SimpleGroup = AG:Create("SimpleGroup")
     SimpleGroup:SetFullWidth(true)
     SimpleGroup:SetLayout("Flow")
-    Container:AddChild(SimpleGroup)
+    FontContainer:AddChild(SimpleGroup)
 
     GUIWidgets.CreateHeader(SimpleGroup, "Font Shadows")
 
-    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(SimpleGroup, "Enable Font Shadows", RUF.db.profile.General.Fonts.Shadow, function()
-        RUF:ResolveLSM()
-        RUF:UpdateAllUnitFrames()
-        RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
-    end, {width = 0.5})
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(SimpleGroup, "Enable Font Shadows", ZF.db.profile.General.Fonts.Shadow, RefreshFontsAndTags, {width = 0.5})
     panelsToDisable[1] = SimpleGroup
 
-    local ColorPicker = AG:Create("ColorPicker")
-    ColorPicker:SetLabel("Color")
-    ColorPicker:SetColor(unpack(RUF.db.profile.General.Fonts.Shadow.Color))
-    ColorPicker:SetFullWidth(true)
-	ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF.db.profile.General.Fonts.Shadow.Color = {r, g, b, a} RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    ColorPicker:SetRelativeWidth(0.5)
-    SimpleGroup:AddChild(ColorPicker)
-
-    local XSlider = AG:Create("Slider")
-    XSlider:SetLabel("Offset X")
-    XSlider:SetValue(RUF.db.profile.General.Fonts.Shadow.XPos)
-    XSlider:SetSliderValues(-5, 5, 1)
-    XSlider:SetFullWidth(true)
-	XSlider:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.Fonts.Shadow.XPos = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    XSlider:SetRelativeWidth(0.5)
-    SimpleGroup:AddChild(XSlider)
-
-    local YSlider = AG:Create("Slider")
-    YSlider:SetLabel("Offset Y")
-    YSlider:SetValue(RUF.db.profile.General.Fonts.Shadow.YPos)
-    YSlider:SetSliderValues(-5, 5, 1)
-    YSlider:SetFullWidth(true)
-	YSlider:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.Fonts.Shadow.YPos = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
-    YSlider:SetRelativeWidth(0.5)
-    SimpleGroup:AddChild(YSlider)
+    GUIBuilders.CreateColorBlock(SimpleGroup, "Color", ZF.db.profile.General.Fonts.Shadow, "Color", RefreshFontsAndTags, {hasAlpha = true, width = 0.5})
+    GUIBuilders.CreateSlider(SimpleGroup, "Offset X", ZF.db.profile.General.Fonts.Shadow, "XPos", RefreshFontsAndTags, {sliderValues = {-5, 5, 1}, width = 0.5})
+    GUIBuilders.CreateSlider(SimpleGroup, "Offset Y", ZF.db.profile.General.Fonts.Shadow, "YPos", RefreshFontsAndTags, {sliderValues = {-5, 5, 1}, width = 0.5})
 
     Refresh()
 end
 
 local function CreateTextureSettings(containerParent)
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Textures")
+    local TextureContainer = GUIWidgets.CreateInlineGroup(containerParent, "Textures")
 
-    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFD100SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(TextureContainer,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFD100SharedMedia|r.")
 
     local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
     ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
     ForegroundTextureDropdown:SetLabel("Foreground Texture")
-    ForegroundTextureDropdown:SetValue(RUF.db.profile.General.Textures.Foreground)
+    ForegroundTextureDropdown:SetValue(ZF.db.profile.General.Textures.Foreground)
     ForegroundTextureDropdown:SetRelativeWidth(0.5)
-    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) RUF.db.profile.General.Textures.Foreground = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(ForegroundTextureDropdown)
+    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) ZF.db.profile.General.Textures.Foreground = value ZF:ResolveLSM() ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(ForegroundTextureDropdown)
 
     local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
     BackgroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
     BackgroundTextureDropdown:SetLabel("Background Texture")
-    BackgroundTextureDropdown:SetValue(RUF.db.profile.General.Textures.Background)
+    BackgroundTextureDropdown:SetValue(ZF.db.profile.General.Textures.Background)
     BackgroundTextureDropdown:SetRelativeWidth(0.5)
-    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) RUF.db.profile.General.Textures.Background = value RUF:ResolveLSM() RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(BackgroundTextureDropdown)
+    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) ZF.db.profile.General.Textures.Background = value ZF:ResolveLSM() ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(BackgroundTextureDropdown)
 
     local MouseoverStyleDropdown = AG:Create("Dropdown")
     MouseoverStyleDropdown:SetList({["SELECT"] = "Set a Highlight Texture...", ["BORDER"] = "Border", ["OVERLAY"] = "Overlay", ["GRADIENT"] = "Gradient" })
     MouseoverStyleDropdown:SetLabel("Highlight Style")
     MouseoverStyleDropdown:SetValue("SELECT")
     MouseoverStyleDropdown:SetRelativeWidth(0.5)
-    MouseoverStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.Style = value end end) RUF:UpdateAllUnitFrames() MouseoverStyleDropdown:SetValue("SELECT") end)
+    MouseoverStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) ZF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.Style = value end end) ZF:UpdateAllUnitFrames() MouseoverStyleDropdown:SetValue("SELECT") end)
     MouseoverStyleDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(MouseoverStyleDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("Set |cFFFFD100Mouseover Highlight Style|r for all units. |cFFFFD100Color|r & |cFFFFD100Alpha|r can be adjusted per unit.", 1, 1, 1) GameTooltip:Show() end)
     MouseoverStyleDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    Container:AddChild(MouseoverStyleDropdown)
+    TextureContainer:AddChild(MouseoverStyleDropdown)
 
     local MouseoverHighlightSlider = AG:Create("Slider")
     MouseoverHighlightSlider:SetLabel("Highlight Opacity")
@@ -369,16 +351,15 @@ local function CreateTextureSettings(containerParent)
     MouseoverHighlightSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     MouseoverHighlightSlider:SetRelativeWidth(0.5)
     MouseoverHighlightSlider:SetIsPercent(true)
-    MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(MouseoverHighlightSlider)
+    MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) ZF:ForEachUnitDB(function(unitDB) if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end) ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(MouseoverHighlightSlider)
 
     local ForegroundColorPicker = AG:Create("ColorPicker")
     ForegroundColorPicker:SetLabel("Foreground Color")
-    local R, G, B = 8/255, 8/255, 8/255
-    ForegroundColorPicker:SetColor(R, G, B)
+    ForegroundColorPicker:SetColor(8/255, 8/255, 8/255)
     ForegroundColorPicker:SetRelativeWidth(0.5)
-    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Foreground = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(ForegroundColorPicker)
+    ForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Foreground = {r, g, b} end) ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(ForegroundColorPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -386,16 +367,15 @@ local function CreateTextureSettings(containerParent)
     ForegroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     ForegroundOpacitySlider:SetRelativeWidth(0.5)
     ForegroundOpacitySlider:SetIsPercent(true)
-    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.ForegroundOpacity = value end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(ForegroundOpacitySlider)
+    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) ZF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.ForegroundOpacity = value end) ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(ForegroundOpacitySlider)
 
     local BackgroundColorPicker = AG:Create("ColorPicker")
     BackgroundColorPicker:SetLabel("Background Color")
-    local R2, G2, B2 = 8/255, 8/255, 8/255
-    BackgroundColorPicker:SetColor(R2, G2, B2)
+    BackgroundColorPicker:SetColor(8/255, 8/255, 8/255)
     BackgroundColorPicker:SetRelativeWidth(0.5)
-    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Background = {r, g, b} end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(BackgroundColorPicker)
+    BackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.Background = {r, g, b} end) ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(BackgroundColorPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
@@ -403,187 +383,168 @@ local function CreateTextureSettings(containerParent)
     BackgroundOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
     BackgroundOpacitySlider:SetRelativeWidth(0.5)
     BackgroundOpacitySlider:SetIsPercent(true)
-    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) RUF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.BackgroundOpacity = value end) RUF:UpdateAllUnitFrames() end)
-    Container:AddChild(BackgroundOpacitySlider)
+    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) ZF:ForEachUnitDB(function(unitDB) unitDB.HealthBar.BackgroundOpacity = value end) ZF:UpdateAllUnitFrames() end)
+    TextureContainer:AddChild(BackgroundOpacitySlider)
 
-    local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
+    local CastBarContainer = GUIWidgets.CreateInlineGroup(TextureContainer, "Cast Bar")
 
     local CastBarForegroundColorPicker = AG:Create("ColorPicker")
     CastBarForegroundColorPicker:SetLabel("Foreground Color")
-    local CR, CG, CB = 128/255, 128/255, 255/255
-    CastBarForegroundColorPicker:SetColor(CR, CG, CB)
+    CastBarForegroundColorPicker:SetColor(128/255, 128/255, 255/255)
     CastBarForegroundColorPicker:SetRelativeWidth(0.25)
-    CastBarForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarForegroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end) ZF:UpdateAllUnitFrames() end)
     CastBarContainer:AddChild(CastBarForegroundColorPicker)
 
     local CastBarBackgroundColorPicker = AG:Create("ColorPicker")
     CastBarBackgroundColorPicker:SetLabel("Background Color")
-    local CR2, CG2, CB2 = 34/255, 34/255, 34/255
-    CastBarBackgroundColorPicker:SetColor(CR2, CG2, CB2)
+    CastBarBackgroundColorPicker:SetColor(34/255, 34/255, 34/255)
     CastBarBackgroundColorPicker:SetRelativeWidth(0.25)
-    CastBarBackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarBackgroundColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end) ZF:UpdateAllUnitFrames() end)
     CastBarContainer:AddChild(CastBarBackgroundColorPicker)
 
     local CastBarNotInterruptibleColorPicker = AG:Create("ColorPicker")
     CastBarNotInterruptibleColorPicker:SetLabel("Not Interruptible Color")
-    local CR3, CG3, CB3 = 255/255, 64/255, 64/255
-    CastBarNotInterruptibleColorPicker:SetColor(CR3, CG3, CB3)
+    CastBarNotInterruptibleColorPicker:SetColor(255/255, 64/255, 64/255)
     CastBarNotInterruptibleColorPicker:SetRelativeWidth(0.25)
-    CastBarNotInterruptibleColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColor = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarNotInterruptibleColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColor = {r, g, b} end end) ZF:UpdateAllUnitFrames() end)
     CastBarContainer:AddChild(CastBarNotInterruptibleColorPicker)
 
     local CastBarInterruptCooldownColorPicker = AG:Create("ColorPicker")
     CastBarInterruptCooldownColorPicker:SetLabel("Interrupt on Cooldown Color")
-    local CR4, CG4, CB4 = 204/255, 204/255, 204/255
-    CastBarInterruptCooldownColorPicker:SetColor(CR4, CG4, CB4)
+    CastBarInterruptCooldownColorPicker:SetColor(204/255, 204/255, 204/255)
     CastBarInterruptCooldownColorPicker:SetRelativeWidth(0.25)
-    CastBarInterruptCooldownColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) RUF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.InterruptCooldownColor = {r, g, b} end end) RUF:UpdateAllUnitFrames() end)
+    CastBarInterruptCooldownColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) ZF:ForEachUnitDB(function(unitDB) if unitDB.CastBar then unitDB.CastBar.InterruptCooldownColor = {r, g, b} end end) ZF:UpdateAllUnitFrames() end)
     CastBarContainer:AddChild(CastBarInterruptCooldownColorPicker)
 end
 
 local function CreateRangeSettings(containerParent)
-    local RangeDB = RUF.db.profile.General.Range
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Range")
+    local RangeDB = ZF.db.profile.General.Range
+    local RangeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Range")
 
-    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(Container, "Enable Range Fading", RangeDB, function() RUF:UpdateAllRangeFrames() end, {width = 0.33})
-    panelsToDisable[1] = Container
+    local function RefreshRangeFrames() ZF:UpdateAllRangeFrames() end
 
-    local InAlphaSlider = AG:Create("Slider")
-    InAlphaSlider:SetLabel("In Range Alpha")
-    InAlphaSlider:SetValue(RangeDB.InRange)
-    InAlphaSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    InAlphaSlider:SetFullWidth(true)
-	InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value RUF:UpdateAllRangeFrames() end)
-    InAlphaSlider:SetRelativeWidth(0.33)
-    InAlphaSlider:SetIsPercent(true)
-    Container:AddChild(InAlphaSlider)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(RangeContainer, "Enable Range Fading", RangeDB, RefreshRangeFrames, {width = 0.33})
+    panelsToDisable[1] = RangeContainer
 
-    local OutAlphaSlider = AG:Create("Slider")
-    OutAlphaSlider:SetLabel("Out of Range Alpha")
-    OutAlphaSlider:SetValue(RangeDB.OutOfRange)
-    OutAlphaSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    OutAlphaSlider:SetFullWidth(true)
-	OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value RUF:UpdateAllRangeFrames() end)
-    OutAlphaSlider:SetRelativeWidth(0.33)
-    OutAlphaSlider:SetIsPercent(true)
-    Container:AddChild(OutAlphaSlider)
+    GUIBuilders.CreateSlider(RangeContainer, "In Range Alpha", RangeDB, "InRange", RefreshRangeFrames, {sliderValues = STYLE.Sliders.Opacity, isPercent = true, width = 0.33})
+    GUIBuilders.CreateSlider(RangeContainer, "Out of Range Alpha", RangeDB, "OutOfRange", RefreshRangeFrames, {sliderValues = STYLE.Sliders.Opacity, isPercent = true, width = 0.33})
 
     Refresh()
 end
 
 local function CreateColorSettings(containerParent)
-    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colors")
-    RUF.db.profile.General.Colors.Status = RUF.db.profile.General.Colors.Status or {}
-    for statusType, color in pairs(RUF:GetDefaultDB().profile.General.Colors.Status) do
-        RUF.db.profile.General.Colors.Status[statusType] = RUF.db.profile.General.Colors.Status[statusType] or {color[1], color[2], color[3]}
+    local ColorsContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors")
+    ZF.db.profile.General.Colors.Status = ZF.db.profile.General.Colors.Status or {}
+    for statusType, color in pairs(ZF:GetDefaultDB().profile.General.Colors.Status) do
+        ZF.db.profile.General.Colors.Status[statusType] = ZF.db.profile.General.Colors.Status[statusType] or {color[1], color[2], color[3]}
     end
-    RUF.db.profile.General.Colors.Threat = RUF.db.profile.General.Colors.Threat or {}
-    for threatStatus, color in pairs(RUF:GetDefaultDB().profile.General.Colors.Threat) do
-        RUF.db.profile.General.Colors.Threat[threatStatus] = RUF.db.profile.General.Colors.Threat[threatStatus] or {color[1], color[2], color[3]}
+    ZF.db.profile.General.Colors.Threat = ZF.db.profile.General.Colors.Threat or {}
+    for threatStatus, color in pairs(ZF:GetDefaultDB().profile.General.Colors.Threat) do
+        ZF.db.profile.General.Colors.Threat[threatStatus] = ZF.db.profile.General.Colors.Threat[threatStatus] or {color[1], color[2], color[3]}
     end
 
     local function PopulateColors()
-        Container:ReleaseChildren()
+        ColorsContainer:ReleaseChildren()
 
         local function UpdateColors()
-            RUF:LoadCustomColors()
-            RUF:UpdateAllUnitFrames()
+            ZF:LoadCustomColors()
+            ZF:UpdateAllUnitFrames()
         end
 
-        GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colors to their default values as defined by " .. RUF.PRETTY_ADDON_NAME .. ".")
+        GUIWidgets.CreateInformationTag(ColorsContainer,"Buttons below will reset the colors to their default values as defined by " .. ZF.PRETTY_ADDON_NAME .. ".")
 
         local ResetAllColorsButton = AG:Create("Button")
         ResetAllColorsButton:SetText("All Colors")
-        ResetAllColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors, RUF.db.profile.General.Colors) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetAllColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors, ZF.db.profile.General.Colors) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
         ResetAllColorsButton:SetRelativeWidth(1)
-        Container:AddChild(ResetAllColorsButton)
+        ColorsContainer:AddChild(ResetAllColorsButton)
 
         local ResetPowerColorsButton = AG:Create("Button")
         ResetPowerColorsButton:SetText("Power Colors")
-        ResetPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Power, RUF.db.profile.General.Colors.Power) PopulateColors() end)
+        ResetPowerColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Power, ZF.db.profile.General.Colors.Power) PopulateColors() end)
         ResetPowerColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetPowerColorsButton)
+        ColorsContainer:AddChild(ResetPowerColorsButton)
 
         local ResetSecondaryPowerColorsButton = AG:Create("Button")
         ResetSecondaryPowerColorsButton:SetText("Secondary Power Colors")
-        ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.SecondaryPower, RUF.db.profile.General.Colors.SecondaryPower) PopulateColors() end)
+        ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.SecondaryPower, ZF.db.profile.General.Colors.SecondaryPower) PopulateColors() end)
         ResetSecondaryPowerColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetSecondaryPowerColorsButton)
+        ColorsContainer:AddChild(ResetSecondaryPowerColorsButton)
 
         local ResetReactionColorsButton = AG:Create("Button")
         ResetReactionColorsButton:SetText("Reaction Colors")
-        ResetReactionColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Reaction, RUF.db.profile.General.Colors.Reaction) PopulateColors() end)
+        ResetReactionColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Reaction, ZF.db.profile.General.Colors.Reaction) PopulateColors() end)
         ResetReactionColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetReactionColorsButton)
+        ColorsContainer:AddChild(ResetReactionColorsButton)
 
         local ResetDispelColorsButton = AG:Create("Button")
         ResetDispelColorsButton:SetText("Dispel Colors")
-        ResetDispelColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Dispel, RUF.db.profile.General.Colors.Dispel) PopulateColors() end)
+        ResetDispelColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Dispel, ZF.db.profile.General.Colors.Dispel) PopulateColors() end)
         ResetDispelColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetDispelColorsButton)
+        ColorsContainer:AddChild(ResetDispelColorsButton)
 
         local ResetStatusColorsButton = AG:Create("Button")
         ResetStatusColorsButton:SetText("Status Colors")
-        ResetStatusColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Status, RUF.db.profile.General.Colors.Status) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetStatusColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Status, ZF.db.profile.General.Colors.Status) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
         ResetStatusColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetStatusColorsButton)
+        ColorsContainer:AddChild(ResetStatusColorsButton)
 
         local ResetThreatColorsButton = AG:Create("Button")
         ResetThreatColorsButton:SetText("Threat Colors")
-        ResetThreatColorsButton:SetCallback("OnClick", function() RUF:CopyTable(RUF:GetDefaultDB().profile.General.Colors.Threat, RUF.db.profile.General.Colors.Threat) RUF:LoadCustomColors() RUF:UpdateAllUnitFrames() PopulateColors() end)
+        ResetThreatColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Threat, ZF.db.profile.General.Colors.Threat) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
         ResetThreatColorsButton:SetRelativeWidth(0.33)
-        Container:AddChild(ResetThreatColorsButton)
+        ColorsContainer:AddChild(ResetThreatColorsButton)
 
-        GUIWidgets.CreateHeader(Container, "Power")
+        GUIWidgets.CreateHeader(ColorsContainer, "Power")
 
         local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
         for _, powerType in ipairs(PowerOrder) do
-            GUIBuilders.CreateColorBlock(Container, Power[powerType], RUF.db.profile.General.Colors.Power, powerType, UpdateColors, {width = 0.19})
+            GUIBuilders.CreateColorBlock(ColorsContainer, Power[powerType], ZF.db.profile.General.Colors.Power, powerType, UpdateColors, {width = 0.19})
         end
 
-        GUIWidgets.CreateHeader(Container, "Secondary Power")
+        GUIWidgets.CreateHeader(ColorsContainer, "Secondary Power")
 
         local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
 
         for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
-            if RUF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] then
-                GUIBuilders.CreateColorBlock(Container, Power[secondaryPowerType], RUF.db.profile.General.Colors.SecondaryPower, secondaryPowerType, UpdateColors, {width = 0.2})
+            if ZF.db.profile.General.Colors.SecondaryPower[secondaryPowerType] then
+                GUIBuilders.CreateColorBlock(ColorsContainer, Power[secondaryPowerType], ZF.db.profile.General.Colors.SecondaryPower, secondaryPowerType, UpdateColors, {width = 0.2})
             end
         end
 
-        GUIWidgets.CreateHeader(Container, "Reaction")
+        GUIWidgets.CreateHeader(ColorsContainer, "Reaction")
 
         local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
 
         for _, reactionType in ipairs(ReactionOrder) do
-            GUIBuilders.CreateColorBlock(Container, Reaction[reactionType], RUF.db.profile.General.Colors.Reaction, reactionType, UpdateColors, {width = 0.25})
+            GUIBuilders.CreateColorBlock(ColorsContainer, Reaction[reactionType], ZF.db.profile.General.Colors.Reaction, reactionType, UpdateColors, {width = 0.25})
         end
 
-        GUIWidgets.CreateHeader(Container, "Status")
+        GUIWidgets.CreateHeader(ColorsContainer, "Status")
 
         local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
 
         for _, statusType in ipairs(StatusOrder) do
-            GUIBuilders.CreateColorBlock(Container, Status[statusType], RUF.db.profile.General.Colors.Status, statusType, UpdateColors, {width = 0.25})
+            GUIBuilders.CreateColorBlock(ColorsContainer, Status[statusType], ZF.db.profile.General.Colors.Status, statusType, UpdateColors, {width = 0.25})
         end
 
-        GUIWidgets.CreateHeader(Container, "Threat")
+        GUIWidgets.CreateHeader(ColorsContainer, "Threat")
 
         local ThreatOrder = {0, 1, 2, 3}
 
         for _, threatStatus in ipairs(ThreatOrder) do
-            GUIBuilders.CreateColorBlock(Container, Threat[threatStatus], RUF.db.profile.General.Colors.Threat, threatStatus, UpdateColors, {width = 0.25})
+            GUIBuilders.CreateColorBlock(ColorsContainer, Threat[threatStatus], ZF.db.profile.General.Colors.Threat, threatStatus, UpdateColors, {width = 0.25})
         end
 
-        GUIWidgets.CreateHeader(Container, "Dispel Types")
+        GUIWidgets.CreateHeader(ColorsContainer, "Dispel Types")
 
         local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
 
         for _, dispelType in ipairs(DispelTypes) do
-            GUIBuilders.CreateColorBlock(Container, dispelType, RUF.db.profile.General.Colors.Dispel, dispelType, UpdateColors, {width = 0.2})
+            GUIBuilders.CreateColorBlock(ColorsContainer, dispelType, ZF.db.profile.General.Colors.Dispel, dispelType, UpdateColors, {width = 0.2})
         end
-        Container:DoLayout()
+        ColorsContainer:DoLayout()
     end
     PopulateColors()
 end
@@ -591,6 +552,17 @@ end
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
     local FrameDB = GetUnitDB(unit).Frame
     local HealthBarDB = GetUnitDB(unit).HealthBar
+
+    -- Category flags standing in for the "47 unit == checks" this section
+    -- used to be built from - not every branch below uses every flag, some
+    -- widgets really are single-unit-only (raid's Groups, party's Role
+    -- Order, augmentation's Units Per Column) and keep their own guard
+    -- rather than being folded into a flag that would only ever be true
+    -- for that one unit anyway.
+    local isRaidLike = unit == "raid" or unit == "augmentation"
+    local isGroupUnit = unit == "party" or isRaidLike
+    local isGridUnit = unit == "boss" or isGroupUnit
+    local isSoloTarget = unit == "player" or unit == "target"
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -610,21 +582,23 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Height = value updateCallback("Frame") end)
     LayoutContainer:AddChild(HeightSlider)
 
+    local anchorDropdownWidth = isRaidLike and 0.5 or ((unitHasParent or unit == "boss") and 0.33 or (unit == "party" and 0.25 or 0.5))
+
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-	AnchorFromDropdown:SetRelativeWidth((unit == "raid" or unit == "augmentation") and 0.5 or ((unitHasParent or unit == "boss") and 0.33 or (unit == "party" and 0.25 or 0.5)))
+    AnchorFromDropdown:SetRelativeWidth(anchorDropdownWidth)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback("Frame") end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     if unitHasParent then
         local AnchorParentEditBox = AG:Create("EditBox")
         AnchorParentEditBox:SetLabel("Anchor Parent")
-        AnchorParentEditBox:SetText(FrameDB.AnchorParent or "")
+        AnchorParentEditBox:SetText(FrameDB.AnchorToFrame or "")
         AnchorParentEditBox:SetRelativeWidth(0.33)
         AnchorParentEditBox:DisableButton(true)
-        AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value) FrameDB.AnchorParent = value AnchorParentEditBox:SetText(FrameDB.AnchorParent or "") updateCallback("Frame") end)
+        AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value) FrameDB.AnchorToFrame = value AnchorParentEditBox:SetText(FrameDB.AnchorToFrame or "") updateCallback("Frame") end)
         LayoutContainer:AddChild(AnchorParentEditBox)
     end
 
@@ -632,13 +606,13 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(FrameDB.Layout[2])
-	AnchorToDropdown:SetRelativeWidth((unit == "raid" or unit == "augmentation") and 0.5 or ((unitHasParent or unit == "boss") and 0.33 or (unit == "party" and 0.25 or 0.5)))
+    AnchorToDropdown:SetRelativeWidth(anchorDropdownWidth)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback("Frame") end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
-	if unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation" then
+    if isGridUnit then
         local GrowthDirectionDropdown = AG:Create("Dropdown")
-		if unit == "raid" or unit == "augmentation" then
+        if isRaidLike then
             GrowthDirectionDropdown:SetList(RaidGrowthDirectionList[1], RaidGrowthDirectionList[2])
         elseif unit == "party" then
             GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down", ["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"UP", "DOWN", "LEFT", "RIGHT"})
@@ -647,23 +621,38 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
-		GrowthDirectionDropdown:SetRelativeWidth((unit == "raid" and 0.33) or (unit == "party" and 0.25) or (unit == "augmentation" and 0.5) or 0.33)
+        GrowthDirectionDropdown:SetRelativeWidth((unit == "raid" and 0.33) or (unit == "party" and 0.25) or (unit == "augmentation" and 0.5) or 0.33)
         GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback("Frame") end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
-    if unit == "party" or unit == "raid" or unit == "augmentation" then
+    -- Declared before any callback references it (that used to be the bug:
+    -- the Sort By dropdown's callback called this before its `local
+    -- function` existed yet, so it silently resolved to a nonexistent
+    -- global). Widget refs are tracked directly rather than indexed out of
+    -- LayoutContainer.children by a hardcoded position, since that position
+    -- would silently go stale the moment a widget gets added or reordered
+    -- above it.
+    local RoleOrderDropdowns = {}
+    local function RefreshSortOrders()
+        if unit ~= "party" then return end
+        for i = 1, 3 do
+            RoleOrderDropdowns[i]:SetDisabled(FrameDB.SortBy ~= "ROLE")
+        end
+    end
+
+    if isGroupUnit then
         local SortByDropdown = AG:Create("Dropdown")
         if unit == "raid" then
             SortByDropdown:SetList({["GROUP"] = "Group", ["INDEX"] = "Index"}, {"GROUP", "INDEX"})
-		elseif unit == "augmentation" then
-			SortByDropdown:SetList({["NAMELIST"] = "Player List", ["NAME"] = "Name"}, {"NAMELIST", "NAME"})
+        elseif unit == "augmentation" then
+            SortByDropdown:SetList({["NAMELIST"] = "Player List", ["NAME"] = "Name"}, {"NAMELIST", "NAME"})
         else
             SortByDropdown:SetList({["ROLE"] = "Role", ["INDEX"] = "Index", ["NAME"] = "Name"}, {"ROLE", "INDEX", "NAME"})
         end
         SortByDropdown:SetLabel("Sort By")
-		SortByDropdown:SetValue(unit == "augmentation" and FrameDB.SortBy ~= "NAME" and "NAMELIST" or FrameDB.SortBy)
-		SortByDropdown:SetRelativeWidth((unit == "raid" and 0.33) or (unit == "augmentation" and 0.5) or 0.25)
+        SortByDropdown:SetValue(unit == "augmentation" and FrameDB.SortBy ~= "NAME" and "NAMELIST" or FrameDB.SortBy)
+        SortByDropdown:SetRelativeWidth((unit == "raid" and 0.33) or (unit == "augmentation" and 0.5) or 0.25)
         SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback("Frame") RefreshSortOrders() end)
         LayoutContainer:AddChild(SortByDropdown)
     end
@@ -679,7 +668,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         LayoutContainer:AddChild(AutoAdjustGroupsToggle)
 
         local GroupsContainer = GUIWidgets.CreateInlineGroup(LayoutContainer, "Groups To Show")
-        for groupIndex = 1, RUF.MAX_RAID_GROUPS do
+        for groupIndex = 1, ZF.MAX_RAID_GROUPS do
             local GroupToggle = AG:Create("CheckBox")
             GroupToggle:SetLabel("G" .. groupIndex)
             GroupToggle:SetValue(FrameDB.Groups[groupIndex])
@@ -702,14 +691,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.RoleOrder[i] = value updateCallback("Frame") end)
             RoleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
             LayoutContainer:AddChild(RoleOrderDropdown)
-        end
-    end
-
-    local function RefreshSortOrders()
-        if unit ~= "party" then return end
-        for i = 1, 3 do
-            local RoleOrderDropdown = LayoutContainer.children[7 + i]
-            RoleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
+            RoleOrderDropdowns[i] = RoleOrderDropdown
         end
     end
 
@@ -717,7 +699,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(FrameDB.Layout[3])
     XPosSlider:SetSliderValues(-3000, 3000, 0.1)
-	XPosSlider:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation") and 0.25 or 0.33)
+    XPosSlider:SetRelativeWidth(isGridUnit and 0.25 or 0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[3] = value updateCallback("Frame") end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -725,11 +707,11 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(FrameDB.Layout[4])
     YPosSlider:SetSliderValues(-3000, 3000, 0.1)
-	YPosSlider:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation") and 0.25 or 0.33)
+    YPosSlider:SetRelativeWidth(isGridUnit and 0.25 or 0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback("Frame") end)
     LayoutContainer:AddChild(YPosSlider)
 
-	if unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation" then
+    if isGridUnit then
         local SpacingSlider = AG:Create("Slider")
         SpacingSlider:SetLabel("Frame Spacing")
         SpacingSlider:SetValue(FrameDB.Layout[5])
@@ -740,27 +722,27 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     end
 
     if unit == "augmentation" then
-		local UnitsPerColumnSlider = AG:Create("Slider")
-		UnitsPerColumnSlider:SetLabel("Units Per Row / Column")
-		UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn or RUF.MAX_RAID_FRAMES_PER_GROUP)
-		UnitsPerColumnSlider:SetSliderValues(1, RUF.MAX_RAID_FRAMES, 1)
-		UnitsPerColumnSlider:SetRelativeWidth(0.25)
-		UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.UnitsPerColumn = value updateCallback("Frame") end)
-		LayoutContainer:AddChild(UnitsPerColumnSlider)
-	end
+        local UnitsPerColumnSlider = AG:Create("Slider")
+        UnitsPerColumnSlider:SetLabel("Units Per Row / Column")
+        UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP)
+        UnitsPerColumnSlider:SetSliderValues(1, ZF.MAX_RAID_FRAMES, 1)
+        UnitsPerColumnSlider:SetRelativeWidth(0.25)
+        UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.UnitsPerColumn = value updateCallback("Frame") end)
+        LayoutContainer:AddChild(UnitsPerColumnSlider)
+    end
 
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(FrameDB.FrameStrata)
-	FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or (unit == "augmentation" and 1) or 0.33)
+    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or (unit == "augmentation" and 1) or 0.33)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback("Frame") end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
-    local healthToggleWidth = (unit == "player" or unit == "target") and 0.25 or 0.33
-	local primaryToggleWidth = (unit == "party" or unit == "raid" or unit == "augmentation") and 0.33 or healthToggleWidth
-	local secondaryToggleWidth = (unit == "raid" or unit == "augmentation") and 0.33 or primaryToggleWidth
+    local healthToggleWidth = isSoloTarget and 0.25 or 0.33
+    local primaryToggleWidth = isGroupUnit and 0.33 or healthToggleWidth
+    local secondaryToggleWidth = isRaidLike and 0.33 or primaryToggleWidth
 
     if unit == "party" then
         GUIBuilders.CreateReloadPrompt(ColorContainer, "Show Player", FrameDB, "ShowPlayer", {width = primaryToggleWidth})
@@ -787,7 +769,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColorWhenDisconnectedToggle:SetRelativeWidth(secondaryToggleWidth)
     ColorContainer:AddChild(ColorWhenDisconnectedToggle)
 
-	if unit == "party" or unit == "raid" or unit == "augmentation" then
+    if isGroupUnit then
         local ColorBackdropWhenDeadToggle = AG:Create("CheckBox")
         ColorBackdropWhenDeadToggle:SetLabel("Color Backdrop When Dead")
         ColorBackdropWhenDeadToggle:SetValue(HealthBarDB.ColorBackdropWhenDead)
@@ -803,7 +785,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     InverseGrowthDirectionToggle:SetRelativeWidth(secondaryToggleWidth)
     ColorContainer:AddChild(InverseGrowthDirectionToggle)
 
-    if unit == "player" or unit == "target" then
+    if isSoloTarget then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
         AnchorToCooldownViewerToggle:SetLabel("Anchor To Cooldown Viewer")
         AnchorToCooldownViewerToggle:SetValue(HealthBarDB.AnchorToCooldownViewer)
@@ -815,31 +797,21 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
                 FrameDB.Layout[2] = GetDefaultUnitDB(unit).Frame.Layout[2]
                 FrameDB.Layout[3] = GetDefaultUnitDB(unit).Frame.Layout[3]
                 FrameDB.Layout[4] = GetDefaultUnitDB(unit).Frame.Layout[4]
-                AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                XPosSlider:SetValue(FrameDB.Layout[3])
-                YPosSlider:SetValue(FrameDB.Layout[4])
-            else
-                if unit == "player" then
-                    FrameDB.Layout[1] = "RIGHT"
-                    FrameDB.Layout[2] = "LEFT"
-                    FrameDB.Layout[3] = 0
-                    FrameDB.Layout[4] = 0
-                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                    XPosSlider:SetValue(FrameDB.Layout[3])
-                    YPosSlider:SetValue(FrameDB.Layout[4])
-                elseif unit == "target" then
-                    FrameDB.Layout[1] = "LEFT"
-                    FrameDB.Layout[2] = "RIGHT"
-                    FrameDB.Layout[3] = 0
-                    FrameDB.Layout[4] = 0
-                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                    XPosSlider:SetValue(FrameDB.Layout[3])
-                    YPosSlider:SetValue(FrameDB.Layout[4])
-                end
+            elseif unit == "player" then
+                FrameDB.Layout[1] = "RIGHT"
+                FrameDB.Layout[2] = "LEFT"
+                FrameDB.Layout[3] = 0
+                FrameDB.Layout[4] = 0
+            elseif unit == "target" then
+                FrameDB.Layout[1] = "LEFT"
+                FrameDB.Layout[2] = "RIGHT"
+                FrameDB.Layout[3] = 0
+                FrameDB.Layout[4] = 0
             end
+            AnchorFromDropdown:SetValue(FrameDB.Layout[1])
+            AnchorToDropdown:SetValue(FrameDB.Layout[2])
+            XPosSlider:SetValue(FrameDB.Layout[3])
+            YPosSlider:SetValue(FrameDB.Layout[4])
             updateCallback("Frame")
         end)
         AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFFFFD100Essential|r Cooldown Viewer. Toggling this will overwrite existing |cFFFFD100Layout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
@@ -886,9 +858,9 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetIsPercent(true)
     ColorContainer:AddChild(BackgroundOpacitySlider)
 
-	if unit == "player" or unit == "target" or unit == "focus" or unit == "party" or unit == "raid" or unit == "augmentation" then
+    if isSoloTarget or unit == "focus" or isGroupUnit then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
-        
+
         CreateDesignerPreviewToggle(DispelHighlightContainer, "DispelHighlight", function() updateCallback("HealthBar") end)
         local EnableDispelHighlightingToggle = AG:Create("CheckBox")
         EnableDispelHighlightingToggle:SetLabel("Enable Dispel Highlighting")
@@ -914,7 +886,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     do
         local values, order = {}, {}
         for _, otherUnit in ipairs({"player", "target", "targettarget", "pet", "focus", "focustarget", "party", "raid", "boss", "augmentation"}) do
-            if otherUnit ~= unit and (otherUnit ~= "augmentation" or RUF:IsAugmentationEvoker()) then
+            if otherUnit ~= unit and (otherUnit ~= "augmentation" or ZF:IsAugmentationEvoker()) then
                 values[otherUnit] = UnitDBToUnitPrettyName[otherUnit]
                 order[#order + 1] = otherUnit
             end
@@ -934,26 +906,26 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         if not copySourceUnit then return end
         local sourceLabel = UnitDBToUnitPrettyName[copySourceUnit] or copySourceUnit
         local targetLabel = UnitDBToUnitPrettyName[unit] or unit
-        StaticPopupDialogs["RUF_COPY_UNIT_SETTINGS"] = {
+        StaticPopupDialogs["ZF_COPY_UNIT_SETTINGS"] = {
             text = ("This will overwrite ALL of |cFFFFD100%s|r's settings with |cFFFFD100%s|r's (screen position kept as-is). This cannot be undone. Continue?"):format(targetLabel, sourceLabel),
             button1 = "Copy",
             button2 = "Cancel",
             showAlert = true,
             OnAccept = function()
-                RUF:CopyUnitSettings(copySourceUnit, unit)
-                RUF:BuildDesignerSectionOptions(containerParent, unit, "Frame")
+                ZF:CopyUnitSettings(copySourceUnit, unit)
+                ZF:BuildDesignerSectionOptions(containerParent, unit, "Frame")
             end,
             timeout = 0,
             whileDead = true,
             hideOnEscape = true,
         }
-        StaticPopup_Show("RUF_COPY_UNIT_SETTINGS")
+        StaticPopup_Show("ZF_COPY_UNIT_SETTINGS")
     end)
     CopyContainer:AddChild(CopyButton)
 end
 
 local function CreateAugmentationFrameSettings(containerParent)
-	local AugmentationDB = RUF.db.profile.Units.raid.augmentation
+	local AugmentationDB = ZF.db.profile.Units.augmentation
 	local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Player Filter")
 	GUIWidgets.CreateInformationTag(GeneralContainer, "|cFFFFD100Listed|r Raid Members are the only players that will be shown.")
 
@@ -962,7 +934,7 @@ local function CreateAugmentationFrameSettings(containerParent)
 	NamesEditBox:SetText(AugmentationDB.Names or "")
 	NamesEditBox:SetNumLines(8)
 	NamesEditBox:SetFullWidth(true)
-	NamesEditBox:SetCallback("OnEnterPressed", function(_, _, value) AugmentationDB.Names = value RUF:UpdateAugmentationRaidFrames() end)
+	NamesEditBox:SetCallback("OnEnterPressed", function(_, _, value) AugmentationDB.Names = value ZF:UpdateAugmentationRaidFrames() end)
 	GeneralContainer:AddChild(NamesEditBox)
 end
 
@@ -989,7 +961,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightToggle:SetRelativeWidth(0.33)
     IncomingHealSettings:AddChild(MatchParentHeightToggle)
 
-    local IncomingHealColorPicker = GUIBuilders.CreateColorBlock(IncomingHealSettings, "Incoming Heal Color", HealPredictionDB.IncomingHeal, "Color", updateCallback, {hasAlpha = true, width = 0.33})
+    GUIBuilders.CreateColorBlock(IncomingHealSettings, "Incoming Heal Color", HealPredictionDB.IncomingHeal, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local IncomingHealHeightSlider = AG:Create("Slider")
     IncomingHealHeightSlider:SetLabel("Height")
@@ -1034,7 +1006,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightAbsorbToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(MatchParentHeightAbsorbToggle)
 
-    local AbsorbColorPicker = GUIBuilders.CreateColorBlock(AbsorbSettings, "Absorb Color", HealPredictionDB.Absorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
+    GUIBuilders.CreateColorBlock(AbsorbSettings, "Absorb Color", HealPredictionDB.Absorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local AbsorbHeightSlider = AG:Create("Slider")
     AbsorbHeightSlider:SetLabel("Height")
@@ -1070,7 +1042,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     MatchParentHeightHealAbsorbToggle:SetRelativeWidth(0.33)
     HealAbsorbSettings:AddChild(MatchParentHeightHealAbsorbToggle)
 
-    local HealAbsorbColorPicker = GUIBuilders.CreateColorBlock(HealAbsorbSettings, "Heal Absorb Color", HealPredictionDB.HealAbsorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
+    GUIBuilders.CreateColorBlock(HealAbsorbSettings, "Heal Absorb Color", HealPredictionDB.HealAbsorbs, "Color", updateCallback, {hasAlpha = true, width = 0.33})
 
     local HealAbsorbHeightSlider = AG:Create("Slider")
     HealAbsorbHeightSlider:SetLabel("Height")
@@ -1105,7 +1077,6 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
 end
 
 local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
-    local FrameDB = GetUnitDB(unit).Frame
     local CastBarDB = GetUnitDB(unit).CastBar
     local DefaultCastBarDB = GetDefaultUnitDB(unit).CastBar
     if not CastBarDB.InterruptCooldownColor then CastBarDB.InterruptCooldownColor = {unpack(DefaultCastBarDB.InterruptCooldownColor)} end
@@ -1297,10 +1268,10 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
 end
 
 local function CreateCastBarSettings(containerParent, unit)
-	local function UpdateCastBar() UpdateUnitSettings(unit, function() RUF:UpdateUnitCastBar(RUF[unit:upper()], unit) end, "CastBar") end
+	local function UpdateCastBar() UpdateUnitSettings(unit, function() ZF:UpdateUnitCastBar(ZF[unit:upper()], unit) end, "CastBar") end
 
     local function SelectCastBarTab(CastBarContainer, _, CastBarTab)
-        RUF:SaveSubTab(unit, "CastBar", CastBarTab)
+        ZF:SaveSubTab(unit, "CastBar", CastBarTab)
         CastBarContainer:ReleaseChildren()
         if CastBarTab == "Bar" then
             CreateCastBarBarSettings(CastBarContainer, unit, UpdateCastBar)
@@ -1336,8 +1307,8 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
 
     local function UpdatePowerBarSettings()
         updateCallback()
-        if unit == "player" and RUF.PLAYER then
-            RUF:UpdateUnitSecondaryPowerBar(RUF.PLAYER, unit)
+        if unit == "player" and ZF.PLAYER then
+            ZF:UpdateUnitSecondaryPowerBar(ZF.PLAYER, unit)
         end
     end
 
@@ -1355,7 +1326,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local PositionDropdown = AG:Create("Dropdown")
     PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
     PositionDropdown:SetLabel("Position")
-    PositionDropdown:SetValue(RUF:GetConfiguredPowerBarPosition(unit))
+    PositionDropdown:SetValue(ZF:GetConfiguredPowerBarPosition(unit))
     PositionDropdown:SetRelativeWidth(0.25)
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Position = value UpdatePowerBarSettings() end)
     LayoutContainer:AddChild(PositionDropdown)
@@ -1450,7 +1421,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     local PositionDropdown = AG:Create("Dropdown")
     PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
     PositionDropdown:SetLabel("Position")
-    PositionDropdown:SetValue(RUF:GetConfiguredSecondaryPowerBarPosition(unit))
+    PositionDropdown:SetValue(ZF:GetConfiguredSecondaryPowerBarPosition(unit))
     PositionDropdown:SetRelativeWidth(0.33)
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Position = value updateCallback() end)
     LayoutContainer:AddChild(PositionDropdown)
@@ -1474,7 +1445,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     ColorContainer:AddChild(ColorByTypeToggle)
 
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", SecondaryPowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = 0.5})
-    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", SecondaryPowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.5})
+    GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", SecondaryPowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.5})
 
     RefreshSecondaryPowerBarGUI = function()
         BuilderRefresh()
@@ -1564,7 +1535,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     ColorContainer:AddChild(ColorByTypeToggle)
 
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", AlternativePowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = 0.33})
-    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", AlternativePowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.33})
+    GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", AlternativePowerBarDB, "Background", updateCallback, {hasAlpha = true, width = 0.33})
 
     RefreshAlternativePowerBarGUI = function()
         BuilderRefresh()
@@ -1686,7 +1657,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
 end
 
 local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback)
-	local ReadyCheckDB = GetUnitDB(unit).Indicators.ReadyCheckIndicator
+	local ReadyCheckDB = GetUnitDB(unit).Indicators.ReadyCheck
 	ReadyCheckDB.Texture = ReadyCheckDB.Texture or "Default"
 
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
@@ -1696,8 +1667,8 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	local TextureDropdown = AG:Create("Dropdown")
 	TextureDropdown:SetList({
 		["Default"] = "|A:UI-LFG-ReadyMark-Raid:18:18|a |A:UI-LFG-DeclineMark-Raid:18:18|a |A:UI-LFG-PendingMark-Raid:18:18|a",
-		["White"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png:18:18|t",
-        ["HiRes"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png:18:18|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png:18:18|t",
+		["White"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png:18:18|t",
+        ["HiRes"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png:18:18|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png:18:18|t",
 	}, {"Default", "White", "HiRes"})
 	TextureDropdown:SetLabel("Ready Check Texture")
 	TextureDropdown:SetValue(ReadyCheckDB.Texture)
@@ -1712,7 +1683,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 end
 
 local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback)
-	local ResurrectDB = GetUnitDB(unit).Indicators.ResurrectIndicator
+	local ResurrectDB = GetUnitDB(unit).Indicators.Resurrect
 
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrect Indicator Settings")
 	local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Resurrect|r Indicator", ResurrectDB, updateCallback)
@@ -1739,7 +1710,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
 end
 
 local function CreateAssistantSettings(containerParent, unit, updateCallback)
-    local LeaderAssistantDB = GetUnitDB(unit).Indicators.LeaderAssistantIndicator
+    local LeaderAssistantDB = GetUnitDB(unit).Indicators.LeaderAssistant
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
     local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Leader|r & " .. STYLE.Palette.SelectedText .. "Assistant|r Indicator", LeaderAssistantDB, updateCallback)
@@ -1835,7 +1806,7 @@ local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback)
 end
 
 local function CreateQuestIndicatorSettings(containerParent, updateCallback)
-    local QuestIndicatorDB = RUF.db.profile.Units.target.Indicators.Quest
+    local QuestIndicatorDB = ZF.db.profile.Units.target.Indicators.Quest
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Quest Indicator Settings")
     local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Quest|r Indicator", QuestIndicatorDB, updateCallback, {width = 0.5})
@@ -1844,8 +1815,8 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
         ["DEFAULT"] = "|TInterface\\TargetingFrame\\PortraitQuestBadge:20:20|t",
-        ["QUEST0"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
-        ["QUEST1"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png:20:20|t",
+        ["QUEST0"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
+        ["QUEST1"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest02.png:20:20|t",
     }, {"DEFAULT", "QUEST0", "QUEST1"})
     TextureDropdown:SetLabel("Quest Texture")
     TextureDropdown:SetValue(QuestIndicatorDB.Texture or "DEFAULT")
@@ -1860,7 +1831,7 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
 end
 
 local function CreateClassificationIndicatorSettings(containerParent, updateCallback)
-    local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
+    local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Classification Indicator Settings")
     local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Classification|r Indicator", ClassificationIndicatorDB, updateCallback, {width = 0.5})
@@ -1870,8 +1841,8 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     TextureDropdown:SetList({
         ["CLASSIFICATION0"] = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
         ["CLASSIFICATION1"] = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
-        ["CLASSIFICATION2"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png:20:20|t",
-        ["CLASSIFICATION3"] = "|TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png:20:20|t |TInterface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png:20:20|t",
+        ["CLASSIFICATION2"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Elite.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Rare.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png:20:20|t",
+        ["CLASSIFICATION3"] = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png:20:20|t |TInterface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png:20:20|t",
     }, {"CLASSIFICATION0", "CLASSIFICATION1", "CLASSIFICATION2", "CLASSIFICATION3"})
     TextureDropdown:SetLabel("Classification Texture")
     TextureDropdown:SetValue(ClassificationIndicatorDB.Texture or "DEFAULT")
@@ -1971,7 +1942,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     local TotemsIndicatorDB = GetUnitDB(unit).Indicators.Totems
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
-    local Toggle, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Totems|r", TotemsIndicatorDB, updateCallback)
+    local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Totems|r", TotemsIndicatorDB, updateCallback)
     panelsToDisable[1] = ToggleContainer
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -2096,12 +2067,12 @@ local IndicatorCategoryByUnit = {
 
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
-        RUF:SaveSubTab(unit, "Indicators", IndicatorTab)
+        ZF:SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
-            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitRaidTargetMarker(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitRaidTargetMarker(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "LeaderAssistant" then
-            CreateAssistantSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitLeaderAssistantIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateAssistantSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitLeaderAssistantIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Role" then
             CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Phase" then
@@ -2113,23 +2084,23 @@ local function CreateIndicatorSettings(containerParent, unit)
 		elseif IndicatorTab == "Summon" then
 			CreateSummonIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Resting" then
-            CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitRestingIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitRestingIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Combat" then
-            CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitCombatIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCombatIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "PvP" and unit == "player" then
-            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPvPIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPvPIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Mouseover" then
-            CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitMouseoverIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitMouseoverIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "TargetIndicator" then
-            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitTargetGlowIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitTargetGlowIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "ThreatIndicator" then
-            CreateThreatIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitThreatIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateThreatIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitThreatIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Totems" then
-            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitTotems(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitTotems(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Quest" and unit == "target" then
-            CreateQuestIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitQuestIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateQuestIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitQuestIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Classification" and unit == "target" then
-            CreateClassificationIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitQuestIndicator(RUF[unit:upper()], unit) end, "Indicators") end)
+            CreateClassificationIndicatorSettings(IndicatorContainer, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitQuestIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         end
     end
 
@@ -2148,7 +2119,7 @@ end
 local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
 	local TagDB = GetUnitDB(unit).Tags[tagDB]
 	local function UpdateTag()
-		RUF:UpdateUnitTags(unit, tagDB)
+		ZF:UpdateUnitTags(unit, tagDB)
         if updateCallback then updateCallback() end
 	end
 
@@ -2217,7 +2188,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFFFFD100Prefix|r indicates that this should be added to the start of the tag string.")
 
     local HealthTagDropdown = AG:Create("Dropdown")
-    HealthTagDropdown:SetList(RUF:FetchTagData("Health")[1], RUF:FetchTagData("Health")[2])
+    HealthTagDropdown:SetList(ZF:FetchTagData("Health")[1], ZF:FetchTagData("Health")[2])
     HealthTagDropdown:SetLabel("Health Tags")
     HealthTagDropdown:SetValue(nil)
     HealthTagDropdown:SetRelativeWidth(0.5)
@@ -2225,7 +2196,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     TagSelectionContainer:AddChild(HealthTagDropdown)
 
     local PowerTagDropdown = AG:Create("Dropdown")
-    PowerTagDropdown:SetList(RUF:FetchTagData("Power")[1], RUF:FetchTagData("Power")[2])
+    PowerTagDropdown:SetList(ZF:FetchTagData("Power")[1], ZF:FetchTagData("Power")[2])
     PowerTagDropdown:SetLabel("Power Tags")
     PowerTagDropdown:SetValue(nil)
     PowerTagDropdown:SetRelativeWidth(0.5)
@@ -2233,7 +2204,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     TagSelectionContainer:AddChild(PowerTagDropdown)
 
     local NameTagDropdown = AG:Create("Dropdown")
-    NameTagDropdown:SetList(RUF:FetchTagData("Name")[1], RUF:FetchTagData("Name")[2])
+    NameTagDropdown:SetList(ZF:FetchTagData("Name")[1], ZF:FetchTagData("Name")[2])
     NameTagDropdown:SetLabel("Name Tags")
     NameTagDropdown:SetValue(nil)
     NameTagDropdown:SetRelativeWidth(0.5)
@@ -2241,12 +2212,12 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     TagSelectionContainer:AddChild(NameTagDropdown)
 
     local MiscTagDropdown = AG:Create("Dropdown")
-    MiscTagDropdown:SetList(RUF:FetchTagData("Misc")[1], RUF:FetchTagData("Misc")[2])
+    MiscTagDropdown:SetList(ZF:FetchTagData("Misc")[1], ZF:FetchTagData("Misc")[2])
     MiscTagDropdown:SetLabel("Misc Tags")
     MiscTagDropdown:SetValue(nil)
     MiscTagDropdown:SetRelativeWidth(0.5)
     MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) GetUnitDB(unit).Tags[tagDB].Tag = currentTag UpdateTag() MiscTagDropdown:SetValue(nil) end)
-    MiscTagDropdown:SetDisabled(#RUF:FetchTagData("Misc") == 0)
+    MiscTagDropdown:SetDisabled(#ZF:FetchTagData("Misc") == 0)
     TagSelectionContainer:AddChild(MiscTagDropdown)
 
     containerParent:DoLayout()
@@ -2265,7 +2236,7 @@ local function BubbleDesignerLayout(container)
     end
 end
 
-function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
+function ZF:BuildDesignerSectionOptions(container, unit, tabValue)
     if not (container and container.frame) then return end
     if tabValue then
         designerLastTab[unit] = tabValue
@@ -2275,30 +2246,30 @@ function RUF:BuildDesignerSectionOptions(container, unit, tabValue)
     container:ReleaseChildren()
 
     local function RefreshDesignerPreview()
-        RUF:UpdateDesignerPreviewFrame()
-        RUF:AnchorDesignerOverlays()
+        ZF:UpdateDesignerPreviewFrame()
+        ZF:AnchorDesignerOverlays()
     end
 
-    local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil
+    local playerHasSecondaryPower = UnitClassBase("player") == "DEATHKNIGHT" or ZF:GetSecondaryPowerType() ~= nil
 
     if tabValue == "Frame" then
-        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorParent and true or false, function(element) UpdateUnitSettings(unit, function() RUF:UpdateUnitFrame(RUF[unit:upper()], unit) end, element) end)
+        CreateFrameSettings(container, unit, GetUnitDB(unit).Frame.AnchorToFrame and true or false, function(element) UpdateUnitSettings(unit, function() ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end, element) end)
     elseif tabValue == "HealPrediction" then
-        CreateDesignerPreviewToggle(container, "HealPrediction", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
-        CreateHealPredictionSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitHealPrediction(RUF[unit:upper()], unit) end, "HealPrediction") end)
+        CreateDesignerPreviewToggle(container, "HealPrediction", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitHealPrediction(ZF[unit:upper()], unit) end, "HealPrediction") end)
+        CreateHealPredictionSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitHealPrediction(ZF[unit:upper()], unit) end, "HealPrediction") end)
     elseif tabValue == "Auras" then
-        CreateAuraSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit) end, "Auras") end)
+        CreateAuraSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitAuras(ZF[unit:upper()], unit) end, "Auras") end)
     elseif tabValue == "PowerBar" then
-        CreatePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPowerBar(RUF[unit:upper()], unit) end, "PowerBar") end)
+        CreatePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPowerBar(ZF[unit:upper()], unit) end, "PowerBar") end)
     elseif tabValue == "SecondaryPowerBar" and unit == "player" and playerHasSecondaryPower then
-        CreateSecondaryPowerBarSettings(container, unit, function() RUF:UpdateUnitSecondaryPowerBar(RUF[unit:upper()], unit) RefreshDesignerPreview() end)
-    elseif tabValue == "AlternativePowerBar" and unit == "player" and RUF:RequiresAlternativePowerBar() then
-        CreateAlternativePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitAlternativePowerBar(RUF[unit:upper()], unit) end) end)
+        CreateSecondaryPowerBarSettings(container, unit, function() ZF:UpdateUnitSecondaryPowerBar(ZF[unit:upper()], unit) RefreshDesignerPreview() end)
+    elseif tabValue == "AlternativePowerBar" and unit == "player" and ZF:RequiresAlternativePowerBar() then
+        CreateAlternativePowerBarSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitAlternativePowerBar(ZF[unit:upper()], unit) end) end)
     elseif tabValue == "CastBar" then
-        CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() RUF:UpdateUnitCastBar(RUF[unit:upper()], unit) end, "CastBar") end)
+        CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCastBar(ZF[unit:upper()], unit) end, "CastBar") end)
         CreateCastBarSettings(container, unit)
     elseif tabValue == "Portrait" then
-        CreatePortraitSettings(container, unit, function() UpdateUnitSettings(unit, function() RUF:UpdateUnitPortrait(RUF[unit:upper()], unit) end, "Portrait") end)
+        CreatePortraitSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPortrait(ZF[unit:upper()], unit) end, "Portrait") end)
     elseif tabValue == "Indicators" then
         CreateIndicatorSettings(container, unit)
     elseif tabValue == "Tags" then
@@ -2314,7 +2285,7 @@ end
 function CreateTagsSettings(containerParent, unit)
 
     local function SelectTagTab(TagContainer, _, TagTab)
-        RUF:SaveSubTab(unit, "Tags", TagTab)
+        ZF:SaveSubTab(unit, "Tags", TagTab)
         TagContainer:ReleaseChildren()
         CreateTagSetting(TagContainer, unit, TagTab, function() UpdateUnitSettings(unit, nil, "Tags") end)
         containerParent:DoLayout()
@@ -2337,13 +2308,13 @@ function CreateTagsSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateCallback)
+local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local AuraDB = GetUnitDB(unit).Auras[auraDB]
     local isCustom = auraDB == "Custom"
     local filterAuraDB = auraDB == "Custom" and (AuraDB.Type == "Debuffs" and "Debuffs" or "Buffs") or auraDB
     local auraTitle = auraDB == "Custom" and filterAuraDB or auraDB
     local function UpdateAuras()
-        UpdateUnitSettings(unit, function() RUF:UpdateUnitAuras(RUF[unit:upper()], unit, auraDB) end, "Auras")
+        UpdateUnitSettings(unit, function() ZF:UpdateUnitAuras(ZF[unit:upper()], unit, auraDB) end, "Auras")
     end
 
     local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Settings")
@@ -2396,7 +2367,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
 
     local FilterDropdowns = {}
 
-    for _, filter in ipairs(RUF.AURA_FILTERS[filterAuraDB]) do
+    for _, filter in ipairs(ZF.AURA_FILTERS[filterAuraDB]) do
         if filter.Group == "General" then
             local filterKey = filter.Key
             local FilterToggle = AG:Create("CheckBox")
@@ -2417,7 +2388,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
         local filterDesc = {}
         local filterOrder = {}
         local FilterDropdown = AG:Create("Dropdown")
-        for _, filter in ipairs(RUF.AURA_FILTERS[filterAuraDB]) do
+        for _, filter in ipairs(ZF.AURA_FILTERS[filterAuraDB]) do
             if filter.Group == filterGroup then
                 filterList[filter.Key] = filter.Title
                 filterDesc[filter.Key] = filter.Desc
@@ -2447,9 +2418,9 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, updateC
 	local AnchorParentDropdown = AG:Create("Dropdown")
 	AnchorParentDropdown:SetList(AuraAnchorParents[1], AuraAnchorParents[2])
 	AnchorParentDropdown:SetLabel("Anchor Parent")
-	AnchorParentDropdown:SetValue(AuraDB.AnchorParent)
+	AnchorParentDropdown:SetValue(AuraDB.AnchorRegion)
 	AnchorParentDropdown:SetRelativeWidth(0.25)
-	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.AnchorParent = value UpdateAuras() end)
+	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.AnchorRegion = value UpdateAuras() end)
 	LayoutContainer:AddChild(AnchorParentDropdown)
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -2674,9 +2645,9 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
 	local AnchorParentDropdown = AG:Create("Dropdown")
 	AnchorParentDropdown:SetList(AuraAnchorParents[1], AuraAnchorParents[2])
 	AnchorParentDropdown:SetLabel("Anchor Parent")
-	AnchorParentDropdown:SetValue(PrivateAurasDB.AnchorParent)
+	AnchorParentDropdown:SetValue(PrivateAurasDB.AnchorRegion)
 	AnchorParentDropdown:SetRelativeWidth(0.33)
-	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.AnchorParent = value UpdatePrivateAuras() end)
+	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.AnchorRegion = value UpdatePrivateAuras() end)
 	LayoutContainer:AddChild(AnchorParentDropdown)
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -2766,9 +2737,9 @@ end
 
 function CreateAuraSettings(containerParent, unit, updateCallback)
     local AurasDB = GetUnitDB(unit).Auras
-    
+
     CreateDesignerPreviewToggle(containerParent, "Auras", updateCallback)
-    
+
     local Spacer = AG:Create("Label")
     Spacer:SetText("")
     Spacer:SetRelativeWidth(0.29)
@@ -2783,7 +2754,7 @@ function CreateAuraSettings(containerParent, unit, updateCallback)
     containerParent:AddChild(FrameStrataDropdown)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
-        RUF:SaveSubTab(unit, "Auras", AuraTab)
+        ZF:SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs", updateCallback)
@@ -2812,17 +2783,18 @@ function CreateAuraSettings(containerParent, unit, updateCallback)
 end
 
 local function CreateCooldownTextSettings(containerParent)
-    local CooldownTextDB = RUF.db.profile.General.CooldownText
+    local CooldownTextDB = ZF.db.profile.General.CooldownText
     local CooldownTextContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Settings")
 
-    local AdvancedToggle = AG:Create("CheckBox")
-    AdvancedToggle:SetLabel("Advanced")
-    AdvancedToggle:SetValue(CooldownTextDB.Advanced)
-    AdvancedToggle:SetRelativeWidth(CooldownTextDB.Advanced and 1 or 0.5)
-    AdvancedToggle:SetCallback("OnValueChanged", function(_, _, value) CooldownTextDB.Advanced = value RUF:UpdateAllUnitFrames() containerParent:ReleaseChildren() CreateCooldownTextSettings(containerParent) containerParent:DoLayout() end)
-    AdvancedToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AdvancedToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Advanced Settings will allow you to customize cooldown text for each unit individually.", 1, 1, 1, true) GameTooltip:Show() end)
-    AdvancedToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    CooldownTextContainer:AddChild(AdvancedToggle)
+    GUIBuilders.CreateCheckbox(CooldownTextContainer, "Advanced", CooldownTextDB, "Advanced", function()
+        ZF:UpdateAllUnitFrames()
+        containerParent:ReleaseChildren()
+        CreateCooldownTextSettings(containerParent)
+        containerParent:DoLayout()
+    end, {
+        width = CooldownTextDB.Advanced and 1 or 0.5,
+        tooltip = "Advanced Settings will allow you to customize cooldown text for each unit individually.",
+    })
 
     local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB)
         local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
@@ -2831,47 +2803,21 @@ local function CreateCooldownTextSettings(containerParent)
         ScaleByIconSizeCheckbox:SetRelativeWidth(CooldownTextDB.Advanced and 1 or 0.5)
         StyleContainerParent:AddChild(ScaleByIconSizeCheckbox)
 
-        local AnchorFromDropdown = AG:Create("Dropdown")
-        AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-        AnchorFromDropdown:SetLabel("Anchor From")
-        AnchorFromDropdown:SetValue(CooldownTextStyleDB.Layout[1])
-        AnchorFromDropdown:SetRelativeWidth(0.5)
-        AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[1] = value RUF:UpdateAllUnitFrames() end)
-        StyleContainerParent:AddChild(AnchorFromDropdown)
-
-        local AnchorToDropdown = AG:Create("Dropdown")
-        AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-        AnchorToDropdown:SetLabel("Anchor To")
-        AnchorToDropdown:SetValue(CooldownTextStyleDB.Layout[2])
-        AnchorToDropdown:SetRelativeWidth(0.5)
-        AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[2] = value RUF:UpdateAllUnitFrames() end)
-        StyleContainerParent:AddChild(AnchorToDropdown)
-
-        local XPosSlider = AG:Create("Slider")
-        XPosSlider:SetLabel("X Position")
-        XPosSlider:SetValue(CooldownTextStyleDB.Layout[3])
-        XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-        XPosSlider:SetRelativeWidth(0.33)
-        XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[3] = value RUF:UpdateAllUnitFrames() end)
-        StyleContainerParent:AddChild(XPosSlider)
-
-        local YPosSlider = AG:Create("Slider")
-        YPosSlider:SetLabel("Y Position")
-        YPosSlider:SetValue(CooldownTextStyleDB.Layout[4])
-        YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-        YPosSlider:SetRelativeWidth(0.33)
-        YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[4] = value RUF:UpdateAllUnitFrames() end)
-        StyleContainerParent:AddChild(YPosSlider)
+        local function RefreshCooldownText() ZF:UpdateAllUnitFrames() end
+        GUIBuilders.CreateDropdown(StyleContainerParent, "Anchor From", CooldownTextStyleDB.Layout, 1, RefreshCooldownText, {list = AnchorPoints[1], order = AnchorPoints[2], width = 0.5})
+        GUIBuilders.CreateDropdown(StyleContainerParent, "Anchor To", CooldownTextStyleDB.Layout, 2, RefreshCooldownText, {list = AnchorPoints[1], order = AnchorPoints[2], width = 0.5})
+        GUIBuilders.CreateSlider(StyleContainerParent, "X Position", CooldownTextStyleDB.Layout, 3, RefreshCooldownText, {sliderValues = STYLE.Sliders.Position, width = 0.33})
+        GUIBuilders.CreateSlider(StyleContainerParent, "Y Position", CooldownTextStyleDB.Layout, 4, RefreshCooldownText, {sliderValues = STYLE.Sliders.Position, width = 0.33})
 
         local FontSizeSlider = AG:Create("Slider")
         FontSizeSlider:SetLabel("Font Size")
         FontSizeSlider:SetValue(CooldownTextStyleDB.FontSize)
         FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
         FontSizeSlider:SetRelativeWidth(0.33)
-        FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value RUF:UpdateAllUnitFrames() end)
+        FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value ZF:UpdateAllUnitFrames() end)
         FontSizeSlider:SetDisabled(CooldownTextStyleDB.ScaleByIconSize)
         StyleContainerParent:AddChild(FontSizeSlider)
-        ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.ScaleByIconSize = value FontSizeSlider:SetDisabled(value) RUF:UpdateAllUnitFrames() end)
+        ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.ScaleByIconSize = value FontSizeSlider:SetDisabled(value) ZF:UpdateAllUnitFrames() end)
     end
 
     if CooldownTextDB.Advanced then
@@ -2899,7 +2845,7 @@ local function CreateCooldownTextSettings(containerParent)
                     { text = "Party", value = "party" },
                     { text = "Raid", value = "raid" },
 				}
-				if RUF:IsAugmentationEvoker() then auraUnitTabs[#auraUnitTabs + 1] = { text = "Augmentation Raid", value = "augmentation" } end
+				if ZF:IsAugmentationEvoker() then auraUnitTabs[#auraUnitTabs + 1] = { text = "Augmentation Raid", value = "augmentation" } end
 				auraUnitTabs[#auraUnitTabs + 1] = { text = "Boss", value = "boss" }
 				AuraUnitTabs:SetTabs(auraUnitTabs)
                 AuraUnitTabs:SetCallback("OnGroupSelected", SelectAuraUnit)
@@ -2924,7 +2870,7 @@ local function CreateCooldownTextSettings(containerParent)
     end
 
     local Breakpoints = CooldownTextDB.CooldownBreakpoints
-    local DefaultBreakpoints = RUF:GetDefaultDB().profile.General.CooldownText.CooldownBreakpoints
+    local DefaultBreakpoints = ZF:GetDefaultDB().profile.General.CooldownText.CooldownBreakpoints
     for BreakpointIndex = 1, 5 do
         Breakpoints[BreakpointIndex] = Breakpoints[BreakpointIndex] or CopyTable(DefaultBreakpoints[BreakpointIndex])
         Breakpoints[BreakpointIndex].color = Breakpoints[BreakpointIndex].color or CopyTable(DefaultBreakpoints[BreakpointIndex].color)
@@ -2941,7 +2887,7 @@ local function CreateCooldownTextSettings(containerParent)
         MinimumValue:SetLabel("Minimum Value in Seconds")
         MinimumValue:SetText(tostring(BreakpointDB.threshold or 0))
         MinimumValue:SetRelativeWidth(0.33)
-        MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = RUF:GetCooldownDurationComponents(BreakpointDB.displayStyle, value) RUF:UpdateAllUnitFrames() end)
+        MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = ZF:GetCooldownDurationComponents(BreakpointDB.displayStyle, value) ZF:UpdateAllUnitFrames() end)
         BreakpointTabContainer:AddChild(MinimumValue)
 
         local DisplayStyle = AG:Create("Dropdown")
@@ -2956,8 +2902,8 @@ local function CreateCooldownTextSettings(containerParent)
             BreakpointDB.rounding = DisplayStyleDB.rounding
             BreakpointDB.min = DisplayStyleDB.min
             BreakpointDB.format = CreateColor(unpack(BreakpointDB.color)):WrapTextInColorCode(DisplayStyleDB.format)
-            BreakpointDB.components = RUF:GetCooldownDurationComponents(value, BreakpointDB.threshold or 0)
-            RUF:UpdateAllUnitFrames()
+            BreakpointDB.components = ZF:GetCooldownDurationComponents(value, BreakpointDB.threshold or 0)
+            ZF:UpdateAllUnitFrames()
         end)
         BreakpointTabContainer:AddChild(DisplayStyle)
 
@@ -2966,7 +2912,7 @@ local function CreateCooldownTextSettings(containerParent)
         ColorPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
         ColorPicker:SetHasAlpha(false)
         ColorPicker:SetRelativeWidth(0.33)
-        ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) RUF:UpdateAllUnitFrames() end)
+        ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) ZF:UpdateAllUnitFrames() end)
         BreakpointTabContainer:AddChild(ColorPicker)
     end
 
@@ -2989,15 +2935,15 @@ local function CreateGlobalToggleSettings(containerParent)
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Toggles")
 
     local ToggleMoversButton = AG:Create("Button")
-    ToggleMoversButton:SetText(RUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+    ToggleMoversButton:SetText(ZF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
     ToggleMoversButton:SetRelativeWidth(0.33)
-    ToggleMoversButton:SetCallback("OnClick", function() RUF:ToggleMovers() end)
+    ToggleMoversButton:SetCallback("OnClick", function() ZF:ToggleMovers() end)
     ToggleContainer:AddChild(ToggleMoversButton)
 
     local DisplayLoginMessageToggle = AG:Create("CheckBox")
     DisplayLoginMessageToggle:SetLabel("Display Login Message")
-    DisplayLoginMessageToggle:SetValue(RUF.db.global.DisplayLoginMessage)
-    DisplayLoginMessageToggle:SetCallback("OnValueChanged", function(_, _, value) RUF.db.global.DisplayLoginMessage = value end)
+    DisplayLoginMessageToggle:SetValue(ZF.db.global.DisplayLoginMessage)
+    DisplayLoginMessageToggle:SetCallback("OnValueChanged", function(_, _, value) ZF.db.global.DisplayLoginMessage = value end)
     DisplayLoginMessageToggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(DisplayLoginMessageToggle)
 end
@@ -3007,38 +2953,38 @@ local function CreateGlobalTagSettings(containerParent)
 
     local UseCustomAbbreviationsCheckbox = AG:Create("CheckBox")
     UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
-    UseCustomAbbreviationsCheckbox:SetValue(RUF.db.profile.General.UseCustomAbbreviations)
-    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.UseCustomAbbreviations = value RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
+    UseCustomAbbreviationsCheckbox:SetValue(ZF.db.profile.General.UseCustomAbbreviations)
+    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) ZF.db.profile.General.UseCustomAbbreviations = value ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end) end)
     UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
     TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
 
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
-    TagIntervalSlider:SetValue(1 / RUF.db.profile.General.TagUpdateInterval)
+    TagIntervalSlider:SetValue(1 / ZF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
     TagIntervalSlider:SetRelativeWidth(0.25)
-    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) RUF.TAG_UPDATE_INTERVAL = 1 / value RUF.db.profile.General.TagUpdateInterval = 1 / value RUF:SetTagUpdateInterval() RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) ZF.TAG_UPDATE_INTERVAL = 1 / value ZF.db.profile.General.TagUpdateInterval = 1 / value ZF:SetTagUpdateInterval() ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end) end)
     TagContainer:AddChild(TagIntervalSlider)
 
     local SeparatorDropdown = AG:Create("Dropdown")
-    SeparatorDropdown:SetList(RUF.SEPARATOR_TAGS[1], RUF.SEPARATOR_TAGS[2])
+    SeparatorDropdown:SetList(ZF.SEPARATOR_TAGS[1], ZF.SEPARATOR_TAGS[2])
     SeparatorDropdown:SetLabel("Tag Separator")
-    SeparatorDropdown:SetValue(RUF.db.profile.General.Separator)
+    SeparatorDropdown:SetValue(ZF.db.profile.General.Separator)
     SeparatorDropdown:SetRelativeWidth(0.25)
-    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db.profile.General.Separator = value RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end) end)
+    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) ZF.db.profile.General.Separator = value ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end) end)
     SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFFFFD100[curhpperhp]|r or |cFFFFD100[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
     local ToTSeparatorDropdown = AG:Create("Dropdown")
-    ToTSeparatorDropdown:SetList(RUF.TOT_SEPARATOR_TAGS[1], RUF.TOT_SEPARATOR_TAGS[2])
+    ToTSeparatorDropdown:SetList(ZF.TOT_SEPARATOR_TAGS[1], ZF.TOT_SEPARATOR_TAGS[2])
     ToTSeparatorDropdown:SetLabel("ToT Separator")
-    ToTSeparatorDropdown:SetValue(RUF.db.profile.General.ToTSeparator)
+    ToTSeparatorDropdown:SetValue(ZF.db.profile.General.ToTSeparator)
     ToTSeparatorDropdown:SetRelativeWidth(0.25)
     ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
-        RUF.db.profile.General.ToTSeparator = value
-        RUF.TOT_SEPARATOR = value
-        RUF:ForEachUnitDB(function(_, unit) RUF:UpdateUnitTags(unit) end)
+        ZF.db.profile.General.ToTSeparator = value
+        ZF.TOT_SEPARATOR = value
+        ZF:ForEachUnitDB(function(_, unit) ZF:UpdateUnitTags(unit) end)
     end)
     ToTSeparatorDropdown:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
@@ -3062,7 +3008,7 @@ end
 local function CreateTagReferenceSettings(containerParent)
 
     local function DrawTagContainer(TagContainer, TagGroup)
-        local TagsList, TagOrder = RUF:FetchTagData(TagGroup)[1], RUF:FetchTagData(TagGroup)[2]
+        local TagsList, TagOrder = ZF:FetchTagData(TagGroup)[1], ZF:FetchTagData(TagGroup)[2]
 
         local SortedTagsList = {}
         for _, tag in ipairs(TagOrder) do
@@ -3081,7 +3027,7 @@ local function CreateTagReferenceSettings(containerParent)
 
             local TagValue = AG:Create("EditBox")
             TagValue:SetText("[" .. Tag .. "]")
-            TagValue:SetCallback("OnTextChanged", function(widget, event, value) TagValue:ClearFocus() TagValue:SetText("[" .. Tag .. "]") end)
+            TagValue:SetCallback("OnTextChanged", function() TagValue:ClearFocus() TagValue:SetText("[" .. Tag .. "]") end)
             TagValue:SetRelativeWidth(0.5)
             TagContainer:AddChild(TagValue)
         end
@@ -3131,20 +3077,20 @@ local function CreateProfileSettings(containerParent)
     local function RefreshProfiles()
         wipe(profileKeys)
         local tmp = {}
-        for _, name in ipairs(RUF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
+        for _, name in ipairs(ZF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
         local profilesToDelete = {}
         for k, v in pairs(profileKeys) do profilesToDelete[k] = v end
-        profilesToDelete[RUF.db:GetCurrentProfile()] = nil
+        profilesToDelete[ZF.db:GetCurrentProfile()] = nil
         SelectProfileDropdown:SetList(profileKeys)
         CopyFromProfileDropdown:SetList(profileKeys)
         GlobalProfileDropdown:SetList(profileKeys)
         DeleteProfileDropdown:SetList(profilesToDelete)
         for i = 1, numSpecs do
             specProfilesList[i]:SetList(profileKeys)
-            specProfilesList[i]:SetValue(RUF.db:GetDualSpecProfile(i))
+            specProfilesList[i]:SetValue(ZF.db:GetDualSpecProfile(i))
         end
-        SelectProfileDropdown:SetValue(RUF.db:GetCurrentProfile())
-        GlobalProfileDropdown:SetValue((RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default")
+        SelectProfileDropdown:SetValue(ZF.db:GetCurrentProfile())
+        GlobalProfileDropdown:SetValue((ZF.db.global.GlobalProfile and ZF.db.global.GlobalProfile ~= "" and ZF.db.global.GlobalProfile) or "Default")
         CopyFromProfileDropdown:SetValue(nil)
         DeleteProfileDropdown:SetValue(nil)
         if not next(profilesToDelete) then
@@ -3152,10 +3098,10 @@ local function CreateProfileSettings(containerParent)
         else
             DeleteProfileDropdown:SetDisabled(false)
         end
-        ResetProfileButton:SetText("Reset |cFFFFD100" .. RUF.db:GetCurrentProfile() .. "|r Profile")
-        local isUsingGlobal = RUF.db.global.UseGlobalProfile
-        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. RUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFD100Global|r)" or "") .. "|r" )
-        if RUF.db:IsDualSpecEnabled() then
+        ResetProfileButton:SetText("Reset |cFFFFD100" .. ZF.db:GetCurrentProfile() .. "|r Profile")
+        local isUsingGlobal = ZF.db.global.UseGlobalProfile
+        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. ZF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFD100Global|r)" or "") .. "|r" )
+        if ZF.db:IsDualSpecEnabled() then
             SelectProfileDropdown:SetDisabled(true)
             CopyFromProfileDropdown:SetDisabled(true)
             GlobalProfileDropdown:SetDisabled(true)
@@ -3172,30 +3118,30 @@ local function CreateProfileSettings(containerParent)
         end
     end
 
-    RUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
+    ZFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
 
     SelectProfileDropdown = AG:Create("Dropdown")
     SelectProfileDropdown:SetLabel("Select...")
     SelectProfileDropdown:SetRelativeWidth(0.25)
-    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) ZF.db:SetProfile(value) ZF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(SelectProfileDropdown)
 
     CopyFromProfileDropdown = AG:Create("Dropdown")
     CopyFromProfileDropdown:SetLabel("Copy From...")
     CopyFromProfileDropdown:SetRelativeWidth(0.25)
-    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFFFFD100" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() RUF.db:CopyProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
+    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) ZF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFFFFD100" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() ZF.db:CopyProfile(value) ZF:UpdateAllUnitFrames() RefreshProfiles() end) end)
     ProfileContainer:AddChild(CopyFromProfileDropdown)
 
     DeleteProfileDropdown = AG:Create("Dropdown")
     DeleteProfileDropdown:SetLabel("Delete...")
     DeleteProfileDropdown:SetRelativeWidth(0.25)
-    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= RUF.db:GetCurrentProfile() then RUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFFFFD100" .. value .. "|r?", function() RUF.db:DeleteProfile(value) RUF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
+    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= ZF.db:GetCurrentProfile() then ZF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFFFFD100" .. value .. "|r?", function() ZF.db:DeleteProfile(value) ZF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
     ProfileContainer:AddChild(DeleteProfileDropdown)
 
     ResetProfileButton = AG:Create("Button")
-    ResetProfileButton:SetText("Reset |cFFFFD100" .. RUF.db:GetCurrentProfile() .. "|r Profile")
+    ResetProfileButton:SetText("Reset |cFFFFD100" .. ZF.db:GetCurrentProfile() .. "|r Profile")
     ResetProfileButton:SetRelativeWidth(0.25)
-    ResetProfileButton:SetCallback("OnClick", function() RUF.db:ResetProfile() RUF:ResolveLSM() RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    ResetProfileButton:SetCallback("OnClick", function() ZF.db:ResetProfile() ZF:ResolveLSM() ZF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(ResetProfileButton)
 
     local CreateProfileEditBox = AG:Create("EditBox")
@@ -3209,7 +3155,7 @@ local function CreateProfileSettings(containerParent)
     local CreateProfileButton = AG:Create("Button")
     CreateProfileButton:SetText("Create Profile")
     CreateProfileButton:SetRelativeWidth(0.5)
-    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then RUF.db:SetProfile(profileName) RUF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
+    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then ZF.db:SetProfile(profileName) ZF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
     ProfileContainer:AddChild(CreateProfileButton)
 
     local GlobalProfileHeading = AG:Create("Heading")
@@ -3221,27 +3167,27 @@ local function CreateProfileSettings(containerParent)
 
     UseGlobalProfileToggle = AG:Create("CheckBox")
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
-    UseGlobalProfileToggle:SetValue(RUF.db.global.UseGlobalProfile)
+    UseGlobalProfileToggle:SetValue(ZF.db.global.UseGlobalProfile)
     UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() RUF.db.global.UseGlobalProfile = value RUF.db.global.GlobalProfile = (RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default" if value then RUF.db:SetProfile(RUF.db.global.GlobalProfile) end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() ZF.db.global.UseGlobalProfile = value ZF.db.global.GlobalProfile = (ZF.db.global.GlobalProfile and ZF.db.global.GlobalProfile ~= "" and ZF.db.global.GlobalProfile) or "Default" if value then ZF.db:SetProfile(ZF.db.global.GlobalProfile) end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end ZF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(UseGlobalProfileToggle)
 
     GlobalProfileDropdown = AG:Create("Dropdown")
     GlobalProfileDropdown:SetLabel("Global Profile...")
     GlobalProfileDropdown:SetRelativeWidth(0.5)
     GlobalProfileDropdown:SetList(profileKeys)
-    GlobalProfileDropdown:SetValue((RUF.db.global.GlobalProfile and RUF.db.global.GlobalProfile ~= "" and RUF.db.global.GlobalProfile) or (RUF.db.global.GlobalProfileName and RUF.db.global.GlobalProfileName ~= "" and RUF.db.global.GlobalProfileName) or "Default")
-    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetProfile(value) RUF.db.global.GlobalProfile = value RUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    GlobalProfileDropdown:SetValue((ZF.db.global.GlobalProfile and ZF.db.global.GlobalProfile ~= "" and ZF.db.global.GlobalProfile) or "Default")
+    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) ZF.db:SetProfile(value) ZF.db.global.GlobalProfile = value ZF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(GlobalProfileDropdown)
 
     local SpecProfileContainer = GUIWidgets.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
 
     local UseDualSpecializationToggle = AG:Create("CheckBox")
     UseDualSpecializationToggle:SetLabel("Enable Specialization Profiles")
-    UseDualSpecializationToggle:SetValue(RUF.db:IsDualSpecEnabled())
+    UseDualSpecializationToggle:SetValue(ZF.db:IsDualSpecEnabled())
     UseDualSpecializationToggle:SetRelativeWidth(1)
-    UseDualSpecializationToggle:SetCallback("OnValueChanged", function(_, _, value) RUF.db:SetDualSpecEnabled(value) for i = 1, numSpecs do specProfilesList[i]:SetDisabled(not value) end RUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    UseDualSpecializationToggle:SetDisabled(RUF.db.global.UseGlobalProfile)
+    UseDualSpecializationToggle:SetCallback("OnValueChanged", function(_, _, value) ZF.db:SetDualSpecEnabled(value) for i = 1, numSpecs do specProfilesList[i]:SetDisabled(not value) end ZF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseDualSpecializationToggle:SetDisabled(ZF.db.global.UseGlobalProfile)
     SpecProfileContainer:AddChild(UseDualSpecializationToggle)
 
     for i = 1, numSpecs do
@@ -3249,9 +3195,9 @@ local function CreateProfileSettings(containerParent)
         specProfilesList[i] = AG:Create("Dropdown")
         specProfilesList[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
         specProfilesList[i]:SetList(profileKeys)
-        specProfilesList[i]:SetCallback("OnValueChanged", function(widget, event, value) RUF.db:SetDualSpecProfile(value, i) end)
+        specProfilesList[i]:SetCallback("OnValueChanged", function(_, _, value) ZF.db:SetDualSpecProfile(value, i) end)
         specProfilesList[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
-        specProfilesList[i]:SetDisabled(not RUF.db:IsDualSpecEnabled() or RUF.db.global.UseGlobalProfile)
+        specProfilesList[i]:SetDisabled(not ZF.db:IsDualSpecEnabled() or ZF.db.global.UseGlobalProfile)
         SpecProfileContainer:AddChild(specProfilesList[i])
     end
 
@@ -3264,7 +3210,7 @@ local function CreateProfileSettings(containerParent)
     ExportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ExportingHeading)
 
-    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFFFFD100Export Profile|r button below & share the string with other |cFFFFD100Rehalted|r Unit Frame users.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFFFFD100Export Profile|r button below & share the string with other |cFFFFD100Zen|r Frames users.")
 
     local ExportingEditBox = AG:Create("EditBox")
     ExportingEditBox:SetLabel("Export String...")
@@ -3278,7 +3224,7 @@ local function CreateProfileSettings(containerParent)
     local ExportProfileButton = AG:Create("Button")
     ExportProfileButton:SetText("Export Profile")
     ExportProfileButton:SetRelativeWidth(0.3)
-    ExportProfileButton:SetCallback("OnClick", function() ExportingEditBox:SetText(RUF:ExportSavedVariables()) ExportingEditBox:HighlightText() ExportingEditBox:SetFocus() end)
+    ExportProfileButton:SetCallback("OnClick", function() ExportingEditBox:SetText(ZF:ExportSavedVariables()) ExportingEditBox:HighlightText() ExportingEditBox:SetFocus() end)
     SharingContainer:AddChild(ExportProfileButton)
 
     local ImportingHeading = AG:Create("Heading")
@@ -3300,10 +3246,10 @@ local function CreateProfileSettings(containerParent)
     local ImportProfileButton = AG:Create("Button")
     ImportProfileButton:SetText("Import Profile")
     ImportProfileButton:SetRelativeWidth(0.3)
-    ImportProfileButton:SetCallback("OnClick", function() if ImportingEditBox:GetText() ~= "" then RUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end end)
+    ImportProfileButton:SetCallback("OnClick", function() if ImportingEditBox:GetText() ~= "" then ZF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end end)
     SharingContainer:AddChild(ImportProfileButton)
-    GlobalProfileDropdown:SetDisabled(not RUF.db.global.UseGlobalProfile)
-    if RUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, true) end end end
+    GlobalProfileDropdown:SetDisabled(not ZF.db.global.UseGlobalProfile)
+    if ZF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, true) end end end
 
     local DefaultsExportHeading = AG:Create("Heading")
     DefaultsExportHeading:SetText("Export Profile (Table)")
@@ -3323,11 +3269,11 @@ local function CreateProfileSettings(containerParent)
     local ExportDefaultsButton = AG:Create("Button")
     ExportDefaultsButton:SetText("Export Profile (Table)")
     ExportDefaultsButton:SetFullWidth(true)
-    ExportDefaultsButton:SetCallback("OnClick", function() DefaultsExportEditBox:SetText(RUF:ExportDefaultsTable()) DefaultsExportEditBox:HighlightText() DefaultsExportEditBox:SetFocus() end)
+    ExportDefaultsButton:SetCallback("OnClick", function() DefaultsExportEditBox:SetText(ZF:ExportDefaultsTable()) DefaultsExportEditBox:HighlightText() DefaultsExportEditBox:SetFocus() end)
     SharingContainer:AddChild(ExportDefaultsButton)
 end
 
-function RUF:SetMainGUIShown(shown)
+function ZF:SetMainGUIShown(shown)
     if not Container then return end
     if shown then
         Container:Show()
@@ -3339,14 +3285,14 @@ function RUF:SetMainGUIShown(shown)
     end
 end
 
-function RUF:CreateGUI()
+function ZF:CreateGUI()
     if isGUIOpen then return end
     if InCombatLockdown() then return end
 
     isGUIOpen = true
 
     Container = AG:Create("Frame")
-    Container:SetTitle(RUF.PRETTY_ADDON_NAME)
+    Container:SetTitle(ZF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
     Container:SetWidth(1100)
     Container:SetHeight(800)
@@ -3358,15 +3304,15 @@ function RUF:CreateGUI()
     local function SelectTab(GUIContainer, _, MainTab)
 		MainTab = MainTab:match("[^\001]+$")
 		if MainTab == "Designer" then
-			RUFGUI.MainNavigationStatus.groups["Designer"] = true
-			RUFGUI.MainNavigationStatus.selected = "Designer\001DesignerPlayer"
+			ZFGUI.MainNavigationStatus.groups["Designer"] = true
+			ZFGUI.MainNavigationStatus.selected = "Designer\001DesignerPlayer"
 			GUIContainer:RefreshTree(true)
 			MainTab = "DesignerPlayer"
 		end
-		if RUF.DESIGNER_PREVIEW_FRAME then RUF.DESIGNER_PREVIEW_FRAME:Hide() end
-		if RUF.DESIGNER_DISABLED_LABEL then RUF.DESIGNER_DISABLED_LABEL:Hide() end
+		if ZF.DESIGNER_PREVIEW_FRAME then ZF.DESIGNER_PREVIEW_FRAME:Hide() end
+		if ZF.DESIGNER_DISABLED_LABEL then ZF.DESIGNER_DISABLED_LABEL:Hide() end
 		GUIContainer:ReleaseChildren()
-		RUF:ForEachUnitDB(function(_, unit) DisableAurasTestMode(unit) end)
+		ZF:ForEachUnitDB(function(_, unit) DisableAurasTestMode(unit) end)
 
         local Wrapper = AG:Create("SimpleGroup")
         Wrapper:SetFullWidth(true)
@@ -3425,20 +3371,20 @@ function RUF:CreateGUI()
 
             PreviewContainer = AG:Create("SimpleGroup")
             PreviewContainer:SetLayout("Fill")
-            if RUF.DesignerStyle.Layout.CanvasWidth then
+            if ZF.DesignerStyle.Layout.CanvasWidth then
                 PreviewContainer:SetFullWidth(false)
-                PreviewContainer:SetWidth(RUF.DesignerStyle.Layout.CanvasWidth)
+                PreviewContainer:SetWidth(ZF.DesignerStyle.Layout.CanvasWidth)
             else
                 PreviewContainer:SetFullWidth(true)
             end
             PreviewContainer:SetAutoAdjustHeight(false)
-            PreviewContainer:SetHeight(RUF.DesignerStyle.Layout.CanvasHeight)
+            PreviewContainer:SetHeight(ZF.DesignerStyle.Layout.CanvasHeight)
             Wrapper:AddChild(PreviewContainer)
             DesignerOptionsScroll = AG:Create("SimpleGroup")
             DesignerOptionsScroll:SetLayout("Flow")
-            if RUF.DesignerStyle.Layout.OptionsWidth then
+            if ZF.DesignerStyle.Layout.OptionsWidth then
                 DesignerOptionsScroll:SetFullWidth(false)
-                DesignerOptionsScroll:SetWidth(RUF.DesignerStyle.Layout.OptionsWidth)
+                DesignerOptionsScroll:SetWidth(ZF.DesignerStyle.Layout.OptionsWidth)
             else
                 DesignerOptionsScroll:SetFullWidth(true)
             end
@@ -3450,16 +3396,16 @@ function RUF:CreateGUI()
             DesignerOptionsScroll:AddChild(DesignerSettingsContainer)
 
             CreateUnitEnableToggles(DesignerSettingsContainer, unit)
-            
+
             local ToggleMoversButton = AG:Create("Button")
             ToggleMoversButton:SetText("Unlock Movers")
             ToggleMoversButton:SetRelativeWidth(0.33)
-            ToggleMoversButton:SetCallback("OnClick", function() RUF:ToggleMovers() end)
+            ToggleMoversButton:SetCallback("OnClick", function() ZF:ToggleMovers() end)
             DesignerSettingsContainer:AddChild(ToggleMoversButton)
 
             local hasCastBarPortrait = unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "party" and unit ~= "raid" and unit ~= "Augmentation"
-            local playerHasSecondaryPower = unit == "player" and (UnitClassBase("player") == "DEATHKNIGHT" or RUF:GetSecondaryPowerType() ~= nil)
-            local requiresAlternativePowerBar = unit == "player" and RUF:RequiresAlternativePowerBar()
+            local playerHasSecondaryPower = unit == "player" and (UnitClassBase("player") == "DEATHKNIGHT" or ZF:GetSecondaryPowerType() ~= nil)
+            local requiresAlternativePowerBar = unit == "player" and ZF:RequiresAlternativePowerBar()
             local designerTab = {
                 { text = "Frame", value = "Frame" },
                 { text = "Heal Prediction", value = "HealPrediction" },
@@ -3486,9 +3432,9 @@ function RUF:CreateGUI()
                 table.insert(designerTab, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
             end
 
-            local tabStripHeight = RUF.DesignerStyle.Layout.TabStripHeight
+            local tabStripHeight = ZF.DesignerStyle.Layout.TabStripHeight
             if playerHasSecondaryPower or requiresAlternativePowerBar then
-                tabStripHeight = tabStripHeight + RUF.DesignerStyle.Layout.TabStripHeightSecondRow
+                tabStripHeight = tabStripHeight + ZF.DesignerStyle.Layout.TabStripHeightSecondRow
             end
 
             DesignerTabGroup = AG:Create("TabGroup")
@@ -3496,16 +3442,16 @@ function RUF:CreateGUI()
             DesignerTabGroup:SetFullWidth(true)
             DesignerTabGroup:SetTabs(designerTab)
             DesignerTabGroup:SetCallback("OnGroupSelected", function(_, _, DesignerTab)
-                local selected = RUF:GetDesignerSelectedEntry()
+                local selected = ZF:GetDesignerSelectedEntry()
                 if not (selected and selected.designerTab == DesignerTab) then
-                    RUF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
+                    ZF:ClearDesignerSelection() -- not SetDesignerSelection(nil): that triggers its own section build, doubling the work of the build below
                 end
-                RUF:BuildDesignerSectionOptions(RUF.DESIGNER_OPTIONS_CONTAINER, unit, DesignerTab) end)
+                ZF:BuildDesignerSectionOptions(ZF.DESIGNER_OPTIONS_CONTAINER, unit, DesignerTab) end)
 
             DesignerTabContentScroll = GUIWidgets.CreateScrollFrame(DesignerTabGroup)
-            DesignerTabContentScroll:SetHeight(RUF.DesignerStyle.Layout.OptionsHeight - tabStripHeight)
-            RUF.DESIGNER_OPTIONS_CONTAINER = DesignerTabContentScroll
-            RUF.DESIGNER_TAB_GROUP = DesignerTabGroup
+            DesignerTabContentScroll:SetHeight(ZF.DesignerStyle.Layout.OptionsHeight - tabStripHeight)
+            ZF.DESIGNER_OPTIONS_CONTAINER = DesignerTabContentScroll
+            ZF.DESIGNER_TAB_GROUP = DesignerTabGroup
             DesignerSettingsContainer:AddChild(DesignerTabGroup)
             local startTab = designerLastTab[unit] or "Frame"
             if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
@@ -3521,22 +3467,22 @@ function RUF:CreateGUI()
             if GetUnitDB(unit).Enabled then
                 C_Timer.After(0, function()
                     if requestToken ~= designerPreviewRequestToken then return end
-                    if canvasFrame:IsShown() then RUF:ShowDesignerPreview(canvasFrame, unit, DesignerTabContentScroll) end
+                    if canvasFrame:IsShown() then ZF:ShowDesignerPreview(canvasFrame, unit, DesignerTabContentScroll) end
                 end)
             else
-                RUF:HideDesignerPreview()
-                if not RUF.DESIGNER_DISABLED_LABEL then
-                    RUF.DESIGNER_DISABLED_LABEL = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+                ZF:HideDesignerPreview()
+                if not ZF.DESIGNER_DISABLED_LABEL then
+                    ZF.DESIGNER_DISABLED_LABEL = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
                 end
-                RUF.DESIGNER_DISABLED_LABEL:SetParent(canvasFrame)
-                RUF.DESIGNER_DISABLED_LABEL:ClearAllPoints()
-                RUF.DESIGNER_DISABLED_LABEL:SetPoint("CENTER", canvasFrame, "CENTER", 0, 0)
-                RUF.DESIGNER_DISABLED_LABEL:SetText("Unit Frame Disabled")
-                RUF.DESIGNER_DISABLED_LABEL:Show()
+                ZF.DESIGNER_DISABLED_LABEL:SetParent(canvasFrame)
+                ZF.DESIGNER_DISABLED_LABEL:ClearAllPoints()
+                ZF.DESIGNER_DISABLED_LABEL:SetPoint("CENTER", canvasFrame, "CENTER", 0, 0)
+                ZF.DESIGNER_DISABLED_LABEL:SetText("Unit Frame Disabled")
+                ZF.DESIGNER_DISABLED_LABEL:Show()
             end
         else
             designerPreviewRequestToken = designerPreviewRequestToken + 1
-            RUF:HideDesignerPreview()
+            ZF:HideDesignerPreview()
         end
         GenerateSupportText(Container)
     end
@@ -3548,29 +3494,29 @@ function RUF:CreateGUI()
 		for _, child in ipairs(entry.children or {}) do mainNavigationValues[entry.value .. "\001" .. child.value] = true end
     end
 
-    RUFGUI.MainNavigationStatus = RUFGUI.MainNavigationStatus or {}
+    ZFGUI.MainNavigationStatus = ZFGUI.MainNavigationStatus or {}
 
     local ContainerTreeGroup = AG:Create("TreeGroup")
     ContainerTreeGroup:SetLayout("Fill")
     ContainerTreeGroup:SetFullWidth(true)
     ContainerTreeGroup:SetFullHeight(true)
-    ContainerTreeGroup:SetStatusTable(RUFGUI.MainNavigationStatus)
+    ContainerTreeGroup:SetStatusTable(ZFGUI.MainNavigationStatus)
     ContainerTreeGroup:SetTreeWidth(220, false)
     ContainerTreeGroup:SetTree(mainNavigationTree)
     ContainerTreeGroup:SetCallback("OnGroupSelected", SelectTab)
     Container:AddChild(ContainerTreeGroup)
-    RUFGUI.MainNavigation = ContainerTreeGroup
+    ZFGUI.MainNavigation = ContainerTreeGroup
 
-    local initialSection = RUFGUI.MainNavigationStatus.selected
+    local initialSection = ZFGUI.MainNavigationStatus.selected
     if not initialSection or not mainNavigationValues[initialSection] then
         initialSection = "General"
     end
     ContainerTreeGroup:SelectByValue(initialSection)
 end
 
-function RUF:OpenGUIToUnit(unit)
+function ZF:OpenGUIToUnit(unit)
     if InCombatLockdown() then return end
-	if unit == "augmentation" and not RUF:IsAugmentationEvoker() then return end
-    RUF:CreateGUI()
-	if RUFGUI.MainNavigation then RUFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
+	if unit == "augmentation" and not ZF:IsAugmentationEvoker() then return end
+    ZF:CreateGUI()
+	if ZFGUI.MainNavigation then ZFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
 end

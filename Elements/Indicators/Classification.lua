@@ -1,44 +1,46 @@
-local _, RUF = ...
+local _, ZF = ...
 
+-- The "CLASSIFICATION0"/"CLASSIFICATION1" texture sets are Blizzard atlases;
+-- every other set is a plain file-path texture, so the two need different
+-- setter calls even though they're keyed the same way.
 local function UpdateClassificationTexture(ClassificationIndicator, _, classification)
-	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
-	local ClassificationTextures = RUF.ClassificationTextures[ClassificationIndicatorDB.Texture]
-	if ClassificationIndicatorDB.Texture == "CLASSIFICATION0" or ClassificationIndicatorDB.Texture == "CLASSIFICATION1" then
-		if ClassificationTextures[classification] then
-			ClassificationIndicator:SetAtlas(ClassificationTextures[classification], false)
-		end
-	else
-		if ClassificationTextures[classification] then
-			ClassificationIndicator:SetTexture(ClassificationTextures[classification])
-		end
-	end
+    local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
+    local texture = ZF.ClassificationTextures[ClassificationIndicatorDB.Texture][classification]
+    if not texture then return end
+
+    local usesAtlas = ClassificationIndicatorDB.Texture == "CLASSIFICATION0" or ClassificationIndicatorDB.Texture == "CLASSIFICATION1"
+    if usesAtlas then
+        ClassificationIndicator:SetAtlas(texture, false)
+    else
+        ClassificationIndicator:SetTexture(texture)
+    end
 end
 
-function RUF:CreateUnitClassificationIndicator(unitFrame, unit)
-	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
-	local ClassificationIndicator = RUF:CreateIndicatorTexture(unitFrame, unit, "_ClassificationIndicator", ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
-	ClassificationIndicator.PostUpdate = UpdateClassificationTexture
+function ZF:CreateUnitClassificationIndicator(unitFrame, unit)
+    local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
+    local ClassificationIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_ClassificationIndicator", ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
+    ClassificationIndicator.PostUpdate = UpdateClassificationTexture
 
-	if ClassificationIndicatorDB.Enabled then
-		unitFrame.ClassificationIndicator = ClassificationIndicator
-	else
-		RUF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", ClassificationIndicator)
-	end
+    if ClassificationIndicatorDB.Enabled then
+        unitFrame.ClassificationIndicator = ClassificationIndicator
+    else
+        ZF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", ClassificationIndicator)
+    end
 
-	return ClassificationIndicator
+    return ClassificationIndicator
 end
 
-function RUF:UpdateUnitClassificationIndicator(unitFrame, unit)
-	local ClassificationIndicatorDB = RUF.db.profile.Units.target.Indicators.Classification
+function ZF:UpdateUnitClassificationIndicator(unitFrame, unit)
+    local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
 
-	if ClassificationIndicatorDB.Enabled then
-		unitFrame.ClassificationIndicator = unitFrame.ClassificationIndicator or RUF:CreateUnitClassificationIndicator(unitFrame, unit)
-		if not unitFrame:IsElementEnabled("ClassificationIndicator") then unitFrame:EnableElement("ClassificationIndicator") end
+    if ClassificationIndicatorDB.Enabled then
+        unitFrame.ClassificationIndicator = unitFrame.ClassificationIndicator or ZF:CreateUnitClassificationIndicator(unitFrame, unit)
+        if not unitFrame:IsElementEnabled("ClassificationIndicator") then unitFrame:EnableElement("ClassificationIndicator") end
 
-		RUF:PositionIndicatorTexture(unitFrame.ClassificationIndicator, unitFrame.HighLevelContainer, ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
-		unitFrame.ClassificationIndicator:ForceUpdate()
-	elseif unitFrame.ClassificationIndicator then
-		RUF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", unitFrame.ClassificationIndicator)
-		unitFrame.ClassificationIndicator = nil
-	end
+        ZF:PositionIndicatorTexture(unitFrame.ClassificationIndicator, unitFrame.HighLevelContainer, ClassificationIndicatorDB.Size, ClassificationIndicatorDB.Layout)
+        unitFrame.ClassificationIndicator:ForceUpdate()
+    elseif unitFrame.ClassificationIndicator then
+        ZF:DisableIndicatorElement(unitFrame, "ClassificationIndicator", unitFrame.ClassificationIndicator)
+        unitFrame.ClassificationIndicator = nil
+    end
 end

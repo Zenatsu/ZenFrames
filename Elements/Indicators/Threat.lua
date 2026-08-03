@@ -1,53 +1,56 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateThreatIndicatorOverlay(unitFrame, unit)
-	local ThreatIndicator = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
-	ThreatIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 4)
-	ThreatIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
-	ThreatIndicator:SetBackdropColor(0, 0, 0, 0)
-	ThreatIndicator:SetBackdropBorderColor(1, 1, 1, 1)
-	ThreatIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
-	ThreatIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
-	ThreatIndicator:SetAlpha(0)
-	ThreatIndicator:Hide()
-	ThreatIndicator.PostUpdate = function(element, _, status, color)
-		if status and status > 0 and color then
-			element:SetBackdropBorderColor(color:GetRGB())
-			element:SetAlpha(1)
-		else
-			element:SetAlpha(0)
-		end
-	end
+local GLOW_INSET = 3
 
-	return ThreatIndicator
+function ZF:CreateThreatIndicatorOverlay(unitFrame, unit)
+    local overlay = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
+    overlay:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 4)
+    overlay:SetBackdrop({ edgeFile = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Glow.tga", edgeSize = GLOW_INSET, insets = {left = -GLOW_INSET, right = -GLOW_INSET, top = -GLOW_INSET, bottom = -GLOW_INSET} })
+    overlay:SetBackdropColor(0, 0, 0, 0)
+    overlay:SetBackdropBorderColor(1, 1, 1, 1)
+    overlay:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -GLOW_INSET, GLOW_INSET)
+    overlay:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", GLOW_INSET, -GLOW_INSET)
+    overlay:SetAlpha(0)
+    overlay:Hide()
+
+    overlay.PostUpdate = function(element, _, status, color)
+        if status and status > 0 and color then
+            element:SetBackdropBorderColor(color:GetRGB())
+            element:SetAlpha(1)
+        else
+            element:SetAlpha(0)
+        end
+    end
+
+    return overlay
 end
 
-function RUF:CreateUnitThreatIndicator(unitFrame, unit)
-	local ThreatDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Threat
-	if not ThreatDB then return end
+function ZF:CreateUnitThreatIndicator(unitFrame, unit)
+    local ThreatDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Threat
+    if not ThreatDB then return end
 
-	local ThreatIndicator = RUF:CreateThreatIndicatorOverlay(unitFrame, unit)
-	if ThreatDB.Enabled then
-		unitFrame.ThreatIndicator = ThreatIndicator
-	else
-		if ThreatIndicator then ThreatIndicator:Hide() end
-	end
+    local overlay = ZF:CreateThreatIndicatorOverlay(unitFrame, unit)
+    if ThreatDB.Enabled then
+        unitFrame.ThreatIndicator = overlay
+    else
+        overlay:Hide()
+    end
 
-	return ThreatIndicator
+    return overlay
 end
 
-function RUF:UpdateUnitThreatIndicator(unitFrame, unit)
-	local ThreatDB = RUF:GetUnitDB(unitFrame, unit).Indicators.Threat
-	if not ThreatDB then return end
+function ZF:UpdateUnitThreatIndicator(unitFrame, unit)
+    local ThreatDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Threat
+    if not ThreatDB then return end
 
-	if ThreatDB.Enabled then
-		unitFrame.ThreatIndicator = unitFrame.ThreatIndicator or RUF:CreateUnitThreatIndicator(unitFrame, unit)
-		if not unitFrame:IsElementEnabled("ThreatIndicator") then unitFrame:EnableElement("ThreatIndicator") end
-		if unitFrame.ThreatIndicator then unitFrame.ThreatIndicator:ForceUpdate() end
-	elseif unitFrame.ThreatIndicator then
-		if unitFrame:IsElementEnabled("ThreatIndicator") then unitFrame:DisableElement("ThreatIndicator") end
-		unitFrame.ThreatIndicator:SetAlpha(0)
-		unitFrame.ThreatIndicator:Hide()
-		unitFrame.ThreatIndicator = nil
-	end
+    if ThreatDB.Enabled then
+        unitFrame.ThreatIndicator = unitFrame.ThreatIndicator or ZF:CreateUnitThreatIndicator(unitFrame, unit)
+        if not unitFrame:IsElementEnabled("ThreatIndicator") then unitFrame:EnableElement("ThreatIndicator") end
+        if unitFrame.ThreatIndicator then unitFrame.ThreatIndicator:ForceUpdate() end
+    elseif unitFrame.ThreatIndicator then
+        if unitFrame:IsElementEnabled("ThreatIndicator") then unitFrame:DisableElement("ThreatIndicator") end
+        unitFrame.ThreatIndicator:SetAlpha(0)
+        unitFrame.ThreatIndicator:Hide()
+        unitFrame.ThreatIndicator = nil
+    end
 end

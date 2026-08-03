@@ -1,53 +1,55 @@
-local _, RUF = ...
-local RehaltedUnitFrames = LibStub("AceAddon-3.0"):NewAddon("RehaltedUnitFrames")
+local _, ZF = ...
+local ZenFrames = LibStub("AceAddon-3.0"):NewAddon("ZenFrames")
 
-StaticPopupDialogs["RUF_UUFDB_MIGRATED"] = {
-    text = "Hey, welcome to Rehalted Unit Frames, Your old Unhalted profiles should be copied over but please go over your settings and make sure everything is as you like it, some data might have not carried over properly from the refactor. Love ya, bye!",
+StaticPopupDialogs["ZF_UUFDB_MIGRATED"] = {
+    text = "Hey, welcome to Zen Frames, Your old Unhalted profiles should be copied over but please go over your settings and make sure everything is as you like it, some data might have not carried over properly from the refactor. Love ya, bye!",
     button1 = OKAY,
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
 }
 
-function RehaltedUnitFrames:OnInitialize()
+function ZenFrames:OnInitialize()
     -- One-time move off the inherited UUFDB name: only fires when UUFDB actually has data
     local migratedFromUUFDB = false
-    if _G.UUFDB and next(_G.UUFDB) and (not _G.RUFDB or not next(_G.RUFDB)) then
-        RUFDB = CopyTable(UUFDB)
+    if _G.UUFDB and next(_G.UUFDB) and (not _G.ZFDB or not next(_G.ZFDB)) then
+        ZFDB = CopyTable(UUFDB)
         migratedFromUUFDB = true
     end
 
-    RUF.db = LibStub("AceDB-3.0"):New("RUFDB", RUF:GetDefaultDB(), true)
-    RUF.LDS:EnhanceDatabase(RUF.db, "RehaltedUnitFrames")
-    RUF.TAG_UPDATE_INTERVAL = RUF.db.profile.General.TagUpdateInterval or 0.25
-    RUF.SEPARATOR = RUF.db.profile.General.Separator or "||"
-    RUF.TOT_SEPARATOR = RUF.db.profile.General.ToTSeparator or "»"
-    if RUF.db.global.UseGlobalProfile then
-        local globalProfile = RUF.db.global.GlobalProfile or RUF.db.global.GlobalProfileName or "Default"
-		RUF.db:SetProfile(globalProfile)
+    ZF:MigrateAllProfiles(_G.ZFDB)
+    ZF:MigrateGlobalSettings(_G.ZFDB)
+
+    ZF.db = LibStub("AceDB-3.0"):New("ZFDB", ZF:GetDefaultDB(), true)
+    ZF.LDS:EnhanceDatabase(ZF.db, "ZenFrames")
+    ZF.TAG_UPDATE_INTERVAL = ZF.db.profile.General.TagUpdateInterval or 0.25
+    ZF.SEPARATOR = ZF.db.profile.General.Separator or "||"
+    ZF.TOT_SEPARATOR = ZF.db.profile.General.ToTSeparator or "»"
+    if ZF.db.global.UseGlobalProfile then
+        local globalProfile = ZF.db.global.GlobalProfile or "Default"
+		ZF.db:SetProfile(globalProfile)
 	end
-	RUF.db.RegisterCallback(RUF, "OnProfileChanged", RUF.RefreshProfiles)
-	RUF.db.RegisterCallback(RUF, "OnProfileCopied", RUF.RefreshProfiles)
-	RUF.db.RegisterCallback(RUF, "OnProfileReset", RUF.RefreshProfiles)
+	ZF.db.RegisterCallback(ZF, "OnProfileChanged", ZF.RefreshProfiles)
+	ZF.db.RegisterCallback(ZF, "OnProfileCopied", ZF.RefreshProfiles)
+	ZF.db.RegisterCallback(ZF, "OnProfileReset", ZF.RefreshProfiles)
 
     local playerSpecializationChangedEventFrame = CreateFrame("Frame")
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, RUF.RefreshProfiles) end end)
+	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, ZF.RefreshProfiles) end end)
 
-    if migratedFromUUFDB then StaticPopup_Show("RUF_UUFDB_MIGRATED") end
+    if migratedFromUUFDB then StaticPopup_Show("ZF_UUFDB_MIGRATED") end
 end
 
-function RehaltedUnitFrames:OnEnable()
-    RUF:Init()
-    RUF:CreatePositionController()
-    RUF:SpawnUnitFrame("player")
-    RUF:SpawnUnitFrame("target")
-    RUF:SpawnUnitFrame("targettarget")
-    RUF:SpawnUnitFrame("focus")
-    RUF:SpawnUnitFrame("focustarget")
-    RUF:SpawnUnitFrame("pet")
-    RUF:SpawnUnitFrame("boss")
-    RUF:SpawnUnitFrame("party")
-    RUF:SpawnUnitFrame("raid")
-	if SCMAPI and SCMAPI.RegisterAnchorParents then SCMAPI.RegisterAnchorParents("UnhaltedUnitFrames", RUF.SCMAnchors) end
+function ZenFrames:OnEnable()
+    ZF:Init()
+    ZF:CreatePositionController()
+    ZF:SpawnUnitFrame("player")
+    ZF:SpawnUnitFrame("target")
+    ZF:SpawnUnitFrame("targettarget")
+    ZF:SpawnUnitFrame("focus")
+    ZF:SpawnUnitFrame("focustarget")
+    ZF:SpawnUnitFrame("pet")
+    ZF:SpawnUnitFrame("boss")
+    ZF:SpawnUnitFrame("party")
+    ZF:SpawnUnitFrame("raid")
 end

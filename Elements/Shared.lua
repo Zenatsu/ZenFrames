@@ -1,6 +1,6 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:ApplyFontStringStyle(fontString, font, fontSize, fontFlag, color, shadowDB)
+function ZF:ApplyFontStringStyle(fontString, font, fontSize, fontFlag, color, shadowDB)
     fontString:SetFont(font, fontSize, fontFlag)
     fontString:SetTextColor(color[1], color[2], color[3], color[4] or 1)
     if shadowDB.Enabled then
@@ -12,8 +12,8 @@ function RUF:ApplyFontStringStyle(fontString, font, fontSize, fontFlag, color, s
     end
 end
 
-function RUF:ApplyBackdropStyle(frame, backdropColor, borderColor)
-    frame:SetBackdrop(RUF.BACKDROP)
+function ZF:ApplyBackdropStyle(frame, backdropColor, borderColor)
+    frame:SetBackdrop(ZF.BACKDROP)
     frame:SetBackdropColor(unpack(backdropColor))
     frame:SetBackdropBorderColor(unpack(borderColor))
 end

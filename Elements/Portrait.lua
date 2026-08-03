@@ -1,4 +1,4 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local function Update3DPortrait(unitFrame, _, unit)
 	if not unit or not UnitIsUnit(unitFrame.unit, unit) then return end
@@ -8,9 +8,9 @@ local function Update3DPortrait(unitFrame, _, unit)
 
 	local unitGUID = UnitGUID(unit)
 	local isAvailable = UnitIsConnected(unit) and UnitIsVisible(unit)
-	local isSecretGUID = RUF:IsSecretValue(unitGUID)
+	local isSecretGUID = ZF:IsSecretValue(unitGUID)
 	local useFallback = isAvailable and isSecretGUID
-	local isSecretPreviousGUID = RUF:IsSecretValue(unitPortrait.guid)
+	local isSecretPreviousGUID = ZF:IsSecretValue(unitPortrait.guid)
 	local portraitChanged = unitPortrait.state ~= isAvailable or unitPortrait.useFallback ~= useFallback or (not isSecretGUID and not isSecretPreviousGUID and unitPortrait.guid ~= unitGUID)
 
 	if useFallback then
@@ -45,27 +45,27 @@ local function Update3DPortrait(unitFrame, _, unit)
 end
 
 local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
-	local portraitBackdrop = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
+	local portraitBackdrop = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
 	portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
 	portraitBackdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-	RUF:ApplyBackdropStyle(portraitBackdrop, {26/255, 26/255, 26/255, 1}, {0, 0, 0, 0})
+	ZF:ApplyBackdropStyle(portraitBackdrop, {26/255, 26/255, 26/255, 1}, {0, 0, 0, 0})
 
-	local border = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
+	local border = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
 	border:SetAllPoints(portraitBackdrop)
-	RUF:ApplyBackdropStyle(border, {0, 0, 0, 0}, {0, 0, 0, 1})
+	ZF:ApplyBackdropStyle(border, {0, 0, 0, 0}, {0, 0, 0, 1})
 	border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
 
 	return portraitBackdrop, border
 end
 
-function RUF:CreateUnitPortrait(unitFrame, unit)
-	local PortraitDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Portrait
+function ZF:CreateUnitPortrait(unitFrame, unit)
+	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
 
 	if portraitStyle == "3D" then
 		local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 
-		local unitPortrait = CreateFrame("PlayerModel", RUF:FetchFrameName(unit) .. "_Portrait3D", portraitBackdrop)
+		local unitPortrait = CreateFrame("PlayerModel", ZF:FetchFrameName(unit) .. "_Portrait3D", portraitBackdrop)
 		unitPortrait:SetAllPoints(portraitBackdrop)
 		unitPortrait:SetCamDistanceScale(1)
 		unitPortrait:SetPortraitZoom(1)
@@ -73,7 +73,7 @@ function RUF:CreateUnitPortrait(unitFrame, unit)
 		unitPortrait.Backdrop = portraitBackdrop
 		unitPortrait.Override = Update3DPortrait
 
-		unitPortrait.Fallback = portraitBackdrop:CreateTexture(RUF:FetchFrameName(unit) .. "_Portrait3DFallback", "ARTWORK")
+		unitPortrait.Fallback = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait3DFallback", "ARTWORK")
 		unitPortrait.Fallback:SetAllPoints(portraitBackdrop)
 		unitPortrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 		unitPortrait.Fallback:Hide()
@@ -96,7 +96,7 @@ function RUF:CreateUnitPortrait(unitFrame, unit)
 
 	local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 
-	local unitPortrait = portraitBackdrop:CreateTexture(RUF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
+	local unitPortrait = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
 	unitPortrait:SetAllPoints(portraitBackdrop)
 	unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 	unitPortrait.showClass = PortraitDB.UseClassPortrait
@@ -117,8 +117,8 @@ function RUF:CreateUnitPortrait(unitFrame, unit)
 	return unitPortrait
 end
 
-function RUF:UpdateUnitPortrait(unitFrame, unit)
-	local PortraitDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Portrait
+function ZF:UpdateUnitPortrait(unitFrame, unit)
+	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
 
 	if PortraitDB.Enabled then
@@ -139,7 +139,7 @@ function RUF:UpdateUnitPortrait(unitFrame, unit)
 			unitFrame.Portrait = nil
 		end
 
-		if not unitFrame.Portrait then unitFrame.Portrait = RUF:CreateUnitPortrait(unitFrame, unit) end
+		if not unitFrame.Portrait then unitFrame.Portrait = ZF:CreateUnitPortrait(unitFrame, unit) end
 		if not unitFrame:IsElementEnabled("Portrait") then unitFrame:EnableElement("Portrait") end
 
 		if unitFrame.Portrait:IsObjectType("PlayerModel") then

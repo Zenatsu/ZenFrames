@@ -1,6 +1,6 @@
-local _, RUF = ...
+local _, ZF = ...
 
-RUF.DesignerStyle = {
+ZF.DesignerStyle = {
 
     -- Sizes and spacing.
     Layout = {
@@ -52,7 +52,7 @@ RUF.DesignerStyle = {
     -- Panel drawn behind the widget-options
      OptionsPanel = {
         Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
-            edgeFile = RUF.LSM:Fetch("border", "Blizzard Tooltip"),
+            edgeFile = ZF.LSM:Fetch("border", "Blizzard Tooltip"),
             edgeSize = 16,
             insets = {left = 5, right = 5, top = 5, bottom = 5} },
         Fill   = {0, 0, 0, 0.35},

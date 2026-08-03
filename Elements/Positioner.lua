@@ -1,21 +1,31 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreatePositionController()
-    local ECDM = ""
+-- Checked in priority order: third-party cooldown managers first (if
+-- installed, since they provide their own anchor frame), Blizzard's own
+-- Essential Cooldown Viewer as the fallback everyone has.
+local COOLDOWN_VIEWER_ANCHORS = {
+    { addon = "SkironCooldownManager", frameName = "SCM_GroupAnchor_1" },
+    { addon = "Coolinator", frameName = "CoolinatorPrimaryGroupAnchor" },
+}
+local DEFAULT_COOLDOWN_VIEWER_FRAME_NAME = "EssentialCooldownViewer"
 
-    if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
-        ECDM = _G["SCM_GroupAnchor_1"]
-	elseif C_AddOns.IsAddOnLoaded("Coolinator") then
-		ECDM = _G["CoolinatorPrimaryGroupAnchor"]
-    else
-        ECDM = _G["EssentialCooldownViewer"]
+local function FindCooldownViewerFrame()
+    for _, candidate in ipairs(COOLDOWN_VIEWER_ANCHORS) do
+        if C_AddOns.IsAddOnLoaded(candidate.addon) then
+            return _G[candidate.frameName]
+        end
+    end
+    return _G[DEFAULT_COOLDOWN_VIEWER_FRAME_NAME]
+end
+
+function ZF:CreatePositionController()
+    local cooldownViewer = FindCooldownViewerFrame()
+    if not cooldownViewer or not cooldownViewer:IsShown() then
+        ZF:PrettyPrint("|cFFFFD100Anchor Point|r was not found.")
+        return
     end
 
-    if ECDM and ECDM:IsShown() then
-        local CDMAnchor = CreateFrame("Frame", "RUF_CDMAnchor", UIParent)
-        CDMAnchor:SetAllPoints(ECDM)
-        CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
-    else
-        RUF:PrettyPrint("|cFFFFD100Anchor Point|r was not found.")
-    end
+    local anchor = CreateFrame("Frame", "ZF_CDMAnchor", UIParent)
+    anchor:SetAllPoints(cooldownViewer)
+    anchor:SetSize(cooldownViewer:GetWidth() or 300, cooldownViewer:GetHeight() or 48)
 end

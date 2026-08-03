@@ -1,4 +1,4 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local function SetCastBarColor(castBar, unit, CastBarDB)
 	local r, g, b, a
@@ -9,7 +9,7 @@ local function SetCastBarColor(castBar, unit, CastBarDB)
 		if unitColor then r, g, b, a = unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity end
 	end
 	if not r then r, g, b, a = unpack(CastBarDB.Foreground) end
-	if RUF.IsInterruptOnCooldown and C_CurveUtil.EvaluateColorValueFromBoolean and (castBar.casting or castBar.channeling or castBar.empowering) and castBar.notInterruptible ~= nil and UnitCanAttack("player", unit) and RUF:IsInterruptOnCooldown() then
+	if ZF.IsInterruptOnCooldown and C_CurveUtil.EvaluateColorValueFromBoolean and (castBar.casting or castBar.channeling or castBar.empowering) and castBar.notInterruptible ~= nil and UnitCanAttack("player", unit) and ZF:IsInterruptOnCooldown() then
 		local CDR, CDG, CDB, CDA = unpack(CastBarDB.InterruptCooldownColor or CastBarDB.InterruptOnCooldownColor)
 		r = C_CurveUtil.EvaluateColorValueFromBoolean(castBar.notInterruptible, r, CDR)
 		g = C_CurveUtil.EvaluateColorValueFromBoolean(castBar.notInterruptible, g, CDG)
@@ -19,15 +19,15 @@ local function SetCastBarColor(castBar, unit, CastBarDB)
 	castBar:SetStatusBarColor(r, g, b, a)
 end
 
-function RUF:CreateUnitCastBar(unitFrame, unit)
-    local GeneralDB = RUF.db.profile.General
-    local FrameDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar
-    local SpellNameDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
-    local DurationDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+function ZF:CreateUnitCastBar(unitFrame, unit)
+    local GeneralDB = ZF.db.profile.General
+    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
+    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
+    local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
+    local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
 
-    local CastBarContainer = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
-    CastBarContainer:SetBackdrop(RUF.BACKDROP)
+    local CastBarContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
+    CastBarContainer:SetBackdrop(ZF.BACKDROP)
     CastBarContainer:SetBackdropColor(0, 0, 0, 0)
     CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
     CastBarContainer:ClearAllPoints()
@@ -37,8 +37,8 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
     CastBarContainer:Hide()
 
-    local CastBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
-    CastBar:SetStatusBarTexture(RUF.Media.Foreground)
+    local CastBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
+    CastBar:SetStatusBarTexture(ZF.Media.Foreground)
     CastBar:ClearAllPoints()
     CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
@@ -48,17 +48,17 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
-    CastBar.Background:SetTexture(RUF.Media.Background)
+    CastBar.Background:SetTexture(ZF.Media.Background)
     CastBar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
     CastBar.NotInterruptibleOverlay = CastBar:CreateTexture(nil, "ARTWORK", nil, 1)
     CastBar.NotInterruptibleOverlay:SetPoint("TOPLEFT", CastBar:GetStatusBarTexture(), "TOPLEFT")
     CastBar.NotInterruptibleOverlay:SetPoint("BOTTOMRIGHT", CastBar:GetStatusBarTexture(), "BOTTOMRIGHT")
-    CastBar.NotInterruptibleOverlay:SetTexture(RUF.Media.Foreground)
+    CastBar.NotInterruptibleOverlay:SetTexture(ZF.Media.Foreground)
     CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
     CastBar.NotInterruptibleOverlay:SetAlpha(0)
 
-    CastBar.Icon = CastBar:CreateTexture(RUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
+    CastBar.Icon = CastBar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
     CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
     CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     CastBar.Icon:ClearAllPoints()
@@ -79,17 +79,17 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
         CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     end
 
-    local SpellNameText = CastBar:CreateFontString(RUF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
+    local SpellNameText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
     SpellNameText:ClearAllPoints()
     SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-    RUF:ApplyFontStringStyle(SpellNameText, RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-    SpellNameText:SetJustifyH(RUF:SetJustification(SpellNameDB.Layout[1]))
+    ZF:ApplyFontStringStyle(SpellNameText, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
+    SpellNameText:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
 
-    local DurationText = CastBar:CreateFontString(RUF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
+    local DurationText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
     DurationText:ClearAllPoints()
     DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-    RUF:ApplyFontStringStyle(DurationText, RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-    DurationText:SetJustifyH(RUF:SetJustification(DurationDB.Layout[1]))
+    ZF:ApplyFontStringStyle(DurationText, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
+    DurationText:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
 
     if CastBarDB.Inverse then
         CastBar:SetReverseFill(true)
@@ -106,20 +106,20 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
-			local currentCastBarDB = RUF:GetUnitDB(unitFrame, unit).CastBar
+			local currentCastBarDB = ZF:GetUnitDB(unitFrame, unit).CastBar
 			local currentSpellNameDB = currentCastBarDB.Text.SpellName
 			SetCastBarColor(frameCastBar, unit, currentCastBarDB)
 
             local spellInfo = C_Spell.GetSpellInfo(frameCastBar.spellID)
             local spellName = spellInfo and spellInfo.name
             if spellName then
-                if not RUF:IsSecretValue(spellName) then
+                if not ZF:IsSecretValue(spellName) then
 					if currentSpellNameDB.MaxChars and currentSpellNameDB.MaxChars > 0 then spellName = string.format("%." .. currentSpellNameDB.MaxChars .. "s", spellName) end
-                    spellName = RUF:CleanTruncateUTF8String(spellName)
+                    spellName = ZF:CleanTruncateUTF8String(spellName)
                 end
 				local targetName = currentCastBarDB.ShowTarget and not UnitSpellTargetName and UnitName(unit .. "target")
 				if currentCastBarDB.ShowTarget and UnitSpellTargetName and (frameCastBar.casting or (frameCastBar.channeling or frameCastBar.empowering) and UnitShouldDisplaySpellTargetName(unit)) then targetName = UnitSpellTargetName(unit) end
-                if RUF:IsSecretValue(targetName) or targetName then frameCastBar.Text:SetFormattedText("%s » %s", spellName, targetName) else frameCastBar.Text:SetText(spellName) end
+                if ZF:IsSecretValue(targetName) or targetName then frameCastBar.Text:SetFormattedText("%s » %s", spellName, targetName) else frameCastBar.Text:SetText(spellName) end
             else
                 frameCastBar.Text:SetText("")
             end
@@ -130,10 +130,10 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
 
         unitFrame.Castbar.PostCastInterruptible = function(frameCastBar)
             if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0) end
-			SetCastBarColor(frameCastBar, unit, RUF:GetUnitDB(unitFrame, unit).CastBar)
+			SetCastBarColor(frameCastBar, unit, ZF:GetUnitDB(unitFrame, unit).CastBar)
         end
         unitFrame.Castbar.PostCastFail = function(frameCastBar)
-			frameCastBar:SetStatusBarColor(unpack(RUF:GetUnitDB(unitFrame, unit).CastBar.InterruptedFailedColor))
+			frameCastBar:SetStatusBarColor(unpack(ZF:GetUnitDB(unitFrame, unit).CastBar.InterruptedFailedColor))
             if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
         end
         unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
@@ -150,14 +150,14 @@ function RUF:CreateUnitCastBar(unitFrame, unit)
     return CastBar
 end
 
-function RUF:UpdateUnitCastBar(unitFrame, unit)
-    local GeneralDB = RUF.db.profile.General
-    local FrameDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar
+function ZF:UpdateUnitCastBar(unitFrame, unit)
+    local GeneralDB = ZF.db.profile.General
+    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
+    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
     if CastBarDB.Enabled then
-        unitFrame.Castbar = unitFrame.Castbar or RUF:CreateUnitCastBar(unitFrame, unit)
+        unitFrame.Castbar = unitFrame.Castbar or ZF:CreateUnitCastBar(unitFrame, unit)
         CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
@@ -179,14 +179,14 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
                 end
             end
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
-            unitFrame.Castbar:SetStatusBarTexture(RUF.Media.Foreground)
+            unitFrame.Castbar:SetStatusBarTexture(ZF.Media.Foreground)
             unitFrame.Castbar.timeToHold = CastBarDB.HoldTime
-            unitFrame.Castbar.Background:SetTexture(RUF.Media.Background)
+            unitFrame.Castbar.Background:SetTexture(ZF.Media.Background)
             SetCastBarColor(unitFrame.Castbar, unit, CastBarDB)
             unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
             if unitFrame.Castbar.NotInterruptibleOverlay then
-                unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(RUF.Media.Foreground)
+                unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(ZF.Media.Foreground)
                 unitFrame.Castbar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
             end
 
@@ -197,7 +197,7 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if CastBarDB.Icon.Enabled then
-                unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(RUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
+                unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
                 unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                 unitFrame.Castbar.Icon:ClearAllPoints()
@@ -227,20 +227,20 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if unitFrame.Castbar.Text then
-                local SpellNameDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
+                local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-                RUF:ApplyFontStringStyle(unitFrame.Castbar.Text, RUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Text:SetJustifyH(RUF:SetJustification(SpellNameDB.Layout[1]))
+                ZF:ApplyFontStringStyle(unitFrame.Castbar.Text, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
+                unitFrame.Castbar.Text:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
                 if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
             end
 
             if unitFrame.Castbar.Time then
-                local DurationDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+                local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-                RUF:ApplyFontStringStyle(unitFrame.Castbar.Time, RUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Time:SetJustifyH(RUF:SetJustification(DurationDB.Layout[1]))
+                ZF:ApplyFontStringStyle(unitFrame.Castbar.Time, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
+                unitFrame.Castbar.Time:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
                 if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
             end
         end
@@ -253,16 +253,16 @@ function RUF:UpdateUnitCastBar(unitFrame, unit)
             CastBarContainer:Hide()
         end
     end
-    if unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.CastBar then RUF:CreateTestCastBar(unitFrame, unit) end
+    if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then ZF:CreateTestCastBar(unitFrame, unit) end
 end
 
-function RUF:CreateTestCastBar(unitFrame, unit)
+function ZF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local GeneralDB = RUF.db.profile.General
-    local CastBarDB = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar
+    local GeneralDB = ZF.db.profile.General
+    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
-    if unitFrame.isDesignerPreview and RUF.DESIGNER_PREVIEW_TOGGLES.CastBar then
+    if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then
         if unitFrame.Castbar and CastBarDB.Enabled then
             unitFrame:DisableElement("Castbar")
             CastBarContainer:Show()
@@ -270,9 +270,9 @@ function RUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
             local spellName = "Ethereal Portal"
-            local maxChars = RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars
+            local maxChars = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars
             if maxChars and maxChars > 0 then spellName = string.format("%." .. maxChars .. "s", spellName) end
-            spellName = RUF:CleanTruncateUTF8String(spellName)
+            spellName = ZF:CleanTruncateUTF8String(spellName)
             if CastBarDB.ShowTarget then unitFrame.Castbar.Text:SetFormattedText("%s » %s", spellName, "Target") else unitFrame.Castbar.Text:SetText(spellName) end
             unitFrame.Castbar.Time:SetText("2.5")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
@@ -302,12 +302,12 @@ local InterruptCooldownFrame = CreateFrame("Frame")
 InterruptCooldownFrame:RegisterEvent("SPELLS_CHANGED")
 InterruptCooldownFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 InterruptCooldownFrame:SetScript("OnEvent", function()
-	if not RUF.db or not RUF.GetNormalizedUnit then return end
+	if not ZF.db or not ZF.GetNormalizedUnit then return end
 	for i = 1, 9 do
-		local unitFrame = i == 1 and RUF.PLAYER or i == 2 and RUF.TARGET or i == 3 and RUF.FOCUS or i == 4 and RUF.PET or RUF["BOSS" .. (i - 4)]
+		local unitFrame = i == 1 and ZF.PLAYER or i == 2 and ZF.TARGET or i == 3 and ZF.FOCUS or i == 4 and ZF.PET or ZF["BOSS" .. (i - 4)]
 		local castBar = unitFrame and unitFrame.Castbar
 		local unit = unitFrame and unitFrame.unit
-		local UnitDB = unit and RUF.db.profile.Units[RUF:GetNormalizedUnit(unit)]
+		local UnitDB = unit and ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)]
 		if castBar and castBar:IsShown() and (castBar.casting or castBar.channeling or castBar.empowering) and UnitDB and UnitDB.CastBar then SetCastBarColor(castBar, unit, UnitDB.CastBar) end
 	end
 end)

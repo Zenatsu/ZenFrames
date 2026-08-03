@@ -1,10 +1,9 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local Defaults = {
     global = {
         UseGlobalProfile = false,
         GlobalProfile = "Default",
-        GlobalProfileName = "Default",
         DisplayLoginMessage = true,
     },
     profile = {
@@ -233,7 +232,7 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "TOP", 0, 0},
                     },
-                    LeaderAssistantIndicator = {
+                    LeaderAssistant = {
                         Enabled = true,
                         Size = 16,
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
@@ -501,7 +500,7 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "TOP", 0, 0},
                     },
-                    LeaderAssistantIndicator = {
+                    LeaderAssistant = {
                         Enabled = true,
                         Size = 16,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
@@ -590,7 +589,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -651,7 +650,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "RUF_Target",
+                    AnchorToFrame = "ZF_Target",
                     Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1},
                     FrameStrata = "LOW",
                 },
@@ -740,7 +739,7 @@ local Defaults = {
                         ScaleByIconSize = false,
                     },
                     Buffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -761,7 +760,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -821,7 +820,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "RUF_Player",
+                    AnchorToFrame = "ZF_Player",
                     Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 36.1},
                     FrameStrata = "LOW",
                 },
@@ -973,7 +972,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -994,7 +993,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -1055,7 +1054,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "RUF_Focus",
+                    AnchorToFrame = "ZF_Focus",
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     FrameStrata = "LOW",
                 },
@@ -1144,7 +1143,7 @@ local Defaults = {
                         ScaleByIconSize = false,
                     },
                     Buffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -1165,7 +1164,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -1225,7 +1224,7 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
-                    AnchorParent = "RUF_Player",
+                    AnchorToFrame = "ZF_Player",
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -26.1},
                     FrameStrata = "LOW",
                 },
@@ -1353,7 +1352,7 @@ local Defaults = {
                         ScaleByIconSize = false,
                     },
                     Buffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -1374,7 +1373,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
@@ -1395,7 +1394,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -1601,7 +1600,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 34,
@@ -1622,7 +1621,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -1787,18 +1786,18 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
-					ReadyCheckIndicator = {
+					ReadyCheck = {
 						Enabled = true,
 						Texture = "HiRes",
 						Size = 24,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-					ResurrectIndicator = {
+					Resurrect = {
 						Enabled = true,
 						Size = 24,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-                    LeaderAssistantIndicator = {
+                    LeaderAssistant = {
                         Enabled = false,
                         Size = 16,
                         Layout = {"RIGHT", "TOPRIGHT", -3, 0},
@@ -1812,7 +1811,7 @@ local Defaults = {
                         ScaleByIconSize = false,
                     },
                     PrivateAuras = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = true,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FrameStrata = "MEDIUM",
@@ -1827,7 +1826,7 @@ local Defaults = {
                         DisableCooldownText = false,
                     },
                     Buffs = {
-						AnchorParent = "Health",
+						AnchorRegion = "Health",
                         Enabled = true,
                         OnlyShowPlayer = false,
                         Size = 30,
@@ -1848,7 +1847,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Health",
+						AnchorRegion = "Health",
                         Enabled = true,
                         OnlyShowPlayer = false,
                         Size = 30,
@@ -1869,7 +1868,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -2034,18 +2033,18 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
-					ReadyCheckIndicator = {
+					ReadyCheck = {
 						Enabled = true,
 						Texture = "HiRes",
 						Size = 24,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-					ResurrectIndicator = {
+					Resurrect = {
 						Enabled = true,
 						Size = 18,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-                    LeaderAssistantIndicator = {
+                    LeaderAssistant = {
                         Enabled = false,
                         Size = 14,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
@@ -2059,7 +2058,7 @@ local Defaults = {
                         ScaleByIconSize = false,
                     },
                     PrivateAuras = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = true,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FrameStrata = "HIGH",
@@ -2074,7 +2073,7 @@ local Defaults = {
                         DisableCooldownText = false,
                     },
                     Buffs = {
-						AnchorParent = "Health",
+						AnchorRegion = "Health",
                         Enabled = true,
                         OnlyShowPlayer = false,
                         Size = 30,
@@ -2095,7 +2094,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-						AnchorParent = "Health",
+						AnchorRegion = "Health",
                         Enabled = true,
                         OnlyShowPlayer = false,
                         Size = 28,
@@ -2116,7 +2115,7 @@ local Defaults = {
                         }
                     },
                     Custom = {
-						AnchorParent = "Frame",
+						AnchorRegion = "Frame",
                         Enabled = false,
                         Type = "Buffs",
                         OnlyShowPlayer = false,
@@ -2170,19 +2169,20 @@ local Defaults = {
                         Tag = "",
                     },
                 },
-				augmentation = {
-					Enabled = false,
-					Names = "",
-					Frame = {
-						Width = 90,
-						Height = 52,
-						Layout = {"CENTER", "CENTER", 0, 0, 1},
-						GrowthDirection = "LEFT_DOWN",
-						UnitsPerColumn = 5,
-						SortBy = "NAMELIST",
-						FrameStrata = "LOW",
-					},
-					HealthBar = {
+            },
+            augmentation = {
+				Enabled = false,
+				Names = "",
+				Frame = {
+					Width = 90,
+					Height = 52,
+					Layout = {"CENTER", "CENTER", 0, 0, 1},
+					GrowthDirection = "LEFT_DOWN",
+					UnitsPerColumn = 5,
+					SortBy = "NAMELIST",
+					FrameStrata = "LOW",
+				},
+				HealthBar = {
                         ColorByClass = true,
                         ColorBackgroundByClass = false,
                         ColorByReaction = true,
@@ -2199,8 +2199,8 @@ local Defaults = {
                             Enabled = true,
                             Style = "HEALTHBAR",
                         },
-					},
-					HealPrediction = {
+				},
+				HealPrediction = {
                         IncomingHeal = {
                             Enabled = false,
                             UseStripedTexture = false,
@@ -2226,200 +2226,199 @@ local Defaults = {
                             Position = "ATTACH",
                             Height = 40,
                         },
-					},
-					PowerBar = {
+				},
+				PowerBar = {
+					Enabled = false,
+					OnlyShowHealers = true,
+					Height = 1,
+					Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
+					Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
+					ColorByType = true,
+					ColorBackgroundByType = true,
+					ColorByClass = false,
+					Smooth = true,
+					Inverse = false,
+					BackgroundMultiplier = 0.25,
+				},
+				Indicators = {
+					RaidTargetMarker = {
 						Enabled = false,
-						OnlyShowHealers = true,
-						Height = 1,
-						Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
-						Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
-						ColorByType = true,
-						ColorBackgroundByType = true,
-						ColorByClass = false,
-						Smooth = true,
-						Inverse = false,
-						BackgroundMultiplier = 0.25,
+						Size = 24,
+						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-					Indicators = {
-						RaidTargetMarker = {
-							Enabled = false,
-							Size = 24,
-							Layout = {"CENTER", "CENTER", 0, 0},
-						},
-						Mouseover = {
-							Enabled = true,
-							Color = {1, 1, 1},
-							HighlightOpacity = 0.25,
-							Style = "OVERLAY"
-						},
-						Target = {
-							Enabled = false,
-							Style = "Glow",
-							Color = {1, 1, 1},
-						},
-						Threat = {
-							Enabled = false,
-						},
-						Role = {
-							Enabled = false,
-							ShowTank = true,
-							ShowHealer = true,
-							ShowDamager = false,
-							Texture = "White",
-							Size = 12,
-							Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
-						},
-						Phase = {
-							Enabled = false,
-							Size = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-						},
-						Summon = {
-							Enabled = false,
-							Size = 24,
-							Layout = {"CENTER", "CENTER", 0, 0},
-						},
-						ReadyCheckIndicator = {
-							Enabled = false,
-							Texture = "Default",
-							Size = 24,
-							Layout = {"CENTER", "CENTER", 0, 0},
-						},
-						ResurrectIndicator = {
-							Enabled = false,
-							Size = 18,
-							Layout = {"CENTER", "CENTER", 0, 0},
-						},
-						LeaderAssistantIndicator = {
-							Enabled = false,
-							Size = 14,
-							Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
-						}
+					Mouseover = {
+						Enabled = true,
+						Color = {1, 1, 1},
+						HighlightOpacity = 0.25,
+						Style = "OVERLAY"
 					},
-					Auras = {
-						FrameStrata = "MEDIUM",
-						AuraDuration = {
-							Layout = {"CENTER", "CENTER", 0, 0},
-							FontSize = 12,
-							ScaleByIconSize = false,
-						},
-						PrivateAuras = {
-							AnchorParent = "Frame",
-							Enabled = false,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							FrameStrata = "HIGH",
-							Size = 32,
-							Spacing = 1,
-							GrowthX = "LEFT",
-							GrowthY = "UP",
-							InitialAnchor = "CENTER",
-							Num = 1,
-							BorderScale = -1,
-							DisableCooldown = false,
-							DisableCooldownText = false,
-						},
-						Buffs = {
-							AnchorParent = "Frame",
-							Enabled = true,
-							OnlyShowPlayer = false,
-							Size = 28,
-							Layout = {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2, 1},
-							Num = 1,
-							Wrap = 1,
-							GrowthDirection = "RIGHT",
-							WrapDirection = "UP",
-							ShowType = false,
-							Blacklist = false,
-							Filter = "HELPFUL",
-							Sorting = "BLIZZARD",
-							Count = {
-								HideStacks = false,
-								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
-								FontSize = 12,
-								Color = {1, 1, 1, 1}
-							}
-						},
-						Debuffs = {
-							AnchorParent = "Frame",
-							Enabled = false,
-							OnlyShowPlayer = false,
-							Size = 31,
-							Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", -2, 2, 1},
-							Num = 2,
-							Wrap = 2,
-							GrowthDirection = "LEFT",
-							WrapDirection = "UP",
-							ShowType = false,
-							Blacklist = true,
-							Filter = "HARMFUL",
-							Sorting = "BLIZZARD",
-							Count = {
-								HideStacks = false,
-								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
-								FontSize = 12,
-								Color = {1, 1, 1, 1}
-							}
-						},
-						Custom = {
-							AnchorParent = "Frame",
-							Enabled = false,
-							Type = "Buffs",
-							OnlyShowPlayer = false,
-							Size = 42,
-							Layout = {"RIGHT", "LEFT", -1, 0, 1},
-							Num = 3,
-							Wrap = 3,
-							GrowthDirection = "LEFT",
-							WrapDirection = "UP",
-							ShowType = false,
-							Blacklist = false,
-							Filter = "HELPFUL",
-							Sorting = "BLIZZARD",
-							Count = {
-								HideStacks = false,
-								Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
-								FontSize = 12,
-								Color = {1, 1, 1, 1}
-							}
-						},
+					Target = {
+						Enabled = false,
+						Style = "Glow",
+						Color = {1, 1, 1},
 					},
-					Tags = {
-						TagOne = {
-							FontSize = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							Color = {1, 1, 1},
-							Tag = "[name]",
-						},
-						TagTwo = {
-							FontSize = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							Color = {1, 1, 1},
-							Tag = "",
-						},
-						TagThree = {
-							FontSize = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							Color = {1, 1, 1},
-							Tag = "",
-						},
-						TagFour = {
-							FontSize = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							Color = {1, 1, 1},
-							Tag = "",
-						},
-						TagFive = {
-							FontSize = 12,
-							Layout = {"CENTER", "CENTER", 0, 0},
-							Color = {1, 1, 1},
-							Tag = "",
-						},
+					Threat = {
+						Enabled = false,
+					},
+					Role = {
+						Enabled = false,
+						ShowTank = true,
+						ShowHealer = true,
+						ShowDamager = false,
+						Texture = "White",
+						Size = 12,
+						Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
+					},
+					Phase = {
+						Enabled = false,
+						Size = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					Summon = {
+						Enabled = false,
+						Size = 24,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					ReadyCheck = {
+						Enabled = false,
+						Texture = "Default",
+						Size = 24,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					Resurrect = {
+						Enabled = false,
+						Size = 18,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					LeaderAssistant = {
+						Enabled = false,
+						Size = 14,
+						Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
 					}
 				},
-            },
+				Auras = {
+					FrameStrata = "MEDIUM",
+					AuraDuration = {
+						Layout = {"CENTER", "CENTER", 0, 0},
+						FontSize = 12,
+						ScaleByIconSize = false,
+					},
+					PrivateAuras = {
+						AnchorRegion = "Frame",
+						Enabled = false,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						FrameStrata = "HIGH",
+						Size = 32,
+						Spacing = 1,
+						GrowthX = "LEFT",
+						GrowthY = "UP",
+						InitialAnchor = "CENTER",
+						Num = 1,
+						BorderScale = -1,
+						DisableCooldown = false,
+						DisableCooldownText = false,
+					},
+					Buffs = {
+						AnchorRegion = "Frame",
+						Enabled = true,
+						OnlyShowPlayer = false,
+						Size = 28,
+						Layout = {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2, 1},
+						Num = 1,
+						Wrap = 1,
+						GrowthDirection = "RIGHT",
+						WrapDirection = "UP",
+						ShowType = false,
+						Blacklist = false,
+						Filter = "HELPFUL",
+						Sorting = "BLIZZARD",
+						Count = {
+							HideStacks = false,
+							Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+							FontSize = 12,
+							Color = {1, 1, 1, 1}
+						}
+					},
+					Debuffs = {
+						AnchorRegion = "Frame",
+						Enabled = false,
+						OnlyShowPlayer = false,
+						Size = 31,
+						Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", -2, 2, 1},
+						Num = 2,
+						Wrap = 2,
+						GrowthDirection = "LEFT",
+						WrapDirection = "UP",
+						ShowType = false,
+						Blacklist = true,
+						Filter = "HARMFUL",
+						Sorting = "BLIZZARD",
+						Count = {
+							HideStacks = false,
+							Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+							FontSize = 12,
+							Color = {1, 1, 1, 1}
+						}
+					},
+					Custom = {
+						AnchorRegion = "Frame",
+						Enabled = false,
+						Type = "Buffs",
+						OnlyShowPlayer = false,
+						Size = 42,
+						Layout = {"RIGHT", "LEFT", -1, 0, 1},
+						Num = 3,
+						Wrap = 3,
+						GrowthDirection = "LEFT",
+						WrapDirection = "UP",
+						ShowType = false,
+						Blacklist = false,
+						Filter = "HELPFUL",
+						Sorting = "BLIZZARD",
+						Count = {
+							HideStacks = false,
+							Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+							FontSize = 12,
+							Color = {1, 1, 1, 1}
+						}
+					},
+				},
+				Tags = {
+					TagOne = {
+						FontSize = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						Color = {1, 1, 1},
+						Tag = "[name]",
+					},
+					TagTwo = {
+						FontSize = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						Color = {1, 1, 1},
+						Tag = "",
+					},
+					TagThree = {
+						FontSize = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						Color = {1, 1, 1},
+						Tag = "",
+					},
+					TagFour = {
+						FontSize = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						Color = {1, 1, 1},
+						Tag = "",
+					},
+					TagFive = {
+						FontSize = 12,
+						Layout = {"CENTER", "CENTER", 0, 0},
+						Color = {1, 1, 1},
+						Tag = "",
+					},
+				}
+			},
         }
     },
 }
 
 ---@return table Defaults Returns the Default Table.
-function RUF:GetDefaultDB() return Defaults end
+function ZF:GetDefaultDB() return Defaults end

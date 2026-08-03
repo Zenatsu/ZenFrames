@@ -1,4 +1,4 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local function LayoutHealPredictionBar(bar, unitFrame, position, height, attachFn)
     bar:ClearAllPoints()
@@ -66,11 +66,11 @@ local function AttachHealAbsorbs(bar, unitFrame)
 end
 
 local function CreateIncomingHeal(unitFrame, unit)
-    local IncomingHealDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
+    local IncomingHealDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
     if not unitFrame.Health then return end
 
-    local IncomingHealBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_IncomingHealBar", unitFrame.Health)
-    if IncomingHealDB.UseStripedTexture then IncomingHealBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else IncomingHealBar:SetStatusBarTexture(RUF.Media.Foreground) end
+    local IncomingHealBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_IncomingHealBar", unitFrame.Health)
+    if IncomingHealDB.UseStripedTexture then IncomingHealBar:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else IncomingHealBar:SetStatusBarTexture(ZF.Media.Foreground) end
     IncomingHealBar:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
     local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
     LayoutHealPredictionBar(IncomingHealBar, unitFrame, IncomingHealDB.Position, height, AttachIncomingHeal)
@@ -81,11 +81,11 @@ local function CreateIncomingHeal(unitFrame, unit)
 end
 
 local function CreateUnitAbsorbs(unitFrame, unit)
-    local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
+    local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     if not unitFrame.Health then return end
 
-    local AbsorbBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_AbsorbBar", unitFrame.Health)
-    if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
+    local AbsorbBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_AbsorbBar", unitFrame.Health)
+    if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(ZF.Media.Foreground) end
     AbsorbBar:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
     local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
     LayoutHealPredictionBar(AbsorbBar, unitFrame, AbsorbDB.Position, height, AttachAbsorbs)
@@ -96,9 +96,9 @@ local function CreateUnitAbsorbs(unitFrame, unit)
 end
 
 local function ConfigureUnitOverAbsorbs(OverAbsorbBar, unitFrame, unit)
-    local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
+    local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     local OverAbsorbClip = OverAbsorbBar.Clip
-    if AbsorbDB.UseStripedTexture then OverAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else OverAbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
+    if AbsorbDB.UseStripedTexture then OverAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else OverAbsorbBar:SetStatusBarTexture(ZF.Media.Foreground) end
     OverAbsorbBar:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
     OverAbsorbClip:ClearAllPoints()
     OverAbsorbBar:ClearAllPoints()
@@ -126,10 +126,10 @@ end
 local function CreateUnitOverAbsorbs(unitFrame, unit)
     if not unitFrame.Health then return end
 
-    local OverAbsorbClip = CreateFrame("Frame", RUF:FetchFrameName(unit) .. "_OverAbsorbClip", unitFrame.Health)
+    local OverAbsorbClip = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_OverAbsorbClip", unitFrame.Health)
     OverAbsorbClip:SetClipsChildren(true)
 
-    local OverAbsorbBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_OverAbsorbBar", OverAbsorbClip)
+    local OverAbsorbBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_OverAbsorbBar", OverAbsorbClip)
     OverAbsorbBar.Clip = OverAbsorbClip
     ConfigureUnitOverAbsorbs(OverAbsorbBar, unitFrame, unit)
     OverAbsorbBar:Hide()
@@ -139,11 +139,11 @@ local function CreateUnitOverAbsorbs(unitFrame, unit)
 end
 
 local function CreateUnitHealAbsorbs(unitFrame, unit)
-    local HealAbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
+    local HealAbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
     if not unitFrame.Health then return end
 
-    local HealAbsorbBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_HealAbsorbBar", unitFrame.Health)
-    if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(RUF.Media.Foreground) end
+    local HealAbsorbBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_HealAbsorbBar", unitFrame.Health)
+    if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(ZF.Media.Foreground) end
     HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
     local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
     LayoutHealPredictionBar(HealAbsorbBar, unitFrame, HealAbsorbDB.Position, height, AttachHealAbsorbs)
@@ -154,7 +154,7 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
 end
 
 local function UpdateUnitOverAbsorbs(unitFrame, unit)
-    local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
+    local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     if not unitFrame.HealthPrediction or not unitFrame.HealthPrediction.damageAbsorb then return end
 
     if not AbsorbDB.Enabled or not AbsorbDB.ShowOverAbsorb or AbsorbDB.Position ~= "ATTACH" then
@@ -177,10 +177,10 @@ local function UpdateUnitOverAbsorbs(unitFrame, unit)
     OverAbsorbBar:Show()
 end
 
-function RUF:CreateUnitHealPrediction(unitFrame, unit)
-    local IncomingHealDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
-    local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
-    local HealAbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
+function ZF:CreateUnitHealPrediction(unitFrame, unit)
+    local IncomingHealDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
+    local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
+    local HealAbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
 
     unitFrame.HealthPrediction = {
         healingPlayer = IncomingHealDB.Enabled and CreateIncomingHeal(unitFrame, unit),
@@ -194,17 +194,17 @@ function RUF:CreateUnitHealPrediction(unitFrame, unit)
     }
 end
 
-function RUF:UpdateUnitHealPrediction(unitFrame, unit)
-    local IncomingHealDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
-    local AbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
-    local HealAbsorbDB = RUF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
+function ZF:UpdateUnitHealPrediction(unitFrame, unit)
+    local IncomingHealDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.IncomingHeal
+    local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
+    local HealAbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
 
     if unitFrame.HealthPrediction then
         if IncomingHealDB.Enabled then
             unitFrame.HealthPrediction.healingPlayer = unitFrame.HealthPrediction.healingPlayer or CreateIncomingHeal(unitFrame, unit)
             unitFrame.HealthPrediction.healingPlayerClampMode = 2
             unitFrame.HealthPrediction.healingPlayer:Show()
-            if IncomingHealDB.UseStripedTexture then unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture(RUF.Media.Foreground) end
+            if IncomingHealDB.UseStripedTexture then unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture(ZF.Media.Foreground) end
             unitFrame.HealthPrediction.healingPlayer:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
             local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
             LayoutHealPredictionBar(unitFrame.HealthPrediction.healingPlayer, unitFrame, IncomingHealDB.Position, height, AttachIncomingHeal)
@@ -219,7 +219,7 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             unitFrame.HealthPrediction.damageAbsorbClampMode = 2
             unitFrame.HealthPrediction.PostUpdate = function(_, updateUnit) UpdateUnitOverAbsorbs(unitFrame, updateUnit) end
             unitFrame.HealthPrediction.damageAbsorb:Show()
-            if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(RUF.Media.Foreground) end
+            if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
             unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
             local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
             local position = AbsorbDB.Position
@@ -246,7 +246,7 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             unitFrame.HealthPrediction.healAbsorb = unitFrame.HealthPrediction.healAbsorb or CreateUnitHealAbsorbs(unitFrame, unit)
             unitFrame.HealthPrediction.healAbsorbClampMode = 1
             unitFrame.HealthPrediction.healAbsorb:Show()
-            if HealAbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture("Interface\\AddOns\\RehaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture(RUF.Media.Foreground) end
+            if HealAbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
             unitFrame.HealthPrediction.healAbsorb:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
             local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
             LayoutHealPredictionBar(unitFrame.HealthPrediction.healAbsorb, unitFrame, HealAbsorbDB.Position, height, AttachHealAbsorbs)
@@ -258,6 +258,6 @@ function RUF:UpdateUnitHealPrediction(unitFrame, unit)
             end
         end
     else
-        RUF:CreateUnitHealPrediction(unitFrame, unit)
+        ZF:CreateUnitHealPrediction(unitFrame, unit)
     end
 end

@@ -1,9 +1,9 @@
-local _, RUF = ...
-local AG = RUF.AG
-local GUIWidgets = RUF.GUIWidgets
-local STYLE = RUF.DesignerStyle
-RUF.GUIBuilders = {}
-local Builders = RUF.GUIBuilders
+local _, ZF = ...
+local AG = ZF.AG
+local GUIWidgets = ZF.GUIWidgets
+local STYLE = ZF.DesignerStyle
+ZF.GUIBuilders = {}
+local Builders = ZF.GUIBuilders
 
 Builders.AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT" } }
 Builders.FrameStrataList = { { ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" } }
@@ -130,6 +130,86 @@ function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, 
     return ColorPicker, OpacitySlider
 end
 
+-- Shared tooltip wiring for the generic single-widget builders below --
+-- opts.tooltip (plain text) is optional on all three; when set it wires the
+-- same OnEnter/OnLeave GameTooltip pattern repeated throughout GUI.lua by
+-- hand. `anchor` matches this file's existing convention: checkboxes/sliders
+-- follow the cursor, dropdowns anchor below the widget (their pullout list
+-- already occupies the space below, so a stable anchor reads better there).
+local function AttachTooltip(widget, tooltipText, anchor)
+    if not tooltipText then return end
+    widget:SetCallback("OnEnter", function()
+        GameTooltip:SetOwner(widget.frame, anchor)
+        GameTooltip:AddLine(tooltipText, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    widget:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+end
+
+-- A plain db[key]-bound CheckBox. opts: width (default 1), disabled,
+-- tooltip, onChanged(value) for a side effect beyond the db write itself
+-- (run before updateCallback).
+function Builders.CreateCheckbox(parent, label, db, key, updateCallback, opts)
+    opts = opts or {}
+    local Checkbox = AG:Create("CheckBox")
+    Checkbox:SetLabel(label)
+    Checkbox:SetValue(db[key])
+    Checkbox:SetRelativeWidth(opts.width or 1)
+    if opts.disabled then Checkbox:SetDisabled(true) end
+    Checkbox:SetCallback("OnValueChanged", function(_, _, value)
+        db[key] = value
+        if opts.onChanged then opts.onChanged(value) end
+        updateCallback()
+    end)
+    AttachTooltip(Checkbox, opts.tooltip, "ANCHOR_CURSOR")
+    parent:AddChild(Checkbox)
+    return Checkbox
+end
+
+-- A plain db[key]-bound Slider. opts.sliderValues is required -- a
+-- {min, max, step} triple, typically one of ZF.DesignerStyle's STYLE.Sliders.*
+-- tables. opts: width (default 1), isPercent, disabled, tooltip, onChanged(value).
+function Builders.CreateSlider(parent, label, db, key, updateCallback, opts)
+    opts = opts or {}
+    local Slider = AG:Create("Slider")
+    Slider:SetLabel(label)
+    Slider:SetValue(db[key])
+    Slider:SetSliderValues(unpack(opts.sliderValues))
+    Slider:SetRelativeWidth(opts.width or 1)
+    if opts.isPercent then Slider:SetIsPercent(true) end
+    if opts.disabled then Slider:SetDisabled(true) end
+    Slider:SetCallback("OnValueChanged", function(_, _, value)
+        db[key] = value
+        if opts.onChanged then opts.onChanged(value) end
+        updateCallback()
+    end)
+    AttachTooltip(Slider, opts.tooltip, "ANCHOR_CURSOR")
+    parent:AddChild(Slider)
+    return Slider
+end
+
+-- A plain db[key]-bound Dropdown. opts.list is required (value -> display
+-- text map); opts.order is an optional array fixing the display order (some
+-- callers, e.g. Builders.AnchorPoints, already keep a matching list/order
+-- pair around). opts: width (default 1), disabled, tooltip, onChanged(value).
+function Builders.CreateDropdown(parent, label, db, key, updateCallback, opts)
+    opts = opts or {}
+    local Dropdown = AG:Create("Dropdown")
+    Dropdown:SetList(opts.list, opts.order)
+    Dropdown:SetLabel(label)
+    Dropdown:SetValue(db[key])
+    Dropdown:SetRelativeWidth(opts.width or 1)
+    if opts.disabled then Dropdown:SetDisabled(true) end
+    Dropdown:SetCallback("OnValueChanged", function(_, _, value)
+        db[key] = value
+        if opts.onChanged then opts.onChanged(value) end
+        updateCallback()
+    end)
+    AttachTooltip(Dropdown, opts.tooltip, "ANCHOR_BOTTOM")
+    parent:AddChild(Dropdown)
+    return Dropdown
+end
+
 -- Reload prompt, a seperate pop-up that informs the user that a reload is required to make the desired change (like enableing and disabling frames)
 function Builders.CreateReloadPrompt(parent, label, db, key, opts)
     opts = opts or {}
@@ -140,7 +220,7 @@ function Builders.CreateReloadPrompt(parent, label, db, key, opts)
     parent:AddChild(Toggle)
 
     Toggle:SetCallback("OnValueChanged", function(_, _, value)
-        StaticPopupDialogs["RUF_RELOAD_UI"] ={
+        StaticPopupDialogs["ZF_RELOAD_UI"] ={
             text = "You must reload to apply this change, do you want to reload now?",
             button1 = "Reload",
             button2 = "Later",
@@ -151,7 +231,7 @@ function Builders.CreateReloadPrompt(parent, label, db, key, opts)
             whileDead = true,
             hideOnEscape = true,
         }
-        StaticPopup_Show("RUF_RELOAD_UI")
+        StaticPopup_Show("ZF_RELOAD_UI")
     end)
 
     return Toggle

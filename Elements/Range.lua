@@ -1,7 +1,7 @@
-local _, RUF = ...
+local _, ZF = ...
 local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
-RUF.RangeEvtFrames = {}
+ZF.RangeEvtFrames = {}
 
 local rangeTicker = false
 
@@ -255,7 +255,7 @@ local function UnitSpellRange(unit, spells)
 	local isNotInRange = false
 	for spellID in pairs(spells) do
 		local inRange = C_Spell.IsSpellInRange(spellID, unit)
-		if RUF:IsSecretValue(inRange) then
+		if ZF:IsSecretValue(inRange) then
 			return inRange
 		elseif inRange then
 			return true
@@ -269,7 +269,7 @@ end
 local function UnitInSpellsRange(unit, category)
 	local spells = activeSpells[category]
 	local inRange = not next(spells) and 1 or UnitSpellRange(unit, spells)
-	if RUF:IsSecretValue(inRange) then return inRange end
+	if ZF:IsSecretValue(inRange) then return inRange end
 
 	if (not inRange or inRange == 1) and not InCombatLockdown() then
 		return CheckInteractDistance(unit, 4)
@@ -285,7 +285,7 @@ local function FriendlyIsInRange(unit, frame)
 	end
 
 	local inRange, wasChecked = UnitInRange(unit)
-	if RUF:IsSecretValue(wasChecked) then
+	if ZF:IsSecretValue(wasChecked) then
 		if UnitInParty(unit) or UnitInRaid(unit) then
 			frame.RangeIsInRange = inRange
 			frame.RangeWasChecked = wasChecked
@@ -299,15 +299,15 @@ local function FriendlyIsInRange(unit, frame)
 end
 
 local function UpdateRangeFrames()
-	for unit, unitFrames in pairs(RUF.RangeEvtFrames) do
+	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			if frame:IsVisible() then RUF:UpdateRangeAlpha(frame, unit) end
+			if frame:IsVisible() then ZF:UpdateRangeAlpha(frame, unit) end
 		end
 	end
 end
 
 local function UpdateRangeTicker()
-	local shouldRun = RUF.db.profile.General.Range.Enabled and next(RUF.RangeEvtFrames)
+	local shouldRun = ZF.db.profile.General.Range.Enabled and next(ZF.RangeEvtFrames)
 	if shouldRun and not rangeTicker then
 		rangeTicker = C_Timer.NewTicker(0.2, UpdateRangeFrames)
 	elseif not shouldRun and rangeTicker then
@@ -316,55 +316,55 @@ local function UpdateRangeTicker()
 	end
 end
 
-function RUF:RegisterRangeFrame(frameName, unit)
+function ZF:RegisterRangeFrame(frameName, unit)
 	if not frameName or not unit then return end
 	local frame = type(frameName) == "table" and frameName or _G[frameName]
 	if not frame then return end
 
-	local previousUnit = frame.RUFRangeUnit
+	local previousUnit = frame.ZFRangeUnit
 	if previousUnit and previousUnit ~= unit then
-		local previousFrames = RUF.RangeEvtFrames[previousUnit]
+		local previousFrames = ZF.RangeEvtFrames[previousUnit]
 		if previousFrames then
 			previousFrames[frame] = nil
-			if not next(previousFrames) then RUF.RangeEvtFrames[previousUnit] = nil end
+			if not next(previousFrames) then ZF.RangeEvtFrames[previousUnit] = nil end
 		end
 	end
 
-	local unitFrames = RUF.RangeEvtFrames[unit]
+	local unitFrames = ZF.RangeEvtFrames[unit]
 	if not unitFrames then
 		unitFrames = {}
-		RUF.RangeEvtFrames[unit] = unitFrames
+		ZF.RangeEvtFrames[unit] = unitFrames
 	end
 	unitFrames[frame] = true
-	frame.RUFRangeUnit = unit
+	frame.ZFRangeUnit = unit
 
 	UpdateRangeTicker()
-	RUF:UpdateRangeAlpha(frame, unit)
+	ZF:UpdateRangeAlpha(frame, unit)
 end
 
-function RUF:UnregisterRangeFrame(frame)
-	if not frame or not frame.RUFRangeUnit then return end
-	local unit = frame.RUFRangeUnit
-	local unitFrames = RUF.RangeEvtFrames[unit]
+function ZF:UnregisterRangeFrame(frame)
+	if not frame or not frame.ZFRangeUnit then return end
+	local unit = frame.ZFRangeUnit
+	local unitFrames = ZF.RangeEvtFrames[unit]
 	if unitFrames then
 		unitFrames[frame] = nil
-		if not next(unitFrames) then RUF.RangeEvtFrames[unit] = nil end
+		if not next(unitFrames) then ZF.RangeEvtFrames[unit] = nil end
 	end
-	frame.RUFRangeUnit = nil
+	frame.ZFRangeUnit = nil
 	UpdateRangeTicker()
 end
 
-function RUF:UpdateAllRangeFrames()
-	for unit, unitFrames in pairs(RUF.RangeEvtFrames) do
+function ZF:UpdateAllRangeFrames()
+	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			RUF:UpdateRangeAlpha(frame, unit)
+			ZF:UpdateRangeAlpha(frame, unit)
 		end
 	end
 	UpdateRangeTicker()
 end
 
-function RUF:UpdateRangeAlpha(frame, unit)
-	local RangeDB = RUF.db.profile.General.Range
+function ZF:UpdateRangeAlpha(frame, unit)
+	local RangeDB = ZF.db.profile.General.Range
 	if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
 	frame.RangeIsInRange = nil
 	frame.RangeWasChecked = nil
@@ -376,12 +376,12 @@ function RUF:UpdateRangeAlpha(frame, unit)
 
 	if UnitIsDeadOrGhost(unit) then
 		inRange = UnitInSpellsRange(unit, "resurrect")
-		if not RUF:IsSecretValue(inRange) then inRange = inRange == true end
+		if not ZF:IsSecretValue(inRange) then inRange = inRange == true end
 	elseif UnitCanAttack("player", unit) then
 		inRange = UnitInSpellsRange(unit, "enemy")
 	else
 		local isPet = UnitIsUnit(unit, "pet")
-		if not RUF:IsSecretValue(isPet) and isPet then
+		if not ZF:IsSecretValue(isPet) and isPet then
 			inRange = UnitInSpellsRange(unit, "pet")
 		elseif UnitIsConnected(unit) then
 			inRange = FriendlyIsInRange(unit, frame)
@@ -390,10 +390,10 @@ function RUF:UpdateRangeAlpha(frame, unit)
 		end
 	end
 
-	if RUF:IsSecretValue(frame.RangeIsInRange) then
+	if ZF:IsSecretValue(frame.RangeIsInRange) then
 		frame:SetAlphaFromBoolean(frame.RangeIsInRange, inAlpha, outAlpha)
 		return
-	elseif RUF:IsSecretValue(inRange) then
+	elseif ZF:IsSecretValue(inRange) then
 		frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
 		return
 	end
@@ -408,9 +408,9 @@ RangeEventFrame:RegisterEvent("UNIT_IN_RANGE_UPDATE")
 RangeEventFrame:RegisterEvent("UNIT_CONNECTION")
 RangeEventFrame:RegisterEvent("UNIT_PHASE")
 local function UpdateRangeUnit(rangeUnit)
-	local unitFrames = RUF.RangeEvtFrames[rangeUnit]
+	local unitFrames = ZF.RangeEvtFrames[rangeUnit]
 	if not unitFrames then return end
-	for frame in pairs(unitFrames) do RUF:UpdateRangeAlpha(frame, rangeUnit) end
+	for frame in pairs(unitFrames) do ZF:UpdateRangeAlpha(frame, rangeUnit) end
 end
 
 RangeEventFrame:SetScript("OnEvent", function(_, event, unit)

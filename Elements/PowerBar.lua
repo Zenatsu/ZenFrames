@@ -1,9 +1,9 @@
-local _, RUF = ...
+local _, ZF = ...
 
 local function ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB)
 	if not PowerBarDB.Enabled then return false end
 	if not PowerBarDB.OnlyShowHealers then return true end
-	local normalizedUnit = RUF:GetNormalizedUnit(unit)
+	local normalizedUnit = ZF:GetNormalizedUnit(unit)
 	if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then return true end
 	local unitToken = unit == "partyplayer" and "player" or unit
 	return UnitGroupRolesAssigned(unitToken) == "HEALER"
@@ -11,7 +11,7 @@ end
 
 local function CreatePowerBarPostUpdateColor(unitFrame, unit)
     return function(element, _, color, altR, altG, altB)
-        local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+        local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
         if not PowerBarDB.ColorBackgroundByType then return end
         if not element.Background then return end
 
@@ -33,12 +33,12 @@ local function CreatePowerBarPostUpdateColor(unitFrame, unit)
 end
 
 local function LayoutUnitPowerBar(unitFrame, unit, width)
-    local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+    local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
     local powerBar = unitFrame.Power
     if not powerBar then return end
 
-    width = width and width > 0 and width or RUF:GetUnitDB(unitFrame, unit).Frame.Width
-	local position = RUF:GetConfiguredPowerBarPosition(unit, unitFrame)
+    width = width and width > 0 and width or ZF:GetUnitDB(unitFrame, unit).Frame.Width
+	local position = ZF:GetConfiguredPowerBarPosition(unit, unitFrame)
     local isTopAnchored = position == "TOP"
     local anchorPoint = isTopAnchored and "TOPLEFT" or "BOTTOMLEFT"
     local anchorY = isTopAnchored and -1 or 1
@@ -65,15 +65,15 @@ local function LayoutUnitPowerBar(unitFrame, unit, width)
     end
 end
 
-function RUF:CreateUnitPowerBar(unitFrame, unit)
-    local FrameDB = RUF:GetUnitDB(unitFrame, unit).Frame
-    local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+function ZF:CreateUnitPowerBar(unitFrame, unit)
+    local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+    local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
     local unitContainer = unitFrame.Container
 
-    local PowerBar = CreateFrame("StatusBar", RUF:FetchFrameName(unit) .. "_PowerBar", unitContainer)
+    local PowerBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_PowerBar", unitContainer)
     PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
-    PowerBar:SetStatusBarTexture(RUF.Media.Foreground)
+    PowerBar:SetStatusBarTexture(ZF.Media.Foreground)
     PowerBar:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
     PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
     PowerBar.colorPower = PowerBarDB.ColorByType
@@ -88,10 +88,10 @@ function RUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar:SetReverseFill(false)
     end
 
-    PowerBar.Background = PowerBar:CreateTexture(RUF:FetchFrameName(unit) .. "_PowerBackground", "BACKGROUND")
+    PowerBar.Background = PowerBar:CreateTexture(ZF:FetchFrameName(unit) .. "_PowerBackground", "BACKGROUND")
     PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
-    PowerBar.Background:SetTexture(RUF.Media.Background)
+    PowerBar.Background:SetTexture(ZF.Media.Background)
     PowerBar.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
 
     if not PowerBar.PowerBarBorder then
@@ -116,24 +116,24 @@ function RUF:CreateUnitPowerBar(unitFrame, unit)
     if unitFrame.Power then
         LayoutUnitPowerBar(unitFrame, unit, FrameDB.Width)
     end
-    RUF:UpdateHealthBarLayout(unitFrame, unit)
+    ZF:UpdateHealthBarLayout(unitFrame, unit)
 
     return PowerBar
 end
 
-function RUF:UpdateUnitPowerBar(unitFrame, unit)
-    local FrameDB = RUF:GetUnitDB(unitFrame, unit).Frame
-    local PowerBarDB = RUF:GetUnitDB(unitFrame, unit).PowerBar
+function ZF:UpdateUnitPowerBar(unitFrame, unit)
+    local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+    local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
 
     if ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB) then
-		unitFrame.Power = unitFrame.Power or unitFrame.PowerBar or RUF:CreateUnitPowerBar(unitFrame, unit)
+		unitFrame.Power = unitFrame.Power or unitFrame.PowerBar or ZF:CreateUnitPowerBar(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
 
         if unitFrame.Power then
             LayoutUnitPowerBar(unitFrame, unit, unitFrame:GetWidth())
             unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
-            unitFrame.Power:SetStatusBarTexture(RUF.Media.Foreground)
+            unitFrame.Power:SetStatusBarTexture(ZF.Media.Foreground)
             unitFrame.Power.colorPower = PowerBarDB.ColorByType
             unitFrame.Power.colorClass = PowerBarDB.ColorByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
@@ -146,7 +146,7 @@ function RUF:UpdateUnitPowerBar(unitFrame, unit)
 
         if unitFrame.Power.Background then
             unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
-            unitFrame.Power.Background:SetTexture(RUF.Media.Background)
+            unitFrame.Power.Background:SetTexture(ZF.Media.Background)
         end
 
         unitFrame.Power:Show()
@@ -157,9 +157,9 @@ function RUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power:Hide()
             unitFrame.Power = nil
         end
-        RUF:UpdateHealthBarLayout(unitFrame, unit)
+        ZF:UpdateHealthBarLayout(unitFrame, unit)
         return
     end
 
-    RUF:UpdateHealthBarLayout(unitFrame, unit)
+    ZF:UpdateHealthBarLayout(unitFrame, unit)
 end

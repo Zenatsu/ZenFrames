@@ -1,42 +1,48 @@
-local _, RUF = ...
+local _, ZF = ...
 
-function RUF:CreateUnitPvPIndicator(unitFrame, unit)
-    local PvPIndicatorDB = RUF.db.profile.Units.player.Indicators.PvP
+-- The badge overlay is proportioned relative to the main icon's size rather
+-- than having its own DB fields - shared so create and every later
+-- reposition use the exact same ratio.
+local function PositionPvPBadge(badge, indicator, size)
+    badge:ClearAllPoints()
+    badge:SetSize(size * 5 / 3, size * 26 / 15)
+    badge:SetPoint("CENTER", indicator, "CENTER", 0, 0)
+end
 
-    local PvPIndicator = RUF:CreateIndicatorTexture(unitFrame, unit, "_PvPIndicator", PvPIndicatorDB.Size, PvPIndicatorDB.Layout, "OVERLAY", 1)
+function ZF:CreateUnitPvPIndicator(unitFrame, unit)
+    local PvPIndicatorDB = ZF.db.profile.Units.player.Indicators.PvP
 
-    PvPIndicator.Badge = unitFrame.HighLevelContainer:CreateTexture(RUF:FetchFrameName(unit) .. "_PvPIndicatorBadge", "OVERLAY")
-    PvPIndicator.Badge:SetSize(PvPIndicatorDB.Size * 5 / 3, PvPIndicatorDB.Size * 26 / 15)
-    PvPIndicator.Badge:SetPoint("CENTER", PvPIndicator, "CENTER", 0, 0)
+    local PvPIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_PvPIndicator", PvPIndicatorDB.Size, PvPIndicatorDB.Layout, "OVERLAY", 1)
+
+    PvPIndicator.Badge = unitFrame.HighLevelContainer:CreateTexture(ZF:FetchFrameName(unit) .. "_PvPIndicatorBadge", "OVERLAY")
+    PositionPvPBadge(PvPIndicator.Badge, PvPIndicator, PvPIndicatorDB.Size)
 
     if PvPIndicatorDB.Enabled then
         unitFrame.PvPIndicator = PvPIndicator
     else
-        RUF:DisableIndicatorElement(unitFrame, "PvPIndicator", PvPIndicator)
+        ZF:DisableIndicatorElement(unitFrame, "PvPIndicator", PvPIndicator)
         PvPIndicator.Badge:Hide()
     end
 
     return PvPIndicator
 end
 
-function RUF:UpdateUnitPvPIndicator(unitFrame, unit)
-    local PvPIndicatorDB = RUF.db.profile.Units.player.Indicators.PvP
+function ZF:UpdateUnitPvPIndicator(unitFrame, unit)
+    local PvPIndicatorDB = ZF.db.profile.Units.player.Indicators.PvP
 
     if PvPIndicatorDB.Enabled then
-        unitFrame.PvPIndicator = unitFrame.PvPIndicator or RUF:CreateUnitPvPIndicator(unitFrame, unit)
+        unitFrame.PvPIndicator = unitFrame.PvPIndicator or ZF:CreateUnitPvPIndicator(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("PvPIndicator") then unitFrame:EnableElement("PvPIndicator") end
 
         if unitFrame.PvPIndicator then
-            RUF:PositionIndicatorTexture(unitFrame.PvPIndicator, unitFrame.HighLevelContainer, PvPIndicatorDB.Size, PvPIndicatorDB.Layout)
-            unitFrame.PvPIndicator.Badge:ClearAllPoints()
-            unitFrame.PvPIndicator.Badge:SetSize(PvPIndicatorDB.Size * 5 / 3, PvPIndicatorDB.Size * 26 / 15)
-            unitFrame.PvPIndicator.Badge:SetPoint("CENTER", unitFrame.PvPIndicator, "CENTER", 0, 0)
+            ZF:PositionIndicatorTexture(unitFrame.PvPIndicator, unitFrame.HighLevelContainer, PvPIndicatorDB.Size, PvPIndicatorDB.Layout)
+            PositionPvPBadge(unitFrame.PvPIndicator.Badge, unitFrame.PvPIndicator, PvPIndicatorDB.Size)
             unitFrame.PvPIndicator:ForceUpdate()
         end
     else
         if not unitFrame.PvPIndicator then return end
-        RUF:DisableIndicatorElement(unitFrame, "PvPIndicator", unitFrame.PvPIndicator)
+        ZF:DisableIndicatorElement(unitFrame, "PvPIndicator", unitFrame.PvPIndicator)
         unitFrame.PvPIndicator.Badge:Hide()
         unitFrame.PvPIndicator = nil
     end
