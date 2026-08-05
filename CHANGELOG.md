@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## V1.0.4
+
+- Fixed reload popup strata to sit on top of the GUI
+
 ## V1.0.3
 
 - Removed the Cooldown Manager anchor option
