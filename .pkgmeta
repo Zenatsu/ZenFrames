@@ -3,5 +3,10 @@ ignore:
   - .claude
   - .vscode
   - .luacheckrc
+  - .gitignore
+  - .gitattributes
   - IssueTracker.txt
   - ZenFrames-Dev.toc
+  manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
