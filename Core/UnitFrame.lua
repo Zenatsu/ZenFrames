@@ -3,6 +3,30 @@ local oUF = ZF.oUF
 local raidFrameIndex = 0
 local raidStyleRegistered = false
 
+function ZF:EnsureRaidStyleRegistered()
+	if raidStyleRegistered then return end
+	oUF:RegisterStyle(ZF:FetchFrameName("raid"), function(unitFrame)
+		raidFrameIndex = raidFrameIndex + 1
+		ZF:CreateUnitFrame(unitFrame, "raid" .. raidFrameIndex)
+	end)
+	raidStyleRegistered = true
+end
+
+local pendingSpawnUnits = {}
+local SpawnUnitFrameRetryFrame = CreateFrame("Frame")
+SpawnUnitFrameRetryFrame:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    for unit in pairs(pendingSpawnUnits) do
+        pendingSpawnUnits[unit] = nil
+        if unit == "boss" then
+            for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
+            ZF:LayoutBossFrames()
+        elseif ZF[unit:upper()] then
+            ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
+        end
+    end
+end)
+
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
@@ -82,6 +106,7 @@ function ZF:CreateUnitFrame(unitFrame, unit)
 end
 
 function ZF:LayoutBossFrames()
+    if InCombatLockdown() then return end -- AnchorUtil.VerticalLayout calls SetPoint on the secure-templated boss frames
     local Frame = ZF.db.profile.Units.boss.Frame
     if #ZF.BOSS_FRAMES == 0 then return end
     local bossFrames = ZF.BOSS_FRAMES
@@ -111,13 +136,7 @@ function ZF:SpawnUnitFrame(unit)
     if unit == "raid" and UnitDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
 
 	if unit == "raid" then
-		if not raidStyleRegistered then
-			oUF:RegisterStyle(ZF:FetchFrameName(unit), function(unitFrame)
-				raidFrameIndex = raidFrameIndex + 1
-				ZF:CreateUnitFrame(unitFrame, "raid" .. raidFrameIndex)
-			end)
-			raidStyleRegistered = true
-		end
+		ZF:EnsureRaidStyleRegistered()
 	else
 		oUF:RegisterStyle(ZF:FetchFrameName(unit), function(unitFrame) ZF:CreateUnitFrame(unitFrame, unit) end)
 	end
@@ -133,7 +152,7 @@ function ZF:SpawnUnitFrame(unit)
     if unit == "boss" then
         for i = 1, ZF.MAX_BOSS_FRAMES do
             ZF[unit:upper() .. i] = oUF:Spawn(unit .. i, ZF:FetchFrameName(unit .. i))
-            ZF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
+            if not InCombatLockdown() then ZF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height) end
             ZF.BOSS_FRAMES[i] = ZF[unit:upper() .. i]
             ZF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
             ZF:RegisterTargetGlowIndicatorFrame(ZF:FetchFrameName(unit .. i), unit .. i)
@@ -148,8 +167,12 @@ function ZF:SpawnUnitFrame(unit)
     end
 
     if ZF[unit:upper()] then -- boss spawns as BOSS1..n above; there is no single ZF.BOSS frame to size or place
-        ZF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+        if not InCombatLockdown() then ZF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height) end
         ZF:PlaceUnitFrame(ZF[unit:upper()], unit)
+    end
+    if InCombatLockdown() then -- reload/login mid-combat: PlaceUnitFrame/LayoutBossFrames above no-op'd, retry once combat ends
+        pendingSpawnUnits[unit] = true
+        SpawnUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     end
     if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then ZF:RegisterRangeFrame(ZF:FetchFrameName(unit), unit) end
 	ZF:CreateMover(unit)
@@ -171,11 +194,11 @@ end
 
 function ZF:PlaceUnitFrame(unitFrame, unit)
     if not unitFrame or unitFrame.isDesignerPreview then return end
+    if InCombatLockdown() then return end
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     if unit == "player" or unit == "target" then
-        local parentFrame = ZF:GetUnitDB(unitFrame, unit).HealthBar.AnchorToCooldownViewer and _G["ZF_CDMAnchor"] or UIParent
         unitFrame:ClearAllPoints()
-        unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        unitFrame:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
         local parentFrame = _G[FrameDB.AnchorToFrame] or UIParent
         unitFrame:ClearAllPoints()
@@ -184,6 +207,7 @@ function ZF:PlaceUnitFrame(unitFrame, unit)
 end
 
 function ZF:UpdateUnitFrame(unitFrame, unit)
+    if InCombatLockdown() then return end
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
@@ -217,8 +241,8 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     ZF:UpdateUnitThreatIndicator(unitFrame, unit)
     ZF:UpdateUnitAuras(unitFrame, unit)
-	if unit ~= "player" then ZF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
-	ZF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
+	if unit ~= "player" and not unitFrame.isDesignerPreview then ZF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
+	if not unitFrame.isDesignerPreview then ZF:RegisterTargetGlowIndicatorFrame(unitFrame, unit) end
     if not unitFrame.isDesignerPreview then unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata) end -- preview strata is designer-managed (FULLSCREEN_DIALOG)
 end
 

@@ -58,7 +58,7 @@ function ZF:LiftDesignerPreviewStrata() -- Try to ensure the strata of the previ
     if not previewFrame then return end
 
     previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
-    previewFrame:SetFrameLevel(100)
+    if ZF.DESIGNER_CANVAS_FRAME then previewFrame:SetFrameLevel(ZF.DESIGNER_CANVAS_FRAME:GetFrameLevel()+10) end
 
     for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer"}) do
         if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
@@ -99,6 +99,7 @@ function ZF:ApplyDesignerDispelHighlightPreview()
 end
 
 function ZF:UpdateDesignerPreviewFrame() -- Updates the preview frame
+    if InCombatLockdown() then return end
     local previewFrame = ZF:CreateDesignerPreviewFrame()
     local fDB = ZF:GetUnitDB(nil, designerUnit).Frame
     previewFrame:UnregisterAllEvents()
@@ -266,6 +267,32 @@ local function BuildDesignerRegistry(unit)
             sample = function(previewFrame)
                 local region = previewFrame.SummonIndicator if not region then return end
                 region:SetAtlas("RaidFrame-Icon-SummonPending")
+                region:Show()
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "Role", label = "Role Indicator", dbKey = "Role", designerTab = "Indicators", oUFElements = {"GroupRoleIndicator"},
+            getRegion = function(previewFrame) return previewFrame.GroupRoleIndicator end,
+            update = function(unitFrame) ZF:UpdateUnitRoleIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.GroupRoleIndicator if not region then return end
+                local db = ZF.db.profile.Units[unit].Indicators.Role
+                local roleTextureSet = ZF.RoleTextures[db.Texture]
+                local roleTexture = roleTextureSet and roleTextureSet.TANK
+                if roleTexture then
+                    region:SetTexture(roleTexture)
+                    region:SetTexCoord(0, 1, 0, 1)
+                end
+                region:Show()
+            end,
+        }),
+        WidgetEntry(unit, {
+            key = "Phase", label = "Phase Indicator", dbKey = "Phase", designerTab = "Indicators", oUFElements = {"PhaseIndicator"},
+            getRegion = function(previewFrame) return previewFrame.PhaseIndicator end,
+            update = function(unitFrame) ZF:UpdateUnitPhaseIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.PhaseIndicator if not region then return end
+                region.Icon:SetAtlas("RaidFrame-Icon-Phasing")
                 region:Show()
             end,
         }),

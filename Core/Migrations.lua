@@ -45,6 +45,19 @@ local MigrationSteps = {
             end
         end,
     },
+    {
+        fromVersion = 2,
+        migrate = function(profile)
+            local units = profile.Units
+            if type(units) ~= "table" then return end
+
+            for _, unitDB in pairs(units) do
+                if type(unitDB.HealthBar) == "table" then
+                    unitDB.HealthBar.AnchorToCooldownViewer = nil
+                end
+            end
+        end,
+    },
 }
 
 local CURRENT_DB_VERSION = #MigrationSteps

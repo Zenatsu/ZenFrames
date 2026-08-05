@@ -96,6 +96,7 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
 end
 
 function ZF:UpdateUnitHealthBar(unitFrame, unit)
+    if InCombatLockdown() then return end
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
     local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
