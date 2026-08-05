@@ -84,9 +84,6 @@ function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, op
     return Container, XPosSlider, YPosSlider, SizeSlider
 end
 
--- A ColorPicker, either with its own alpha channel (opts.hasAlpha) or paired with a
--- separate Opacity slider (opts.opacityKey names the DB field it writes to). Two
--- distinct shapes exist in the current codebase -- not every caller needs both halves.
 function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, opts)
     opts = opts or {}
     local ColorPicker = AG:Create("ColorPicker")
@@ -120,12 +117,6 @@ function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, 
     return ColorPicker, OpacitySlider
 end
 
--- Shared tooltip wiring for the generic single-widget builders below --
--- opts.tooltip (plain text) is optional on all three; when set it wires the
--- same OnEnter/OnLeave GameTooltip pattern repeated throughout GUI.lua by
--- hand. `anchor` matches this file's existing convention: checkboxes/sliders
--- follow the cursor, dropdowns anchor below the widget (their pullout list
--- already occupies the space below, so a stable anchor reads better there).
 local function AttachTooltip(widget, tooltipText, anchor)
     if not tooltipText then return end
     widget:SetCallback("OnEnter", function()
@@ -136,9 +127,6 @@ local function AttachTooltip(widget, tooltipText, anchor)
     widget:SetCallback("OnLeave", function() GameTooltip:Hide() end)
 end
 
--- A plain db[key]-bound CheckBox. opts: width (default 1), disabled,
--- tooltip, onChanged(value) for a side effect beyond the db write itself
--- (run before updateCallback).
 function Builders.CreateCheckbox(parent, label, db, key, updateCallback, opts)
     opts = opts or {}
     local Checkbox = AG:Create("CheckBox")
@@ -156,9 +144,6 @@ function Builders.CreateCheckbox(parent, label, db, key, updateCallback, opts)
     return Checkbox
 end
 
--- A plain db[key]-bound Slider. opts.sliderValues is required -- a
--- {min, max, step} triple, typically one of ZF.DesignerStyle's STYLE.Sliders.*
--- tables. opts: width (default 1), isPercent, disabled, tooltip, onChanged(value).
 function Builders.CreateSlider(parent, label, db, key, updateCallback, opts)
     opts = opts or {}
     local Slider = AG:Create("Slider")
@@ -178,10 +163,6 @@ function Builders.CreateSlider(parent, label, db, key, updateCallback, opts)
     return Slider
 end
 
--- A plain db[key]-bound Dropdown. opts.list is required (value -> display
--- text map); opts.order is an optional array fixing the display order (some
--- callers, e.g. Builders.AnchorPoints, already keep a matching list/order
--- pair around). opts: width (default 1), disabled, tooltip, onChanged(value).
 function Builders.CreateDropdown(parent, label, db, key, updateCallback, opts)
     opts = opts or {}
     local Dropdown = AG:Create("Dropdown")
@@ -200,7 +181,6 @@ function Builders.CreateDropdown(parent, label, db, key, updateCallback, opts)
     return Dropdown
 end
 
--- Reload prompt, a seperate pop-up that informs the user that a reload is required to make the desired change (like enableing and disabling frames)
 function Builders.CreateReloadPrompt(parent, label, db, key, opts)
     opts = opts or {}
     local Toggle = AG:Create("CheckBox")
@@ -221,7 +201,8 @@ function Builders.CreateReloadPrompt(parent, label, db, key, opts)
             whileDead = true,
             hideOnEscape = true,
         }
-        StaticPopup_Show("ZF_RELOAD_UI")
+        local popup = StaticPopup_Show("ZF_RELOAD_UI")
+        if popup then popup:SetFrameStrata("TOOLTIP") end
     end)
 
     return Toggle
