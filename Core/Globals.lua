@@ -730,7 +730,17 @@ ZF.AURA_BLACKLIST = {
     [95809] = true,     -- Hunter Pet Insanity
 }
 
+local RefreshProfilesRetryFrame = CreateFrame("Frame")
+RefreshProfilesRetryFrame:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	ZF:RefreshProfiles()
+end)
+
 function ZF:RefreshProfiles()
+	if InCombatLockdown() then
+		RefreshProfilesRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	ZF:ResolveLSM()
 	ZF:LoadCustomColors()
 	ZF:UpdateAllUnitFrames()

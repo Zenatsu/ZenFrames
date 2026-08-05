@@ -11,7 +11,9 @@ function ZF:ApplyUnitPreviewContent(unitFrame, unit)
     for tagName in pairs(ZF:GetUnitDB(unitFrame, unit).Tags) do
         ZF:UpdateUnitTag(unitFrame, unit, tagName)
         local tagFontString = unitFrame.Tags[tagName]
-        if tagFontString and tagFontString:GetText() == "Offline" then tagFontString:SetText("")
+        if tagFontString then
+            local text = tagFontString:GetText()
+            if not ZF:IsSecretValue(text) and text == "Offline" then tagFontString:SetText("") end
         end
     end
 
@@ -21,7 +23,8 @@ function ZF:ApplyUnitPreviewContent(unitFrame, unit)
         if ZF:GetNormalizedUnit(unit) == "boss" then
             unitFrame.Health:SetStatusBarColor(1, 0.8, 0)
         elseif ZF:GetUnitDB(unitFrame, unit).HealthBar.ColorByClass then
-            local classColor = RAID_CLASS_COLORS[PreviewClasses[math.random(#PreviewClasses)]]
+            unitFrame.previewClass = unitFrame.previewClass or PreviewClasses[math.random(#PreviewClasses)]
+            local classColor = RAID_CLASS_COLORS[unitFrame.previewClass]
             if classColor then unitFrame.Health:SetStatusBarColor(classColor.r, classColor.g, classColor.b) end
         end
     end
@@ -39,14 +42,14 @@ function ZF:EnterPartyPreview()
     end
     for i = 1, ZF.MAX_PARTY_FRAMES do
         local partyFrame = ZF["PARTY" .. i]
-        if partyFrame then
+        if partyFrame and not UnitExists("party" .. i) then
             partyFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(partyFrame)
             partyFrame:Show()
             ZF:ApplyUnitPreviewContent(partyFrame, "party" .. i)
         end
     end
-    if ZF.PARTYPLAYER then
+    if ZF.PARTYPLAYER and not UnitExists("player") then
         ZF.PARTYPLAYER:SetAttribute("unit", nil)
         UnregisterUnitWatch(ZF.PARTYPLAYER)
         ZF.PARTYPLAYER:Show()
@@ -58,14 +61,16 @@ function ZF:ExitPartyPreview()
     if InCombatLockdown() then return end
     for i = 1, ZF.MAX_PARTY_FRAMES do
         local partyFrame = ZF["PARTY" .. i]
-        if partyFrame then
+        if partyFrame and partyFrame.isUnitPreview then
             partyFrame.isUnitPreview = nil
+            partyFrame.previewClass = nil
             partyFrame:SetAttribute("unit", "party" .. i)
             RegisterUnitWatch(partyFrame)
         end
     end
-    if ZF.PARTYPLAYER then
+    if ZF.PARTYPLAYER and ZF.PARTYPLAYER.isUnitPreview then
         ZF.PARTYPLAYER.isUnitPreview = nil
+        ZF.PARTYPLAYER.previewClass = nil
         ZF.PARTYPLAYER:SetAttribute("unit", "player")
         RegisterUnitWatch(ZF.PARTYPLAYER)
     end
@@ -79,7 +84,7 @@ function ZF:EnterBossPreview()
     if InCombatLockdown() then return end
     for i = 1, ZF.MAX_BOSS_FRAMES do
         local bossFrame = ZF["BOSS" .. i]
-        if bossFrame then
+        if bossFrame and not UnitExists("boss" .. i) then
             bossFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(bossFrame)
             bossFrame:Show()
@@ -92,16 +97,38 @@ function ZF:ExitBossPreview()
     if InCombatLockdown() then return end
     for i = 1, ZF.MAX_BOSS_FRAMES do
         local bossFrame = ZF["BOSS" .. i]
-        if bossFrame then
+        if bossFrame and bossFrame.isUnitPreview then
             bossFrame.isUnitPreview = nil
+            bossFrame.previewClass = nil
             bossFrame:SetAttribute("unit", "boss" .. i)
             RegisterUnitWatch(bossFrame)
         end
     end
 end
 
+function ZF:EnterTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.TARGET and not UnitExists("target") then
+        ZF.TARGET:SetAttribute("unit", nil)
+        UnregisterUnitWatch(ZF.TARGET)
+        ZF.TARGET:Show()
+        ZF:ApplyUnitPreviewContent(ZF.TARGET, "target")
+    end
+end
+
+function ZF:ExitTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.TARGET and ZF.TARGET.isUnitPreview then
+        ZF.TARGET.isUnitPreview = nil
+        ZF.TARGET.previewClass = nil
+        ZF.TARGET:SetAttribute("unit", "target")
+        RegisterUnitWatch(ZF.TARGET)
+    end
+end
+
 function ZF:SpawnRaidPreviewFrames()
     if #ZF.RAID_PREVIEW_FRAMES > 0 then return end
+    ZF:EnsureRaidStyleRegistered()
     local activeStyle = ZF.oUF:GetActiveStyle()
     ZF.oUF:SetActiveStyle(ZF:FetchFrameName("raid"))
     for i = 1, ZF.MAX_RAID_FRAMES do
@@ -128,7 +155,7 @@ function ZF:RaidLayoutPreviewFrame()
 
     local RaidGroupIndex = 0
     for groupIndex = 1, ZF.MAX_RAID_GROUPS do
-        local showGroup = not Frame.Groups or Frame.Groups[groupIndex]
+        local showGroup = ZF:IsRaidGroupShown(Frame, groupIndex)
         if showGroup then RaidGroupIndex = RaidGroupIndex +1 end
         local horizontalOffset = (RaidGroupIndex - 1) * (headerWidth + spacing)
         local verticalOffset = (RaidGroupIndex - 1 ) * (headerHeight + spacing)
@@ -180,6 +207,7 @@ function ZF:ExitRaidPreview()
         local raidFrame = ZF.RAID_PREVIEW_FRAMES[i]
         if raidFrame then
             raidFrame.isUnitPreview = nil
+            raidFrame.previewClass = nil
             raidFrame:SetAttribute("unit", "raid" .. i)
             RegisterUnitWatch(raidFrame)
         end

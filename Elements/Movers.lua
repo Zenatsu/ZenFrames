@@ -11,6 +11,10 @@ end
 
 local function RelayoutUnit(frameMover)
     if frameMover.unit == "boss" then
+        for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do
+            if bossFrame.isUnitPreview then ZF:ApplyUnitPreviewContent(bossFrame, "boss" .. i)
+            else ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
+        end
         ZF:LayoutBossFrames()
     elseif frameMover.unit == "augmentation" then
         ZF:LayoutAugmentationRaidFrames()
@@ -18,7 +22,9 @@ local function RelayoutUnit(frameMover)
         ZF:LayoutGroupFrames(frameMover.unit)
         if frameMover.unit == "raid" then ZF:RaidLayoutPreviewFrame() end
     else
-        ZF:UpdateUnitFrame(ResolveMoverUnitFrame(frameMover), frameMover.unit)
+        local unitFrame = ResolveMoverUnitFrame(frameMover)
+        if unitFrame and unitFrame.isUnitPreview then ZF:ApplyUnitPreviewContent(unitFrame, frameMover.unit)
+        else ZF:UpdateUnitFrame(unitFrame, frameMover.unit) end
     end
 end
 
@@ -88,10 +94,10 @@ local function CommitCoordinateBox(editBox, frameMover, layoutIndex)
 	MoverControlPanel()
 end
 
-local function CreateMoverControlBoxes(panel)
-	local XBox = CreateFrame("EditBox", nil, ControlPanel, "BackdropTemplate")
+local function CreateMoverControlBoxes(core)
+	local XBox = CreateFrame("EditBox", nil, core, "BackdropTemplate")
 	XBox:SetSize(40, 14)
-	XBox:SetPoint("CENTER", ControlPanel, "CENTER", -22, -2)
+	XBox:SetPoint("CENTER", core, "CENTER", -22, -2)
 	XBox:SetAutoFocus(false)
 	XBox:SetFontObject("GameFontHighlightSmall")
 	XBox:SetBackdrop(ZF.BACKDROP)
@@ -100,9 +106,10 @@ local function CreateMoverControlBoxes(panel)
 	XBox:SetScript("OnChar", FilterNumericInput)
 	XBox:SetScript("OnEnterPressed", function(self) if ZF.ACTIVE_MOVER then CommitCoordinateBox(self, ZF.ACTIVE_MOVER, 3) end end)
 	XBox:SetScript("OnEditFocusLost", function(self) if ZF.ACTIVE_MOVER then CommitCoordinateBox(self, ZF.ACTIVE_MOVER, 3) end end)
-	ControlPanel.XBox = XBox
+	XBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	core.XBox = XBox
 
-	local YBox = CreateFrame("EditBox", nil, ControlPanel, "BackdropTemplate")
+	local YBox = CreateFrame("EditBox", nil, core, "BackdropTemplate")
 	YBox:SetSize(40, 14)
 	YBox:SetPoint("LEFT", XBox, "RIGHT", 4, 0)
 	YBox:SetAutoFocus(false)
@@ -113,19 +120,564 @@ local function CreateMoverControlBoxes(panel)
 	YBox:SetScript("OnChar", FilterNumericInput)
 	YBox:SetScript("OnEnterPressed", function(self) if ZF.ACTIVE_MOVER then CommitCoordinateBox(self, ZF.ACTIVE_MOVER, 4) end end)
 	YBox:SetScript("OnEditFocusLost", function(self) if ZF.ACTIVE_MOVER then CommitCoordinateBox(self, ZF.ACTIVE_MOVER, 4) end end)
-	ControlPanel.YBox = YBox
+	YBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	core.YBox = YBox
 end
+
+local miniWidgetCounter = 0
+local function NextMiniWidgetName(prefix)
+	miniWidgetCounter = miniWidgetCounter + 1
+	return "ZF_MoverPanel" .. prefix .. miniWidgetCounter
+end
+
+local function CreateMiniEditBox(parent, width, height, onCommit)
+	local editBox = CreateFrame("EditBox", nil, parent, "BackdropTemplate")
+	editBox:SetSize(width, height)
+	editBox:SetAutoFocus(false)
+	editBox:SetFontObject("GameFontHighlightSmall")
+	editBox:SetBackdrop(ZF.BACKDROP)
+	editBox:SetBackdropColor(0, 0, 0, 0.6)
+	editBox:SetBackdropBorderColor(0, 0, 0, 1)
+	editBox:SetScript("OnChar", FilterNumericInput)
+	local function Commit(self)
+		self:ClearFocus()
+		if InCombatLockdown() then return end
+		local value = tonumber(self:GetText())
+		if value and onCommit then onCommit(value) end
+	end
+	editBox:SetScript("OnEnterPressed", Commit)
+	editBox:SetScript("OnEditFocusLost", Commit)
+	editBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	return editBox
+end
+
+local function CreateMiniCheckbox(parent, label, onToggle)
+	local checkbox = CreateFrame("CheckButton", NextMiniWidgetName("Checkbox"), parent, "UICheckButtonTemplate")
+	checkbox:SetSize(20, 20)
+	local text = _G[checkbox:GetName() .. "Text"]
+	if text then
+		text:SetText(label)
+		text:SetFontObject("GameFontHighlightSmall")
+	end
+	checkbox.Text = text
+	checkbox:SetScript("OnClick", function(self)
+		if InCombatLockdown() then return end
+		if onToggle then onToggle(self:GetChecked() and true or false) end
+	end)
+	return checkbox
+end
+
+local miniDropdowns = {}
+local miniDropdownStrataHooked = false
+local function EnsureMiniDropdownStrataHook()
+	if miniDropdownStrataHooked then return end
+	miniDropdownStrataHooked = true
+	hooksecurefunc("ToggleDropDownMenu", function()
+		if not (UIDROPDOWNMENU_OPEN_MENU and miniDropdowns[UIDROPDOWNMENU_OPEN_MENU]) then return end
+		for _, list in ipairs({DropDownList1, DropDownList2}) do
+			if list then
+				list:SetFrameStrata("TOOLTIP")
+				list:SetFrameLevel(200)
+			end
+		end
+	end)
+end
+
+local function CreateMiniDropdown(parent, width, list, order, onSelect)
+	local dropdown = CreateFrame("Frame", NextMiniWidgetName("Dropdown"), parent, "UIDropDownMenuTemplate")
+	miniDropdowns[dropdown] = true
+	EnsureMiniDropdownStrataHook()
+	UIDropDownMenu_SetWidth(dropdown, width)
+	UIDropDownMenu_Initialize(dropdown, function(_, level)
+		local resolvedList, resolvedOrder = list, order
+		if type(list) == "function" then
+			resolvedList, resolvedOrder = list(ZF.ACTIVE_MOVER and ZF.ACTIVE_MOVER.unit)
+		end
+		for _, key in ipairs(resolvedOrder) do
+			local info = UIDropDownMenu_CreateInfo()
+			info.text = resolvedList[key]
+			info.value = key
+			info.func = function()
+				if InCombatLockdown() then return end
+				UIDropDownMenu_SetSelectedValue(dropdown, key)
+				UIDropDownMenu_SetText(dropdown, resolvedList[key])
+				if onSelect then onSelect(key) end
+			end
+			UIDropDownMenu_AddButton(info, level)
+		end
+	end)
+	return dropdown
+end
+
+local function CreateMiniSlider(parent, width, minValue, maxValue, step, onCommit)
+    local slider = CreateFrame("Slider", NextMiniWidgetName("Slider"), parent, "OptionsSliderTemplate")
+    slider:SetWidth(width)
+    slider:SetHeight(16)
+    slider:SetMinMaxValues(minValue, maxValue)
+    slider:SetValueStep(step)
+    slider:SetObeyStepOnDrag(true)
+    _G[slider:GetName() .. "Low"]:SetText("")
+    _G[slider:GetName() .. "High"]:SetText("")
+    _G[slider:GetName() .. "Text"]:SetText("")
+    
+    slider:SetScript("OnValueChanged", function(self, value)
+		if self.mcpSuppress or InCombatLockdown() then return end
+		if not ControlPanel.isDraggingSlider then
+			ControlPanel.isDraggingSlider = true
+			local left, top = ControlPanel:GetLeft(), ControlPanel:GetTop()
+			if left and top then
+				ControlPanel:ClearAllPoints()
+				ControlPanel:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+			end
+		end
+		if onCommit then onCommit(value) end
+	end)
+	slider:SetScript("OnMouseUp", function()
+		ControlPanel.isDraggingSlider = false
+		MoverControlPanel()
+	end)
+    return slider
+end
+
+local ROW_SPACING = 4
+
+local function IsGridUnit(unit)
+	return unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation"
+end
+
+local function IsGroupUnit(unit)
+	return unit == "party" or unit == "raid" or unit == "augmentation"
+end
+
+local function IsPartyUnit(unit)
+	return unit == "party"
+end
+
+local function IsRaidUnit(unit)
+	return unit == "raid"
+end
+
+local function IsAugmentationUnit(unit)
+	return unit == "augmentation"
+end
+
+local function IsAnyUnit()
+	return true
+end
+
+local CONTROL_PANEL_TABS = {
+	{ key = "Layout", label = "Layout", isRelevant = IsAnyUnit },
+	{ key = "Order", label = "Order", isRelevant = IsGridUnit },
+	{ key = "Groups", label = "Groups", isRelevant = IsRaidUnit },
+}
+
+local function AddControlPanelRow(tabKey, height, isVisibleFn)
+	local tab = ControlPanel.tabs[tabKey]
+	local row = CreateFrame("Frame", nil, tab.page)
+	row:SetHeight(height)
+	row.mcpHeight = height
+	row.mcpIsVisible = isVisibleFn
+	table.insert(tab.rows, row)
+	row:Hide()
+	return row
+end
+
+local function RefreshControlPanelTabs(unit)
+	local panel = ControlPanel
+	local firstRelevantKey
+	for _, tabDef in ipairs(CONTROL_PANEL_TABS) do
+		local tab = panel.tabs[tabDef.key]
+		local relevant = tabDef.isRelevant(unit)
+		tab.button:SetShown(relevant)
+		if relevant and not firstRelevantKey then firstRelevantKey = tabDef.key end
+	end
+	if not panel.activeTab or not panel.tabs[panel.activeTab].button:IsShown() then
+		panel.activeTab = firstRelevantKey
+	end
+
+	local FrameDB = ZF.db.profile.Units[unit].Frame
+	for _, tabDef in ipairs(CONTROL_PANEL_TABS) do
+		local tab = panel.tabs[tabDef.key]
+		if tabDef.key == panel.activeTab then
+			local yOffset = 0
+			for _, row in ipairs(tab.rows) do
+				local visible = not row.mcpIsVisible or row.mcpIsVisible(unit)
+				if visible then
+					row:ClearAllPoints()
+					row:SetPoint("TOPLEFT", tab.page, "TOPLEFT", 0, -yOffset)
+					row:SetPoint("TOPRIGHT", tab.page, "TOPRIGHT", 0, -yOffset)
+					row:Show()
+					if row.mcpRefresh then row.mcpRefresh(FrameDB, unit) end
+					yOffset = yOffset + row.mcpHeight + ROW_SPACING
+				else
+					row:Hide()
+				end
+			end
+			local pageHeight = yOffset > 0 and (yOffset - ROW_SPACING) or 0
+			tab.page:SetHeight(math.max(pageHeight, 0.01))
+			tab.page:Show()
+			tab.button:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+		else
+			tab.page:Hide()
+			tab.button:SetBackdropBorderColor(0, 0, 0, 1)
+		end
+	end
+end
+
+local function CreateLabel(parent, text)
+	local label = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	label:SetJustifyH("LEFT")
+	label:SetText(text)
+	return label
+end
+
+local function CommitFrameField(key, value)
+	if not ZF.ACTIVE_MOVER then return end
+	ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame[key] = value
+	RelayoutUnit(ZF.ACTIVE_MOVER)
+	RefreshMover(ZF.ACTIVE_MOVER)
+	MoverControlPanel()
+end
+
+local function CommitLayoutField(layoutIndex, value)
+	if not ZF.ACTIVE_MOVER then return end
+	ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame.Layout[layoutIndex] = value
+	RelayoutUnit(ZF.ACTIVE_MOVER)
+	RefreshMover(ZF.ACTIVE_MOVER)
+	MoverControlPanel()
+end
+
+local FIELD_ROW_HEIGHT = 20
+local DROPDOWN_ROW_HEIGHT = 32
+
+local function CreateFrameLayoutRows()
+
+    local dimMin, dimMax, dimStep = unpack(ZF.DesignerStyle.Sliders.Dimension)
+   	local sizeSliderRow = AddControlPanelRow("Layout", 20)
+	local WidthSlider = CreateMiniSlider(sizeSliderRow, 80, 20, 500, 1, function(value) CommitFrameField("Width", value) end)
+	WidthSlider:SetPoint("LEFT", sizeSliderRow, "LEFT", 4, 0)
+	local HeightSlider = CreateMiniSlider(sizeSliderRow, 80, 20, 500, 1, function(value) CommitFrameField("Height", value) end)
+	HeightSlider:SetPoint("LEFT", WidthSlider, "RIGHT", 12, 0)
+	sizeSliderRow.mcpRefresh = function(FrameDB)
+		WidthSlider.mcpSuppress = true
+		WidthSlider:SetValue(FrameDB.Width)
+		WidthSlider.mcpSuppress = false
+		HeightSlider.mcpSuppress = true
+		HeightSlider:SetValue(FrameDB.Height)
+		HeightSlider.mcpSuppress = false
+	end
+
+	local sizeRow = AddControlPanelRow("Layout", FIELD_ROW_HEIGHT)
+	local WidthLabel = CreateLabel(sizeRow, "W")
+	WidthLabel:SetPoint("LEFT", sizeRow, "LEFT", 4, 0)
+	local WidthBox = CreateMiniEditBox(sizeRow, 50, 16, function(value) CommitFrameField("Width", value) end)
+	WidthBox:SetPoint("LEFT", WidthLabel, "RIGHT", 4, 0)
+
+	local HeightLabel = CreateLabel(sizeRow, "H")
+	HeightLabel:SetPoint("LEFT", WidthBox, "RIGHT", 12, 0)
+	local HeightBox = CreateMiniEditBox(sizeRow, 50, 16, function(value) CommitFrameField("Height", value) end)
+	HeightBox:SetPoint("LEFT", HeightLabel, "RIGHT", 4, 0)
+
+	sizeRow.mcpRefresh = function(FrameDB)
+		if not WidthBox:HasFocus() then WidthBox:SetText(string.format("%.0f", FrameDB.Width)) end
+		if not HeightBox:HasFocus() then HeightBox:SetText(string.format("%.0f", FrameDB.Height)) end
+	end
+
+	local anchorFromRow = AddControlPanelRow("Layout", DROPDOWN_ROW_HEIGHT)
+	local AnchorFromLabel = CreateLabel(anchorFromRow, "From")
+	AnchorFromLabel:SetPoint("LEFT", anchorFromRow, "LEFT", 4, 2)
+	local AnchorFromDropdown = CreateMiniDropdown(anchorFromRow, 85, ZF.GUIBuilders.AnchorPoints[1], ZF.GUIBuilders.AnchorPoints[2], function(value) CommitLayoutField(1, value) end)
+	AnchorFromDropdown:SetPoint("LEFT", AnchorFromLabel, "RIGHT", -4, -2)
+	anchorFromRow.mcpRefresh = function(FrameDB)
+		UIDropDownMenu_SetSelectedValue(AnchorFromDropdown, FrameDB.Layout[1])
+		UIDropDownMenu_SetText(AnchorFromDropdown, ZF.GUIBuilders.AnchorPoints[1][FrameDB.Layout[1]])
+	end
+
+	local anchorToRow = AddControlPanelRow("Layout", DROPDOWN_ROW_HEIGHT)
+	local AnchorToLabel = CreateLabel(anchorToRow, "To")
+	AnchorToLabel:SetPoint("LEFT", anchorToRow, "LEFT", 4, 2)
+	local AnchorToDropdown = CreateMiniDropdown(anchorToRow, 85, ZF.GUIBuilders.AnchorPoints[1], ZF.GUIBuilders.AnchorPoints[2], function(value) CommitLayoutField(2, value) end)
+	AnchorToDropdown:SetPoint("LEFT", AnchorToLabel, "RIGHT", -4, -2)
+	anchorToRow.mcpRefresh = function(FrameDB)
+		UIDropDownMenu_SetSelectedValue(AnchorToDropdown, FrameDB.Layout[2])
+		UIDropDownMenu_SetText(AnchorToDropdown, ZF.GUIBuilders.AnchorPoints[1][FrameDB.Layout[2]])
+	end
+
+	local anchorParentRow = AddControlPanelRow("Layout", FIELD_ROW_HEIGHT, function(unit)
+		return ZF.db.profile.Units[unit].Frame.AnchorToFrame ~= nil
+	end)
+	local AnchorParentLabel = CreateLabel(anchorParentRow, "Parent")
+	AnchorParentLabel:SetPoint("LEFT", anchorParentRow, "LEFT", 4, 0)
+	local AnchorParentBox = CreateFrame("EditBox", nil, anchorParentRow, "BackdropTemplate")
+	AnchorParentBox:SetSize(140, 16)
+	AnchorParentBox:SetPoint("LEFT", AnchorParentLabel, "RIGHT", 4, 0)
+	AnchorParentBox:SetAutoFocus(false)
+	AnchorParentBox:SetFontObject("GameFontHighlightSmall")
+	AnchorParentBox:SetBackdrop(ZF.BACKDROP)
+	AnchorParentBox:SetBackdropColor(0, 0, 0, 0.6)
+	AnchorParentBox:SetBackdropBorderColor(0, 0, 0, 1)
+	local function CommitAnchorParent(self)
+		self:ClearFocus()
+		if InCombatLockdown() then return end
+		CommitFrameField("AnchorToFrame", self:GetText())
+	end
+	AnchorParentBox:SetScript("OnEnterPressed", CommitAnchorParent)
+	AnchorParentBox:SetScript("OnEditFocusLost", CommitAnchorParent)
+	AnchorParentBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	anchorParentRow.mcpRefresh = function(FrameDB)
+		if not AnchorParentBox:HasFocus() then AnchorParentBox:SetText(FrameDB.AnchorToFrame or "") end
+	end
+
+	local strataRow = AddControlPanelRow("Layout", DROPDOWN_ROW_HEIGHT)
+	local StrataLabel = CreateLabel(strataRow, "Strata")
+	StrataLabel:SetPoint("LEFT", strataRow, "LEFT", 4, 2)
+	local StrataDropdown = CreateMiniDropdown(strataRow, 90, ZF.GUIBuilders.FrameStrataList[1], ZF.GUIBuilders.FrameStrataList[2], function(value) CommitFrameField("FrameStrata", value) end)
+	StrataDropdown:SetPoint("LEFT", StrataLabel, "RIGHT", -4, -2)
+	strataRow.mcpRefresh = function(FrameDB)
+		UIDropDownMenu_SetSelectedValue(StrataDropdown, FrameDB.FrameStrata)
+		UIDropDownMenu_SetText(StrataDropdown, ZF.GUIBuilders.FrameStrataList[1][FrameDB.FrameStrata])
+	end
+end
+
+local RaidGrowthDirectionList = {
+	{
+		["RIGHT_DOWN"] = "Right to Left, then Down",
+		["RIGHT_UP"] = "Right to Left, then Up",
+		["LEFT_DOWN"] = "Left to Right, then Down",
+		["LEFT_UP"] = "Left to Right, then Up",
+		["UP_RIGHT"] = "Top to Bottom, then Right",
+		["UP_LEFT"] = "Top to Bottom, then Left",
+		["DOWN_RIGHT"] = "Bottom to Top, then Right",
+		["DOWN_LEFT"] = "Bottom to Top, then Left",
+	},
+	{"RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP", "UP_RIGHT", "UP_LEFT", "DOWN_RIGHT", "DOWN_LEFT"},
+}
+local PartyGrowthDirectionList = {
+	{["UP"] = "Up", ["DOWN"] = "Down", ["LEFT"] = "Left", ["RIGHT"] = "Right"},
+	{"UP", "DOWN", "LEFT", "RIGHT"},
+}
+local BossGrowthDirectionList = {
+	{["UP"] = "Up", ["DOWN"] = "Down"},
+	{"UP", "DOWN"},
+}
+
+local function GrowthDirectionListFor(unit)
+	if unit == "raid" or unit == "augmentation" then return RaidGrowthDirectionList[1], RaidGrowthDirectionList[2] end
+	if unit == "party" then return PartyGrowthDirectionList[1], PartyGrowthDirectionList[2] end
+	return BossGrowthDirectionList[1], BossGrowthDirectionList[2]
+end
+
+local function CreateGridUnitRows()
+	local growthRow = AddControlPanelRow("Order", DROPDOWN_ROW_HEIGHT, IsGridUnit)
+	local GrowthLabel = CreateLabel(growthRow, "Growth")
+	GrowthLabel:SetPoint("LEFT", growthRow, "LEFT", 4, 2)
+	local GrowthDropdown = CreateMiniDropdown(growthRow, 85, GrowthDirectionListFor, nil, function(value) CommitFrameField("GrowthDirection", value) end)
+	GrowthDropdown:SetPoint("LEFT", GrowthLabel, "RIGHT", -4, -2)
+	growthRow.mcpRefresh = function(FrameDB, unit)
+		local list = GrowthDirectionListFor(unit)
+		UIDropDownMenu_SetSelectedValue(GrowthDropdown, FrameDB.GrowthDirection)
+		UIDropDownMenu_SetText(GrowthDropdown, list[FrameDB.GrowthDirection])
+	end
+
+	
+    local SpacingSliderRow= AddControlPanelRow("Order", 20, IsGridUnit)
+    local SpacingSlider = CreateMiniSlider(SpacingSliderRow, 180, -1, 100, 0.1, function(value) CommitLayoutField(5, value) end)
+    SpacingSlider:SetPoint("LEFT", SpacingSliderRow, "LEFT", 4, 0)
+    SpacingSliderRow.mcpRefresh = function(FrameDB)
+        SpacingSlider.mcpSuppress = true
+        SpacingSlider:SetValue(FrameDB.Layout[5])
+        SpacingSlider.mcpSuppress = false
+    end
+
+    local SpacingRow = AddControlPanelRow("Order", FIELD_ROW_HEIGHT, IsGridUnit)
+	local SpacingLabel = CreateLabel(SpacingRow, "Spacing")
+	SpacingLabel:SetPoint("LEFT", SpacingRow, "LEFT", 4, 0)
+	local SpacingBox = CreateMiniEditBox(SpacingRow, 50, 16, function(value) CommitLayoutField(5, value) end)
+	SpacingBox:SetPoint("LEFT", SpacingLabel, "RIGHT", 4, 0)
+	SpacingRow.mcpRefresh = function(FrameDB)
+		if not SpacingBox:HasFocus() then SpacingBox:SetText(string.format("%.1f", FrameDB.Layout[5])) end
+	end
+
+	local UnitsPerColumnSliderRow = AddControlPanelRow("Order", 20, IsAugmentationUnit)
+	local UnitsPerColumnSlider = CreateMiniSlider(UnitsPerColumnSliderRow, 180, 1, ZF.MAX_RAID_FRAMES, 1, function(value) CommitFrameField("UnitsPerColumn", value) end)
+	UnitsPerColumnSlider:SetPoint("LEFT", UnitsPerColumnSliderRow, "LEFT", 4, 0)
+	UnitsPerColumnSliderRow.mcpRefresh = function(FrameDB)
+		UnitsPerColumnSlider.mcpSuppress = true
+		UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP)
+		UnitsPerColumnSlider.mcpSuppress = false
+	end
+
+	local UnitsPerColumnRow = AddControlPanelRow("Order", FIELD_ROW_HEIGHT, IsAugmentationUnit)
+	local UnitsPerColumnLabel = CreateLabel(UnitsPerColumnRow, "Per Row")
+	UnitsPerColumnLabel:SetPoint("LEFT", UnitsPerColumnRow, "LEFT", 4, 0)
+	local UnitsPerColumnBox = CreateMiniEditBox(UnitsPerColumnRow, 50, 16, function(value) CommitFrameField("UnitsPerColumn", value) end)
+	UnitsPerColumnBox:SetPoint("LEFT", UnitsPerColumnLabel, "RIGHT", 4, 0)
+	UnitsPerColumnRow.mcpRefresh = function(FrameDB)
+		if not UnitsPerColumnBox:HasFocus() then UnitsPerColumnBox:SetText(string.format("%.0f", FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP)) end
+	end
+end
+
+local RaidSortByList = {
+	{["GROUP"] = "Group", ["INDEX"] = "Index"},
+	{"GROUP", "INDEX"},
+}
+local AugmentationSortByList = {
+	{["NAMELIST"] = "Player List", ["NAME"] = "Name"},
+	{"NAMELIST", "NAME"},
+}
+local PartySortByList = {
+	{["ROLE"] = "Role", ["INDEX"] = "Index", ["NAME"] = "Name"},
+	{"ROLE", "INDEX", "NAME"},
+}
+local RoleOrderList = {
+	{["TANK"] = "Tank", ["HEALER"] = "Healer", ["DAMAGER"] = "DPS"},
+	{"TANK", "HEALER", "DAMAGER"},
+}
+
+local function SortByListFor(unit)
+	if unit == "raid" then return RaidSortByList[1], RaidSortByList[2] end
+	if unit == "augmentation" then return AugmentationSortByList[1], AugmentationSortByList[2] end
+	return PartySortByList[1], PartySortByList[2]
+end
+
+local function CommitRoleOrder(index, value)
+	if not ZF.ACTIVE_MOVER then return end
+	ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame.RoleOrder[index] = value
+	RelayoutUnit(ZF.ACTIVE_MOVER)
+	RefreshMover(ZF.ACTIVE_MOVER)
+	MoverControlPanel()
+end
+
+local function CommitGroupToggle(index, value)
+    if not ZF.ACTIVE_MOVER then return end
+    local FrameDB = ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame
+    FrameDB.Groups = FrameDB.Groups or {}
+    FrameDB.Groups[index] = value
+    RelayoutUnit(ZF.ACTIVE_MOVER)
+    RefreshMover(ZF.ACTIVE_MOVER)
+    MoverControlPanel()
+end
+
+local function CreateGroupUnitRows()
+	local sortByRow = AddControlPanelRow("Order", DROPDOWN_ROW_HEIGHT, IsGroupUnit)
+	local SortByLabel = CreateLabel(sortByRow, "Sort")
+	SortByLabel:SetPoint("LEFT", sortByRow, "LEFT", 4, 2)
+	local SortByDropdown = CreateMiniDropdown(sortByRow, 85, SortByListFor, nil, function(value) CommitFrameField("SortBy", value) end)
+	SortByDropdown:SetPoint("LEFT", SortByLabel, "RIGHT", -4, -2)
+	sortByRow.mcpRefresh = function(FrameDB, unit)
+		local list = SortByListFor(unit)
+		local displayValue = (unit == "augmentation" and FrameDB.SortBy ~= "NAME") and "NAMELIST" or FrameDB.SortBy
+		UIDropDownMenu_SetSelectedValue(SortByDropdown, displayValue)
+		UIDropDownMenu_SetText(SortByDropdown, list[displayValue])
+	end
+
+	for i = 1, 3 do
+		local roleOrderRow = AddControlPanelRow("Order", DROPDOWN_ROW_HEIGHT, IsPartyUnit)
+		local RoleOrderLabel = CreateLabel(roleOrderRow, "Order " .. i)
+		RoleOrderLabel:SetPoint("LEFT", roleOrderRow, "LEFT", 4, 2)
+		local RoleOrderDropdown = CreateMiniDropdown(roleOrderRow, 70, RoleOrderList[1], RoleOrderList[2], function(value) CommitRoleOrder(i, value) end)
+		RoleOrderDropdown:SetPoint("LEFT", RoleOrderLabel, "RIGHT", -4, -2)
+		roleOrderRow.mcpRefresh = function(FrameDB)
+			if FrameDB.SortBy ~= "ROLE" then
+				UIDropDownMenu_DisableDropDown(RoleOrderDropdown)
+			else
+				UIDropDownMenu_EnableDropDown(RoleOrderDropdown)
+			end
+			UIDropDownMenu_SetSelectedValue(RoleOrderDropdown, FrameDB.RoleOrder[i])
+			UIDropDownMenu_SetText(RoleOrderDropdown, RoleOrderList[1][FrameDB.RoleOrder[i]])
+		end
+	end
+end
+
+local function CreateRaidGroupRows()
+    local AutoAdjustRow = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+    local AutoAdjustCheckBox = CreateMiniCheckbox(AutoAdjustRow, "Groups per Difficulty", function(value) CommitFrameField("AutoAdjustGroups", value) end)
+    AutoAdjustCheckBox:SetPoint("LEFT", AutoAdjustRow, "LEFT", 4, 0)
+    AutoAdjustRow.mcpRefresh = function(FrameDB)
+        AutoAdjustCheckBox:SetChecked(FrameDB.AutoAdjustGroups)
+     end
+
+     local groupRows = {}
+     local PER_ROW = 4
+     for i = 1, ZF.MAX_RAID_GROUPS do
+        local rowIndex = math.ceil(i / PER_ROW)
+        local colIndex = (i - 1) % PER_ROW
+        if colIndex == 0 then
+            groupRows[rowIndex] = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+            groupRows[rowIndex].mcpCheckboxes = {}
+        end
+        local row = groupRows[rowIndex]
+        local checkbox = CreateMiniCheckbox(row, "G" .. i, function(value) CommitGroupToggle(i, value) end)
+        if colIndex == 0 then
+            checkbox:SetPoint("LEFT", row, "LEFT", 4, 0)
+        else
+            checkbox:SetPoint("LEFT", row.mcpLastCheckbox, "RIGHT", 24, 0)
+        end
+        row.mcpLastCheckbox = checkbox
+        table.insert(row.mcpCheckboxes, {checkbox = checkbox, index = i})
+    end
+    for _, row in pairs(groupRows) do
+        row.mcpRefresh = function(FrameDB)
+            FrameDB.Groups = FrameDB.Groups or {}
+            for _, entry in ipairs(row.mcpCheckboxes) do
+                entry.checkbox:SetChecked(FrameDB.Groups[entry.index])
+                if FrameDB.AutoAdjustGroups then entry.checkbox:Disable() else entry.checkbox:Enable() end
+            end
+        end
+    end
+end
+
+
 
 local function GetMoverControlPanel()
     if ControlPanel then return ControlPanel end
+    local coreHeight = ZF.DesignerStyle.Movers.ControlPanelCoreHeight
+    local coreWidth = ZF.DesignerStyle.Movers.ControlPanelCoreWidth
+    local tabStripWidth = ZF.DesignerStyle.Movers.TabStripWidth
+    local tabButtonHeight = ZF.DesignerStyle.Movers.TabButtonHeight
+    local tabPageWidth = ZF.DesignerStyle.Movers.TabPageWidth
     ControlPanel = CreateFrame("Frame", "ZF_MoverControlPanel", UIParent, "BackdropTemplate")
-    ControlPanel:SetSize(150, 90)
+    ControlPanel:SetSize(coreWidth, coreHeight)
     ControlPanel:SetFrameStrata("TOOLTIP")
     ControlPanel:SetClampedToScreen(true)
     ControlPanel:SetBackdrop(ZF.BACKDROP)
     ControlPanel:SetBackdropColor(0, 0, 0, .9)
     ControlPanel:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
 	ControlPanel:EnableMouse(true)
+	ControlPanel.tabs = {}
+
+	local TabStrip = CreateFrame("Frame", nil, ControlPanel)
+	TabStrip:SetPoint("TOPLEFT", ControlPanel, "TOPRIGHT", 2, 0)
+	TabStrip:SetSize(tabStripWidth, #CONTROL_PANEL_TABS * (tabButtonHeight + 2))
+	ControlPanel.TabStrip = TabStrip
+
+	for index, tabDef in ipairs(CONTROL_PANEL_TABS) do
+		local page = CreateFrame("Frame", nil, ControlPanel, "BackdropTemplate")
+		page:SetPoint("TOPLEFT", TabStrip, "TOPRIGHT", 2, 0)
+		page:SetWidth(tabPageWidth)
+		page:SetHeight(0.01)
+		page:SetBackdrop(ZF.BACKDROP)
+		page:SetBackdropColor(0, 0, 0, .9)
+		page:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+		page:Hide()
+
+		local button = CreateFrame("Button", nil, TabStrip, "BackdropTemplate")
+		button:SetSize(tabStripWidth, tabButtonHeight)
+		button:SetPoint("TOP", TabStrip, "TOP", 0, -((index - 1) * (tabButtonHeight + 2)))
+		button:SetBackdrop(ZF.BACKDROP)
+		button:SetBackdropColor(0, 0, 0, .9)
+		button:SetBackdropBorderColor(0, 0, 0, 1)
+		local text = button:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		text:SetPoint("CENTER")
+		text:SetText(tabDef.label)
+		button:SetScript("OnClick", function()
+			if InCombatLockdown() then return end
+			ControlPanel.activeTab = tabDef.key
+			MoverControlPanel()
+		end)
+
+		ControlPanel.tabs[tabDef.key] = { page = page, button = button, rows = {} }
+	end
 
     local NudgeDirections = {
         Up    = {0, 1, 0},
@@ -155,6 +707,10 @@ local function GetMoverControlPanel()
     end
 
 	CreateMoverControlBoxes(ControlPanel)
+	CreateFrameLayoutRows()
+	CreateGridUnitRows()
+	CreateGroupUnitRows()
+	CreateRaidGroupRows()
     ControlPanel:Hide()
     return ControlPanel
 end
@@ -162,16 +718,20 @@ end
 MoverControlPanel = function()
     local panel = GetMoverControlPanel()
     if not ZF.ACTIVE_MOVER then panel:Hide() return end
-    panel:ClearAllPoints()
-    panel:SetPoint("TOP", ZF.ACTIVE_MOVER, "BOTTOM", 0, -4)
+    if not panel.isDraggingSlider then
+        panel:ClearAllPoints()
+        panel:SetPoint("TOP", ZF.ACTIVE_MOVER, "BOTTOM", 0, -4)
+    end
     local FrameDB = ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame
     if not panel.XBox:HasFocus() then panel.XBox:SetText(string.format("%.1f", FrameDB.Layout[3])) end
     if not panel.YBox:HasFocus() then panel.YBox:SetText(string.format("%.1f", FrameDB.Layout[4])) end
+    RefreshControlPanelTabs(ZF.ACTIVE_MOVER.unit)
     panel:Show()
 end
 
 function ZF:SetMoverSelection(frameMover)
     if not frameMover and not ZF.ACTIVE_MOVER then return end
+    if ControlPanel then ControlPanel.isDraggingSlider = false end
     ZF.ACTIVE_MOVER = frameMover
     local moverList = {}
     for _, mover in pairs(ZF.MOVERS or {}) do moverList[#moverList + 1] = mover end
@@ -247,7 +807,7 @@ local ModeWindow
 local function GetMoverModeWindow()
     if ModeWindow then return ModeWindow end
     ModeWindow = CreateFrame("Frame", "ZF_MoverModeWindow", UIParent, "BackdropTemplate")
-    ModeWindow:SetSize(260, 90)
+    ModeWindow:SetSize(260, 100)
     ModeWindow:SetPoint("TOP", UIParent, "TOP", 0, -100)
     ModeWindow:SetFrameStrata("TOOLTIP")
     ModeWindow:SetBackdrop(ZF.BACKDROP)
@@ -259,7 +819,7 @@ local function GetMoverModeWindow()
     Instructions:SetPoint("TOP", ModeWindow, "TOP", 0, -10)
     Instructions:SetWidth(240)
     Instructions:SetJustifyH("CENTER")
-    Instructions:SetText("Click a mover to select it.\nClick arrows or drag to move.\nArrow keys nudge the selected mover by 0.1px.\nRight-click a mover for its settings.")
+    Instructions:SetText("Click a frame to select it.\nDrag a frame to move it.\nPress arrow buttons to nudge by 1px.\nArrow keys nudge by 0.1px.\nRight-click a frame for its settings.")
 
     local ExitButton = CreateFrame("Button", nil, ModeWindow, "UIPanelButtonTemplate")
     ExitButton:SetSize(80, 22)
@@ -270,6 +830,11 @@ local function GetMoverModeWindow()
     ModeWindow:EnableKeyboard(true)
     ModeWindow:SetPropagateKeyboardInput(true)
     ModeWindow:SetScript("OnKeyDown", function(self, key)
+        if key == "ESCAPE" then
+            self:SetPropagateKeyboardInput(false)
+            ZF:CloseAddonUI()
+            return
+        end
         if not ZF.ACTIVE_MOVER or InCombatLockdown() then return end
         local dx, dy = 0, 0
         if key == "LEFT" then dx = -ZF.DesignerStyle.Movers.NudgeStepFine
@@ -286,25 +851,66 @@ local function GetMoverModeWindow()
     return ModeWindow
 end
 
-function ZF:ToggleMovers()
+local function ShowMoverButtons(shown)
+	for _, mover in pairs(ZF.MOVERS or {}) do
+		mover:SetShown(shown and (mover.unit ~= "augmentation" or ZF:IsAugmentationEvoker()))
+	end
+end
+
+local ClickCatcher
+
+local function GetMoverClickCatcher()
+	if ClickCatcher then return ClickCatcher end
+	ClickCatcher = CreateFrame("Button", "ZF_MoverClickCatcher", UIParent)
+	ClickCatcher:SetAllPoints(UIParent)
+	ClickCatcher:SetFrameStrata("DIALOG")
+	ClickCatcher:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	ClickCatcher:SetScript("OnClick", function() ZF:SetMoverSelection(nil) end)
+	ClickCatcher:Hide()
+	return ClickCatcher
+end
+
+function ZF:SetMoverOverlayShown(shown)
+	if not ZF.MOVERS_UNLOCKED then return end
+	if shown then
+		ShowMoverButtons(true)
+		GetMoverModeWindow():Show()
+		GetMoverClickCatcher():Show()
+		MoverControlPanel()
+	else
+		ShowMoverButtons(false)
+		GetMoverModeWindow():Hide()
+		GetMoverClickCatcher():Hide()
+		GetMoverControlPanel():Hide()
+	end
+end
+
+function ZF:ToggleMovers(skipReopenGUI)
 	if InCombatLockdown() then ZF:PrettyPrint("Movers cannot be toggled while in combat.") return ZF.MOVERS_UNLOCKED end
 	ZF.MOVERS_UNLOCKED = not ZF.MOVERS_UNLOCKED
-	for _, mover in pairs(ZF.MOVERS or {}) do 
-		mover:SetShown(ZF.MOVERS_UNLOCKED and (mover.unit ~= "augmentation" or ZF:IsAugmentationEvoker())) end
-	if ZF.MOVERS_UNLOCKED then 
-        ZF:EnterPartyPreview() 
+	ShowMoverButtons(ZF.MOVERS_UNLOCKED)
+	if ZF.MOVERS_UNLOCKED then
+        ZF:EnterPartyPreview()
         ZF:EnterBossPreview()
-        ZF:EnterRaidPreview() 
-    else 
+        ZF:EnterRaidPreview()
+        ZF:EnterTargetPreview()
+    else
         ZF:ExitPartyPreview()
         ZF:ExitBossPreview()
         ZF:ExitRaidPreview()
+        ZF:ExitTargetPreview()
     end
-	ZF:SetMainGUIShown(not ZF.MOVERS_UNLOCKED)
+	if not skipReopenGUI then ZF:SetMainGUIShown(not ZF.MOVERS_UNLOCKED) end
 	GetMoverModeWindow():SetShown(ZF.MOVERS_UNLOCKED)
-	if not ZF.MOVERS_UNLOCKED then 
-        ZF:SetMoverSelection(nil) 
+	GetMoverClickCatcher():SetShown(ZF.MOVERS_UNLOCKED)
+	if not ZF.MOVERS_UNLOCKED then
+        ZF:SetMoverSelection(nil)
     end
-    
+
 	return ZF.MOVERS_UNLOCKED
+end
+
+function ZF:CloseAddonUI()
+	if ZF.MOVERS_UNLOCKED then ZF:ToggleMovers(true) end
+	ZF:CloseMainGUI()
 end

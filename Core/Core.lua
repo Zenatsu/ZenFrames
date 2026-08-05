@@ -37,12 +37,27 @@ function ZenFrames:OnInitialize()
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, ZF.RefreshProfiles) end end)
 
+    local guiWasShownBeforeCombat = false
+    local combatUIWatcherFrame = CreateFrame("Frame")
+    combatUIWatcherFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+    combatUIWatcherFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    combatUIWatcherFrame:SetScript("OnEvent", function(_, event)
+        if event == "PLAYER_REGEN_DISABLED" then
+            guiWasShownBeforeCombat = ZF:IsMainGUIShown()
+            if guiWasShownBeforeCombat then ZF:SetMainGUIShown(false) end
+            ZF:SetMoverOverlayShown(false)
+        elseif event == "PLAYER_REGEN_ENABLED" then
+            if guiWasShownBeforeCombat then ZF:SetMainGUIShown(true) end
+            guiWasShownBeforeCombat = false
+            ZF:SetMoverOverlayShown(true)
+        end
+    end)
+
     if migratedFromUUFDB then StaticPopup_Show("ZF_UUFDB_MIGRATED") end
 end
 
 function ZenFrames:OnEnable()
     ZF:Init()
-    ZF:CreatePositionController()
     ZF:SpawnUnitFrame("player")
     ZF:SpawnUnitFrame("target")
     ZF:SpawnUnitFrame("targettarget")

@@ -3,13 +3,6 @@ local oUF = ZF.oUF
 oUF.Tags = oUF.Tags or {}
 
 function ZFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
-    -- tagString: The string used to call the tag, e.g., "curhp:abbr"
-    -- tagEvents: A space-separated string of events that will trigger an update of the tag
-    -- tagMethod: A function that takes a unit as an argument and returns the tag's value
-    -- tagType: "Health", "Power", "Name", "Misc"
-    -- tagDescription: A short description of what the tag does.
-    -- tagType, tagDescription are used for the configuration UI. Please provide them. Prefix of your AddOn Name is also advised.
-    -- EG: ZFG:AddTag("BCDM: Health", "UNIT_HEALTH UNIT_MAXHEALTH", function(unit) return UnitHealth(unit) or 0 end, "Health", "Show Health")
 
     if not tagString or not tagEvents or not tagMethod or not tagType or not tagDescription then return end
 

@@ -76,6 +76,7 @@ function ZF:ForEachAugmentationRaidFrame(callback, includeInactive, ...)
 end
 
 function ZF:LayoutAugmentationRaidFrames()
+	if InCombatLockdown() then return end
 	if not ZF.AUGMENTATION_RAID_CONTAINER or not ZF.AUGMENTATION_RAID_HEADER then return end
 	local FrameDB = ZF.db.profile.Units.augmentation.Frame
 	local unitGrowth, groupGrowth = (FrameDB.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
@@ -230,6 +231,7 @@ function ZF:SpawnAugmentationRaidFrames()
 end
 
 function ZF:SpawnGroupFrame(groupType)
+	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
 	local FrameDB = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		ZF.PARTY_CONTAINER = ZF.PARTY_CONTAINER or CreateBackdropContainer("ZF_PartyContainer")
@@ -319,6 +321,7 @@ function ZF:UpdateGroupFrame(groupType)
 		end
 		return
 	end
+	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER then ZF:SpawnGroupFrame("party") else
 			ZF.PARTY_CONTAINER:ClearAllPoints()
@@ -409,7 +412,17 @@ function ZF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
 	if groupType == "party" then ZF:LayoutGroupFrames(groupType) end
 end
 
+function ZF:IsRaidGroupShown(Frame, groupIndex)
+	if Frame.AutoAdjustGroups then
+		local _, _, difficultyID = GetInstanceInfo()
+		local autoGroupCount = (difficultyID == 14 or difficultyID == 15) and 6 or difficultyID == 16 and 4 or difficultyID == 233 and 5 or 8
+		return groupIndex <= autoGroupCount
+	end
+	return Frame.Groups == nil or Frame.Groups[groupIndex] ~= false
+end
+
 function ZF:LayoutGroupFrames(groupType)
+	if InCombatLockdown() then return end
 	local Frame = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER or #ZF.PARTY_FRAMES == 0 then return end
@@ -452,14 +465,12 @@ function ZF:LayoutGroupFrames(groupType)
 		end
 	elseif groupType == "raid" then
 		if not ZF.RAID_CONTAINER then return end
-		local _, _, difficultyID = GetInstanceInfo()
-		local autoGroupCount = Frame.AutoAdjustGroups and ((difficultyID == 14 or difficultyID == 15) and 6 or difficultyID == 16 and 4 or difficultyID == 233 and 5 or 8)
 		local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
 		unitGrowth = unitGrowth or "RIGHT"
 		groupGrowth = groupGrowth or "DOWN"
 		local spacing = Frame.Layout[5] or 0
 		local shownGroups = 0
-		for groupIndex = 1, ZF.MAX_RAID_GROUPS do if autoGroupCount and groupIndex <= autoGroupCount or not autoGroupCount and (not Frame.Groups or Frame.Groups[groupIndex]) then shownGroups = shownGroups + 1 end end
+		for groupIndex = 1, ZF.MAX_RAID_GROUPS do if ZF:IsRaidGroupShown(Frame, groupIndex) then shownGroups = shownGroups + 1 end end
 		local headerWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * ZF.MAX_RAID_FRAMES_PER_GROUP - spacing
 		local headerHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * ZF.MAX_RAID_FRAMES_PER_GROUP - spacing or Frame.Height
 		local point, unitXOffset, unitYOffset = ComputeUnitGrowthAnchor(unitGrowth, spacing)
@@ -470,7 +481,7 @@ function ZF:LayoutGroupFrames(groupType)
 		ZF.RAID_CONTAINER:SetSize(math.max((groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth, Frame.Width), math.max((groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight, Frame.Height))
 		local shownGroupIndex = 0
 		for groupIndex, header in ipairs(ZF.RAID_HEADERS) do
-			local showGroup = autoGroupCount and groupIndex <= autoGroupCount or not autoGroupCount and (not Frame.Groups or Frame.Groups[groupIndex])
+			local showGroup = ZF:IsRaidGroupShown(Frame, groupIndex)
 			if showGroup then shownGroupIndex = shownGroupIndex + 1 end
 			for childIndex = 1, ZF.MAX_RAID_FRAMES_PER_GROUP do
 				local child = header:GetAttribute("child" .. childIndex)
@@ -562,6 +573,8 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		end
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		if RaidDB and RaidDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
+		ZF:UpdateGroupFrame("party")
+		ZF:UpdateGroupFrame("raid")
 		ZF:UpdateGroupIndicators("party")
 		ZF:UpdateGroupIndicators("raid")
 		ZF:UpdateAugmentationRaidFrames()

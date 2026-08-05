@@ -9,7 +9,6 @@
 	<Script file="Movers.lua"/>
 	<Script file="UnitPreview.lua"/>
 	<Script file="Portrait.lua"/>
-	<Script file="Positioner.lua"/>
 	<Script file="PowerBar.lua"/>
 	<Script file="SecondaryPowerBar.lua"/>
 	<Script file="DispelHighlight.lua"/>

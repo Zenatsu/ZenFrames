@@ -7,8 +7,7 @@ ZF.DesignerStyle = {
         CanvasHeight  = 210,
         CanvasWidth   = nil,
         TabStripHeight = 60,
-        TabStripHeightSecondRow = 20,
-        OptionsHeight = 480,--was 280
+        OptionsHeight = 560,
         OptionsWidth  = nil,
         OverlayBleed  = 4,
         OverlayMinHit = 16,
@@ -19,6 +18,11 @@ ZF.DesignerStyle = {
     Movers = {
         NudgeStep = 1,
         NudgeStepFine = 0.1,
+        ControlPanelCoreHeight = 90,
+        ControlPanelCoreWidth = 150,
+        TabStripWidth = 40,
+        TabButtonHeight = 20,
+        TabPageWidth = 200,
     },
 
     -- Shared slider min/max/step triples, so every settings panel tunes from one place.
