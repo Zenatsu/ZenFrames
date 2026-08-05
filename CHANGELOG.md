@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## V1.0.3
+
+- Removed the Cooldown Manager anchor option
+- Party, boss, raid, and target frames now show fake preview data while unlocked for moving, even without a real group or target.
+- Moved each frame's Layout & Positioning options (size, anchor, growth, spacing, sort, raid groups) out of the Designer and into the mover control panel next to the frame itself.
+- Split each Aura tab into separate Buff Config, Layout & Positioning, and Count Settings tabs instead of one long page.
+- Fixed the Designer preview darkening after changing any setting.
+- Fixed party/boss mover previews losing their fake data or re-randomizing their class color when moved.
+- Fixed Threat and Target glow textures rendering incorrectly.
+- Clicking empty space while movers are unlocked now deselects the current mover.
+- Escape now closes the addon UI instead of always opening the game menu.
+
 ## V1.0.2
 
 - Major refactoring and cleanup of core code and the settings menu.
