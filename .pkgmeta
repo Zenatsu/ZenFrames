@@ -1,0 +1,7 @@
+package-as: ZenFrames
+ignore:
+  - .claude
+  - .vscode
+  - .luacheckrc
+  - IssueTracker.txt
+  - ZenFrames-Dev.toc
