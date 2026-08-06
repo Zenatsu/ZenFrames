@@ -7,6 +7,6 @@ ignore:
   - .gitattributes
   - IssueTracker.txt
   - ZenFrames-Dev.toc
-  manual-changelog:
+manual-changelog:
   filename: CHANGELOG.md
   markup-type: markdown
