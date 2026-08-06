@@ -2,7 +2,13 @@
 
 ## V1.0.5
 
-- 
+- Import Migration fixes (some prefixes persisted casuing potiental refrence issues)
+- Replaced the parent editable text box to be a drop down seleciton instead
+- Added the addon into the addon compartment afixed to the minimap
+- Fixed issue where frames can be stuck behind another frame and not be selected. Clicking the frame agian if there is a fame overlapping will select the next frame in line.
+- Added options to the movers UI that changes the preview frames displaying colored boxes and aura (if enabled). None, Always, or Hybrid (only show when selected)
+- Added option to detatch the control panel, it will snap below the movers dialog box and become draggable. Still only appears when you select a frame to manipulate.
+- Added Focus, Focus Target, Pet, and Target of Target, colored preview bars.
 
 ## V1.0.4
 
