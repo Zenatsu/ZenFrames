@@ -196,13 +196,23 @@ function ZF:PlaceUnitFrame(unitFrame, unit)
     if not unitFrame or unitFrame.isDesignerPreview then return end
     if InCombatLockdown() then return end
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+    local parentFrame
     if unit == "player" or unit == "target" then
-        unitFrame:ClearAllPoints()
-        unitFrame:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-        local parentFrame = _G[FrameDB.AnchorToFrame] or UIParent
+        parentFrame = UIParent
         unitFrame:ClearAllPoints()
         unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
+        parentFrame = FrameDB.AnchorToFrame ~= "None" and _G[FrameDB.AnchorToFrame] or UIParent
+        unitFrame:ClearAllPoints()
+        unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    else
+        return
+    end
+    local left, right, top, bottom = unitFrame:GetLeft(), unitFrame:GetRight(), unitFrame:GetTop(), unitFrame:GetBottom()
+    if left and right and top and bottom and (right < 0 or left > GetScreenWidth() or bottom > GetScreenHeight() or top < 0) then
+        FrameDB.Layout[3], FrameDB.Layout[4] = 0, 0
+        unitFrame:ClearAllPoints()
+        unitFrame:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], 0, 0)
     end
 end
 

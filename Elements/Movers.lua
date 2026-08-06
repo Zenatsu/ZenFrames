@@ -74,6 +74,30 @@ local function UpdateMoverVisual(frameMover)
 end
 
 local ControlPanel
+local GetMoverModeWindow
+
+local UNIT_PREVIEW_FUNCS = {
+	target = {enter = "EnterTargetPreview", exit = "ExitTargetPreview"},
+	focus = {enter = "EnterFocusPreview", exit = "ExitFocusPreview"},
+	focustarget = {enter = "EnterFocusTargetPreview", exit = "ExitFocusTargetPreview"},
+	pet = {enter = "EnterPetPreview", exit = "ExitPetPreview"},
+	targettarget = {enter = "EnterTargetTargetPreview", exit = "ExitTargetTargetPreview"},
+	party = {enter = "EnterPartyPreview", exit = "ExitPartyPreview"},
+	raid = {enter = "EnterRaidPreview", exit = "ExitRaidPreview"},
+	boss = {enter = "EnterBossPreview", exit = "ExitBossPreview"},
+}
+
+function ZF:ApplyMoverPreviewMode()
+	if not ZF.MOVERS_UNLOCKED then return end
+	local PreviewMode = ZF.db.profile.General.MoverPreviewMode or "Always"
+	for _, funcs in pairs(UNIT_PREVIEW_FUNCS) do ZF[funcs.exit](ZF) end
+	if PreviewMode == "Always" then
+		for _, funcs in pairs(UNIT_PREVIEW_FUNCS) do ZF[funcs.enter](ZF) end
+	elseif PreviewMode == "Hybrid" and ZF.ACTIVE_MOVER then
+		local funcs = UNIT_PREVIEW_FUNCS[ZF.ACTIVE_MOVER.unit]
+		if funcs then ZF[funcs.enter](ZF) end
+	end
+end
 
 local function FilterNumericInput(self, char)
     if not self:GetText():match("^%-?%d*%.?%d*$") then
@@ -284,15 +308,13 @@ end
 
 local function RefreshControlPanelTabs(unit)
 	local panel = ControlPanel
-	local firstRelevantKey
 	for _, tabDef in ipairs(CONTROL_PANEL_TABS) do
 		local tab = panel.tabs[tabDef.key]
 		local relevant = tabDef.isRelevant(unit)
 		tab.button:SetShown(relevant)
-		if relevant and not firstRelevantKey then firstRelevantKey = tabDef.key end
 	end
-	if not panel.activeTab or not panel.tabs[panel.activeTab].button:IsShown() then
-		panel.activeTab = firstRelevantKey
+		if panel.activeTab and not panel.tabs[panel.activeTab].button:IsShown() then
+		panel.activeTab = nil
 	end
 
 	local FrameDB = ZF.db.profile.Units[unit].Frame
@@ -350,6 +372,26 @@ end
 local FIELD_ROW_HEIGHT = 20
 local DROPDOWN_ROW_HEIGHT = 32
 
+local AnchorParentFrameLabels = {
+	["None"] = "None",
+	["ZF_Player"] = "Player",
+	["ZF_Target"] = "Target",
+	["ZF_Focus"] = "Focus",
+	["ZF_Pet"] = "Pet",
+	["ZF_TargetTarget"] = "Target's Target",
+	["ZF_FocusTarget"] = "Focus's Target",
+}
+local AnchorParentFrameOrder = {"None", "ZF_Player", "ZF_Target", "ZF_Focus", "ZF_Pet", "ZF_TargetTarget", "ZF_FocusTarget"}
+
+local function AnchorParentList(unit)
+	local ownFrame = ZF:FetchFrameName(unit)
+	local order = {}
+	for _, key in ipairs(AnchorParentFrameOrder) do
+		if key ~= ownFrame then order[#order + 1] = key end
+	end
+	return AnchorParentFrameLabels, order
+end
+
 local function CreateFrameLayoutRows()
 
     local dimMin, dimMax, dimStep = unpack(ZF.DesignerStyle.Sliders.Dimension)
@@ -403,29 +445,21 @@ local function CreateFrameLayoutRows()
 		UIDropDownMenu_SetText(AnchorToDropdown, ZF.GUIBuilders.AnchorPoints[1][FrameDB.Layout[2]])
 	end
 
-	local anchorParentRow = AddControlPanelRow("Layout", FIELD_ROW_HEIGHT, function(unit)
+	local anchorParentRow = AddControlPanelRow("Layout", DROPDOWN_ROW_HEIGHT, function(unit)
 		return ZF.db.profile.Units[unit].Frame.AnchorToFrame ~= nil
 	end)
 	local AnchorParentLabel = CreateLabel(anchorParentRow, "Parent")
-	AnchorParentLabel:SetPoint("LEFT", anchorParentRow, "LEFT", 4, 0)
-	local AnchorParentBox = CreateFrame("EditBox", nil, anchorParentRow, "BackdropTemplate")
-	AnchorParentBox:SetSize(140, 16)
-	AnchorParentBox:SetPoint("LEFT", AnchorParentLabel, "RIGHT", 4, 0)
-	AnchorParentBox:SetAutoFocus(false)
-	AnchorParentBox:SetFontObject("GameFontHighlightSmall")
-	AnchorParentBox:SetBackdrop(ZF.BACKDROP)
-	AnchorParentBox:SetBackdropColor(0, 0, 0, 0.6)
-	AnchorParentBox:SetBackdropBorderColor(0, 0, 0, 1)
-	local function CommitAnchorParent(self)
-		self:ClearFocus()
-		if InCombatLockdown() then return end
-		CommitFrameField("AnchorToFrame", self:GetText())
-	end
-	AnchorParentBox:SetScript("OnEnterPressed", CommitAnchorParent)
-	AnchorParentBox:SetScript("OnEditFocusLost", CommitAnchorParent)
-	AnchorParentBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	anchorParentRow.mcpRefresh = function(FrameDB)
-		if not AnchorParentBox:HasFocus() then AnchorParentBox:SetText(FrameDB.AnchorToFrame or "") end
+	AnchorParentLabel:SetPoint("LEFT", anchorParentRow, "LEFT", 4, 2)
+	local AnchorParentDropdown = CreateMiniDropdown(anchorParentRow, 115, AnchorParentList, nil, function(value)
+		CommitFrameField("AnchorToFrame", value)
+		CommitLayoutField(3, 0)
+		CommitLayoutField(4, 0)
+	end)
+	AnchorParentDropdown:SetPoint("LEFT", AnchorParentLabel, "RIGHT", -4, -2)
+	anchorParentRow.mcpRefresh = function(FrameDB, unit)
+		local list = AnchorParentList(unit)
+		UIDropDownMenu_SetSelectedValue(AnchorParentDropdown, FrameDB.AnchorToFrame)
+		UIDropDownMenu_SetText(AnchorParentDropdown, list[FrameDB.AnchorToFrame])
 	end
 
 	local strataRow = AddControlPanelRow("Layout", DROPDOWN_ROW_HEIGHT)
@@ -644,6 +678,17 @@ local function GetMoverControlPanel()
     ControlPanel:SetBackdropColor(0, 0, 0, .9)
     ControlPanel:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
 	ControlPanel:EnableMouse(true)
+	ControlPanel:SetMovable(true)
+	ControlPanel:RegisterForDrag("LeftButton")
+	ControlPanel:SetScript("OnDragStart", function(self)
+		if not ZF.db.profile.General.MoverPanelDetached or InCombatLockdown() then return end
+		self:StartMoving()
+	end)
+	ControlPanel:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+		local left, top = self:GetLeft(), self:GetTop()
+		if left and top then ZF.db.profile.General.MoverPanelPosition = {left, top} end
+	end)
 	ControlPanel.tabs = {}
 
 	local TabStrip = CreateFrame("Frame", nil, ControlPanel)
@@ -672,7 +717,11 @@ local function GetMoverControlPanel()
 		text:SetText(tabDef.label)
 		button:SetScript("OnClick", function()
 			if InCombatLockdown() then return end
-			ControlPanel.activeTab = tabDef.key
+			if ControlPanel.activeTab == tabDef.key then
+				ControlPanel.activeTab = nil
+			else
+				ControlPanel.activeTab = tabDef.key
+			end
 			MoverControlPanel()
 		end)
 
@@ -718,9 +767,21 @@ end
 MoverControlPanel = function()
     local panel = GetMoverControlPanel()
     if not ZF.ACTIVE_MOVER then panel:Hide() return end
-    if not panel.isDraggingSlider then
+    if ZF.db.profile.General.MoverPanelDetached then
+        if not panel.detachedPositionApplied then
+            local pos = ZF.db.profile.General.MoverPanelPosition
+            panel:ClearAllPoints()
+            if pos then
+                panel:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", pos[1], pos[2])
+            else
+                panel:SetPoint("TOP", GetMoverModeWindow(), "BOTTOM", 0, -8)
+            end
+            panel.detachedPositionApplied = true
+        end
+    elseif not panel.isDraggingSlider then
         panel:ClearAllPoints()
         panel:SetPoint("TOP", ZF.ACTIVE_MOVER, "BOTTOM", 0, -4)
+        panel.detachedPositionApplied = false
     end
     local FrameDB = ZF.db.profile.Units[ZF.ACTIVE_MOVER.unit].Frame
     if not panel.XBox:HasFocus() then panel.XBox:SetText(string.format("%.1f", FrameDB.Layout[3])) end
@@ -732,6 +793,12 @@ end
 function ZF:SetMoverSelection(frameMover)
     if not frameMover and not ZF.ACTIVE_MOVER then return end
     if ControlPanel then ControlPanel.isDraggingSlider = false end
+    if ZF.db.profile.General.MoverPreviewMode == "Hybrid" then
+        local prevFuncs = ZF.ACTIVE_MOVER and UNIT_PREVIEW_FUNCS[ZF.ACTIVE_MOVER.unit]
+        if prevFuncs and ZF.ACTIVE_MOVER ~= frameMover then ZF[prevFuncs.exit](ZF) end
+        local nextFuncs = frameMover and UNIT_PREVIEW_FUNCS[frameMover.unit]
+        if nextFuncs then ZF[nextFuncs.enter](ZF) end
+    end
     ZF.ACTIVE_MOVER = frameMover
     local moverList = {}
     for _, mover in pairs(ZF.MOVERS or {}) do moverList[#moverList + 1] = mover end
@@ -755,6 +822,24 @@ local function StopMoving(frameMover)
 	MoverControlPanel()
 end
 
+local MOVER_BASE_LEVEL = (100)
+local nextMoverBack = MOVER_BASE_LEVEL - 1
+
+local function GetOverlappingMover(frameMover)
+	local overLapping = {}
+	local left, right, top, bottom = frameMover:GetLeft(), frameMover:GetRight(), frameMover:GetTop(), frameMover:GetBottom()
+	if not (left and right and top and bottom) then return overLapping end
+	for _, other in pairs(ZF.MOVERS or {}) do
+		if other ~= frameMover and other:IsShown() then
+			local oLeft, oRight, oTop, oBottom = other:GetLeft(), other:GetRight(), other:GetTop(), other:GetBottom()
+			if oLeft and left < oRight and right > oLeft and bottom <oTop and top > oBottom then
+				overLapping[#overLapping +1] = other
+			end
+		end
+	end
+	return overLapping
+end
+
 function ZF:CreateMover(unit)
 	ZF.MOVERS = ZF.MOVERS or {}
 	if ZF.MOVERS[unit] then return end
@@ -766,6 +851,7 @@ function ZF:CreateMover(unit)
 	UpdateMoverVisual(frameMover)
 	frameMover:SetFrameStrata("FULLSCREEN_DIALOG")
 	frameMover:SetClampedToScreen(true)
+	frameMover:SetFrameLevel(MOVER_BASE_LEVEL)
 	frameMover:SetMovable(true)
 	frameMover:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	frameMover:RegisterForDrag("LeftButton")
@@ -774,6 +860,20 @@ function ZF:CreateMover(unit)
 			if ZF.MOVERS_UNLOCKED then ZF:ToggleMovers() end
 			ZF:OpenGUIToUnit(unit)
 		elseif button == "LeftButton" then
+			if self == ZF.ACTIVE_MOVER then
+				local overLapping = GetOverlappingMover(self)
+				if #overLapping > 0 then
+					local topOther, topLevel = nil, -math.huge
+					for _, other in ipairs(overLapping) do
+						local lvl = other:GetFrameLevel()
+						if lvl > topLevel then topOther, topLevel = other, lvl end
+					end
+					self:SetFrameLevel(nextMoverBack)
+					nextMoverBack = nextMoverBack - 1
+					ZF:SetMoverSelection(topOther)
+					return
+				end
+			end
 			ZF:SetMoverSelection(self)
 		end
 	end)
@@ -804,10 +904,10 @@ end
 
 local ModeWindow
 
-local function GetMoverModeWindow()
+function GetMoverModeWindow()
     if ModeWindow then return ModeWindow end
     ModeWindow = CreateFrame("Frame", "ZF_MoverModeWindow", UIParent, "BackdropTemplate")
-    ModeWindow:SetSize(260, 100)
+    ModeWindow:SetSize(260, 185)
     ModeWindow:SetPoint("TOP", UIParent, "TOP", 0, -100)
     ModeWindow:SetFrameStrata("TOOLTIP")
     ModeWindow:SetBackdrop(ZF.BACKDROP)
@@ -820,6 +920,32 @@ local function GetMoverModeWindow()
     Instructions:SetWidth(240)
     Instructions:SetJustifyH("CENTER")
     Instructions:SetText("Click a frame to select it.\nDrag a frame to move it.\nPress arrow buttons to nudge by 1px.\nArrow keys nudge by 0.1px.\nRight-click a frame for its settings.")
+
+    local PreviewModeLabels = { None = "None", Always = "Always", Hybrid = "Hybrid (Selected)" }
+    local PreviewModeOrder = { "None", "Always", "Hybrid" }
+
+    local PreviewLabel = ModeWindow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    PreviewLabel:SetPoint("TOP", Instructions, "BOTTOM", 0, -10)
+    PreviewLabel:SetText("Preview Bars")
+
+    local PreviewDropdown = CreateMiniDropdown(ModeWindow, 130, PreviewModeLabels, PreviewModeOrder, function(value) ZF.db.profile.General.MoverPreviewMode = value ZF:ApplyMoverPreviewMode() end)
+    PreviewDropdown:SetPoint("TOP", PreviewLabel, "BOTTOM", -4, -2)
+    UIDropDownMenu_SetSelectedValue(PreviewDropdown, ZF.db.profile.General.MoverPreviewMode)
+    UIDropDownMenu_SetText(PreviewDropdown, PreviewModeLabels[ZF.db.profile.General.MoverPreviewMode])
+
+	local DetachCheckbox = CreateFrame("CheckButton", nil, ModeWindow, "UICheckButtonTemplate")
+    DetachCheckbox:SetSize(20, 20)
+    DetachCheckbox:SetPoint("TOPLEFT", PreviewDropdown, "BOTTOMLEFT", -6, -10)
+    DetachCheckbox:SetChecked(ZF.db.profile.General.MoverPanelDetached)
+    DetachCheckbox:SetScript("OnClick", function(self)
+        ZF.db.profile.General.MoverPanelDetached = self:GetChecked()
+        GetMoverControlPanel().detachedPositionApplied = false
+        MoverControlPanel()
+    end)
+
+    local DetachLabel = ModeWindow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    DetachLabel:SetPoint("LEFT", DetachCheckbox, "RIGHT", 2, 0)
+    DetachLabel:SetText("Detach Control Panel (Draggable)")
 
     local ExitButton = CreateFrame("Button", nil, ModeWindow, "UIPanelButtonTemplate")
     ExitButton:SetSize(80, 22)
@@ -854,7 +980,9 @@ end
 local function ShowMoverButtons(shown)
 	for _, mover in pairs(ZF.MOVERS or {}) do
 		mover:SetShown(shown and (mover.unit ~= "augmentation" or ZF:IsAugmentationEvoker()))
+		if shown then mover:SetFrameLevel(MOVER_BASE_LEVEL) end
 	end
+	if shown then nextMoverBack = MOVER_BASE_LEVEL - 1 end
 end
 
 local ClickCatcher
@@ -890,15 +1018,9 @@ function ZF:ToggleMovers(skipReopenGUI)
 	ZF.MOVERS_UNLOCKED = not ZF.MOVERS_UNLOCKED
 	ShowMoverButtons(ZF.MOVERS_UNLOCKED)
 	if ZF.MOVERS_UNLOCKED then
-        ZF:EnterPartyPreview()
-        ZF:EnterBossPreview()
-        ZF:EnterRaidPreview()
-        ZF:EnterTargetPreview()
+		ZF:ApplyMoverPreviewMode()
     else
-        ZF:ExitPartyPreview()
-        ZF:ExitBossPreview()
-        ZF:ExitRaidPreview()
-        ZF:ExitTargetPreview()
+        for _, funcs in pairs(UNIT_PREVIEW_FUNCS) do ZF[funcs.exit](ZF) end
     end
 	if not skipReopenGUI then ZF:SetMainGUIShown(not ZF.MOVERS_UNLOCKED) end
 	GetMoverModeWindow():SetShown(ZF.MOVERS_UNLOCKED)

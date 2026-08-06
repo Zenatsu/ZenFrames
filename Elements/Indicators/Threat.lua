@@ -54,3 +54,9 @@ function ZF:UpdateUnitThreatIndicator(unitFrame, unit)
         unitFrame.ThreatIndicator = nil
     end
 end
+
+local ThreatTargetEventFrame = CreateFrame("Frame")
+ThreatTargetEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+ThreatTargetEventFrame:SetScript("OnEvent", function()
+    if ZF.TARGET then ZF:UpdateUnitThreatIndicator(ZF.TARGET, "target") end
+end)

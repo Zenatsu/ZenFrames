@@ -50,10 +50,31 @@ function ZenFrames:OnInitialize()
             if guiWasShownBeforeCombat then ZF:SetMainGUIShown(true) end
             guiWasShownBeforeCombat = false
             ZF:SetMoverOverlayShown(true)
+            ZF:UpdateAllUnitFrames()
         end
     end)
 
     if migratedFromUUFDB then StaticPopup_Show("ZF_UUFDB_MIGRATED") end
+end
+
+function ZenFrames_OnAddonCompartmentClick(addonName, buttonName)
+    if InCombatLockdown() then return end
+    if ZF:IsMainGUIShown() then
+        ZF:CloseMainGUI()
+    else
+        ZF:CreateGUI()
+    end
+end
+
+function ZenFrames_OnAddonCompartmentEnter(addonName, button)
+    GameTooltip:SetOwner(button, "ANCHOR_LEFT")
+    GameTooltip:SetText(ZF.PRETTY_ADDON_NAME)
+    GameTooltip:AddLine("Click to open settings.", 1, 1, 1)
+    GameTooltip:Show()
+end
+
+function ZenFrames_OnAddonCompartmentLeave(addonName, button)
+    GameTooltip:Hide()
 end
 
 function ZenFrames:OnEnable()

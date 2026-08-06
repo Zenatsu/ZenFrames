@@ -1,10 +1,13 @@
 ## Title: |cFF990007Zen|rFrames
 ## Interface: 120007, 120100
-## Version: V1.0.4
+## Version: @project-version@
 ## Author: Zenatsu
 ## Notes: A Unit Frame Addon build with a frame designer for easy customization. Inspired by UUF and Platynator.
 ## Category: Unit Frames 
 ## IconTexture: Interface\AddOns\ZenFrames\Media\Textures\ZFLogo.tga
+## AddonCompartmentFunc: ZenFrames_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: ZenFrames_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: ZenFrames_OnAddonCompartmentLeave
 ## SavedVariables: UUFDB
 ## SavedVariables: ZFDB
 

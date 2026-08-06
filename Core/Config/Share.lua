@@ -119,6 +119,7 @@ local function ApplyImportedProfileToCurrent(profile)
     end
 
     MergeInto(ZF.db.profile, profile)
+    ZF:MigrateProfile("current", ZF.db.profile)
 
     ZFG.RefreshProfiles()
     ZF:UpdateAllUnitFrames()
@@ -170,6 +171,8 @@ function ZF:ImportSavedVariables(encodedInfo, profileName)
         }
         StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
     end
+    local popup = StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
+    if popup then popup:SetFrameStrata("TOOLTIP") end
 
 end
 
@@ -190,6 +193,7 @@ function ZFG:ImportZF(importString, profileKey)
 
     if type(profileData.profile) == "table" then
         ZF.db.profiles[profileKey] = profileData.profile
+        ZF:MigrateProfile(profileKey, ZF.db.profiles[profileKey])
         ZF.db:SetProfile(profileKey)
     end
 end

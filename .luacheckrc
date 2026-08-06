@@ -16,6 +16,12 @@ globals = {
     "ZFDebug",            -- Core/Config/Designer.lua: exposed for /run debugging
     "StaticPopupDialogs", -- Blizzard global table; the addon adds its own popup entries into it
     "SlashCmdList",       -- Blizzard global table; the addon registers its own slash commands into it
+    -- Addon Compartment click/tooltip callbacks (Core/Core.lua) - must be real
+    -- globals, not locals: the .toc's AddonCompartmentFunc/FuncOnEnter/FuncOnLeave
+    -- fields tell Blizzard to look these up by name in _G.
+    "ZenFrames_OnAddonCompartmentClick",
+    "ZenFrames_OnAddonCompartmentEnter",
+    "ZenFrames_OnAddonCompartmentLeave",
 }
 
 -- The Blizzard/WoW API surface this addon actually calls, read-only.

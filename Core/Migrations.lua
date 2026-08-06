@@ -6,6 +6,15 @@ local function RenameKey(tbl, oldKey, newKey)
     tbl[oldKey] = nil
 end
 
+local function RewriteAnchorPrefix(value)
+    if type(value) ~= "string" then return value end
+    local suffix = value:match("^UUF_(.+)$") or value:match("^RUF_(.+)$")
+    if suffix == "Target" or suffix == "Player" or suffix == "Focus" then
+        return "ZF_" .. suffix
+    end
+    return value
+end
+
 local MigrationSteps = {
     {
         fromVersion = 0,
@@ -58,6 +67,19 @@ local MigrationSteps = {
             end
         end,
     },
+    {
+        fromVersion = 3,
+        migrate = function(profile)
+            local units = profile.Units
+            if type(units) ~= "table" then return end
+
+            for _, unitDB in pairs(units) do
+                if type(unitDB.Frame) == "table" then
+                    unitDB.Frame.AnchorToFrame = RewriteAnchorPrefix(unitDB.Frame.AnchorToFrame)
+                end
+            end
+        end,
+    },
 }
 
 local CURRENT_DB_VERSION = #MigrationSteps
@@ -71,7 +93,7 @@ local function RestoreSnapshot(profile, snapshot)
     end
 end
 
-local function MigrateProfile(profileName, profile)
+function ZF:MigrateProfile(profileName, profile)
     if type(profile) ~= "table" then return end
 
     local version = profile.DBVersion or 0
@@ -98,7 +120,7 @@ end
 function ZF:MigrateAllProfiles(rawDB)
     if type(rawDB) ~= "table" or type(rawDB.profiles) ~= "table" then return end
     for profileName, profile in pairs(rawDB.profiles) do
-        MigrateProfile(profileName, profile)
+        ZF:MigrateProfile(profileName, profile)
     end
 end
 

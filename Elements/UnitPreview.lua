@@ -126,6 +126,86 @@ function ZF:ExitTargetPreview()
     end
 end
 
+function ZF:EnterFocusPreview()
+    if InCombatLockdown() then return end
+    if ZF.FOCUS and not UnitExists("focus") then
+        ZF.FOCUS:SetAttribute("unit", nil)
+        UnregisterUnitWatch(ZF.FOCUS)
+        ZF.FOCUS:Show()
+        ZF:ApplyUnitPreviewContent(ZF.FOCUS, "focus")
+    end
+end
+
+function ZF:ExitFocusPreview()
+    if InCombatLockdown() then return end
+    if ZF.FOCUS and ZF.FOCUS.isUnitPreview then
+        ZF.FOCUS.isUnitPreview = nil
+        ZF.FOCUS.previewClass = nil
+        ZF.FOCUS:SetAttribute("unit", "focus")
+        RegisterUnitWatch(ZF.FOCUS)
+    end
+end
+
+function ZF:EnterFocusTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.FOCUSTARGET and not UnitExists("focustarget") then
+        ZF.FOCUSTARGET:SetAttribute("unit", nil)
+        UnregisterUnitWatch(ZF.FOCUSTARGET)
+        ZF.FOCUSTARGET:Show()
+        ZF:ApplyUnitPreviewContent(ZF.FOCUSTARGET, "focustarget")
+    end
+end
+
+function ZF:ExitFocusTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.FOCUSTARGET and ZF.FOCUSTARGET.isUnitPreview then
+        ZF.FOCUSTARGET.isUnitPreview = nil
+        ZF.FOCUSTARGET.previewClass = nil
+        ZF.FOCUSTARGET:SetAttribute("unit", "focustarget")
+        RegisterUnitWatch(ZF.FOCUSTARGET)
+    end
+end
+
+function ZF:EnterPetPreview()
+    if InCombatLockdown() then return end
+    if ZF.PET and not UnitExists("pet") then
+        ZF.PET:SetAttribute("unit", nil)
+        UnregisterUnitWatch(ZF.PET)
+        ZF.PET:Show()
+        ZF:ApplyUnitPreviewContent(ZF.PET, "pet")
+    end
+end
+
+function ZF:ExitPetPreview()
+    if InCombatLockdown() then return end
+    if ZF.PET and ZF.PET.isUnitPreview then
+        ZF.PET.isUnitPreview = nil
+        ZF.PET.previewClass = nil
+        ZF.PET:SetAttribute("unit", "pet")
+        RegisterUnitWatch(ZF.PET)
+    end
+end
+
+function ZF:EnterTargetTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.TARGETTARGET and not UnitExists("targettarget") then
+        ZF.TARGETTARGET:SetAttribute("unit", nil)
+        UnregisterUnitWatch(ZF.TARGETTARGET)
+        ZF.TARGETTARGET:Show()
+        ZF:ApplyUnitPreviewContent(ZF.TARGETTARGET, "targettarget")
+    end
+end
+
+function ZF:ExitTargetTargetPreview()
+    if InCombatLockdown() then return end
+    if ZF.TARGETTARGET and ZF.TARGETTARGET.isUnitPreview then
+        ZF.TARGETTARGET.isUnitPreview = nil
+        ZF.TARGETTARGET.previewClass = nil
+        ZF.TARGETTARGET:SetAttribute("unit", "targettarget")
+        RegisterUnitWatch(ZF.TARGETTARGET)
+    end
+end
+
 function ZF:SpawnRaidPreviewFrames()
     if #ZF.RAID_PREVIEW_FRAMES > 0 then return end
     ZF:EnsureRaidStyleRegistered()
