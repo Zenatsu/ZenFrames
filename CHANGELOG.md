@@ -57,3 +57,4 @@
   - widgets can be selected and dragged to reposition, syncing live with your saved profile and real unit frame.
   - The preview is a bounded canvas that rejects and snaps back drops made outside its bounds.
   - selecting a widget shows its settings inline below the preview instead of requiring the Units tab.
+  
