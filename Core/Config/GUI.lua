@@ -625,6 +625,25 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback("HealthBar") end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColorContainer:AddChild(BackgroundOpacitySlider)
+   
+    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", FrameDB, "BorderColor", function() updateCallback("BorderColor") end, {width = 0.25})
+    
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness") 
+    BorderThicknessSlider:SetValue(FrameDB.BorderThickness)
+    BorderThicknessSlider:SetSliderValues(0, 10, 1)
+    BorderThicknessSlider:SetRelativeWidth(0.25)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.BorderThickness = value updateCallback("BorderThickness") end)
+    ColorContainer:AddChild(BorderThicknessSlider)
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(FrameDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(0.25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.BorderOpacity = value updateCallback("BorderOpacity") end)
+    BorderOpacitySlider:SetIsPercent(true)
+    ColorContainer:AddChild(BorderOpacitySlider)
 
     if isSoloTarget or unit == "focus" or isGroupUnit then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
@@ -1664,10 +1683,27 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     StyleDropdown:SetLabel("Highlight Style")
     StyleDropdown:SetValue(MouseoverDB.Style)
     StyleDropdown:SetRelativeWidth(0.33)
-    StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetSliderValues(1, 10, 1)
+    BorderThicknessSlider:SetValue(MouseoverDB.BorderThickness)
+    BorderThicknessSlider:SetRelativeWidth(0.33)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value)
+        MouseoverDB.BorderThickness = value
+        updateCallback()
+    end)
+    ToggleContainer:AddChild(BorderThicknessSlider)
+
+    StyleDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        MouseoverDB.Style = value
+        BorderThicknessSlider:SetDisabled(value ~= "BORDER")
+        updateCallback()
+    end)
+
     Refresh()
+    BorderThicknessSlider:SetDisabled(MouseoverDB.Style ~= "BORDER") -- after Refresh, or DeepDisable overrides this
 end
 
 local function CreateTargetIndicatorSettings(containerParent, unit, updateCallback)
@@ -1681,14 +1717,31 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     GUIBuilders.CreateColorBlock(ToggleContainer, "Indicator Color", TargetIndicatorDB, "Color", updateCallback, {width = 0.33})
 
     local StyleDropdown = AG:Create("Dropdown")
-    StyleDropdown:SetList({["Glow"] = "Glow", ["Border"] = "Border"}, {"Glow", "Border"})
+    StyleDropdown:SetList({["Glow"] = "Border", ["Border"] = "Outline"}, {"Glow", "Border"}) -- labels swapped, DB values unchanged
     StyleDropdown:SetLabel("Indicator Style")
     StyleDropdown:SetValue(TargetIndicatorDB.Style)
     StyleDropdown:SetRelativeWidth(0.33)
-    StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Style = value updateCallback() end)
     ToggleContainer:AddChild(StyleDropdown)
 
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetSliderValues(1, 10, 1)
+    BorderThicknessSlider:SetValue(TargetIndicatorDB.BorderThickness)
+    BorderThicknessSlider:SetRelativeWidth(0.33)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value)
+        TargetIndicatorDB.BorderThickness = value
+        updateCallback()
+    end)
+    ToggleContainer:AddChild(BorderThicknessSlider)
+
+    StyleDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        TargetIndicatorDB.Style = value
+        BorderThicknessSlider:SetDisabled(value ~= "Glow")
+        updateCallback()
+    end)
+
     Refresh()
+    BorderThicknessSlider:SetDisabled(TargetIndicatorDB.Style ~= "Glow") -- after Refresh, or DeepDisable overrides this
 end
 
 local function CreateThreatIndicatorSettings(containerParent, unit, updateCallback)

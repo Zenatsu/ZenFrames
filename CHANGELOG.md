@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## V1.0.6
+
+- Changed target and mouseover indicators style names to better represent what they do
+- Added Frame border options: Border Color, Border Thickness, Border Opacity (0 thickness to hide, or set opacity to 0%)
+
 ## V1.0.5
 
 - Import Migration fixes (some prefixes persisted casuing potiental refrence issues)

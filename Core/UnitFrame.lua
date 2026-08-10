@@ -228,6 +228,7 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     local isRaid = ZF:GetNormalizedUnit(unit) == "raid"
 
     if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then ZF:UpdateUnitCastBar(unitFrame, unit) end
+    ZF:UpdateUnitContainer(unitFrame, unit)
     ZF:UpdateUnitHealthBar(unitFrame, unit)
     ZF:UpdateUnitHealPrediction(unitFrame, unit)
     if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then ZF:UpdateUnitPortrait(unitFrame, unit) end

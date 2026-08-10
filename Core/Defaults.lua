@@ -105,6 +105,9 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Layout = {"CENTER", "CENTER", -425.1, -275.1},
                     FrameStrata = "LOW",
                 },
@@ -259,6 +262,7 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Totems = {
@@ -391,6 +395,9 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Layout = {"CENTER", "CENTER", 425.1, -275.1},
                     FrameStrata = "LOW",
                 },
@@ -515,11 +522,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     },
                     Classification = {
                         Enabled = true,
@@ -650,6 +660,9 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     AnchorToFrame = "ZF_Target",
                     Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1},
                     FrameStrata = "LOW",
@@ -724,11 +737,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     }
                 },
                 Auras = {
@@ -820,6 +836,9 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     AnchorToFrame = "ZF_Player",
                     Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 36.1},
                     FrameStrata = "LOW",
@@ -934,11 +953,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     },
                     Threat = { 
                         Enabled = false 
@@ -1054,6 +1076,9 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     AnchorToFrame = "ZF_Focus",
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     FrameStrata = "LOW",
@@ -1128,11 +1153,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     }
                 },
                 Auras = {
@@ -1224,6 +1252,9 @@ local Defaults = {
                 Frame = {
                     Width = 122,
                     Height = 22,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     AnchorToFrame = "ZF_Player",
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -26.1},
                     FrameStrata = "LOW",
@@ -1334,11 +1365,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = false,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     },
                     Threat = { 
                         Enabled = false 
@@ -1455,6 +1489,9 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Layout = {"CENTER", "CENTER", 550.1, -0.1, 26},
                     GrowthDirection = "DOWN",
                     FrameStrata = "LOW",
@@ -1565,11 +1602,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "GRADIENT"
                     },
                     Target = {
                         Enabled = true,
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     }
                 },
                 Auras = {
@@ -1682,6 +1722,9 @@ local Defaults = {
                 Frame = {
                     Width = 252,
                     Height = 52,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Layout = {"CENTER", "CENTER", -550.1, -0.1, 1},
                     GrowthDirection = "DOWN",
                     SortBy = "ROLE",
@@ -1756,13 +1799,15 @@ local Defaults = {
                     Mouseover = {
                         Enabled = true,
                         Color = {1, 1, 1},
-                        HighlightOpacity = 1,
+                        HighlightOpacity = 0.75,
+                        BorderThickness = 1,
                         Style = "BORDER"
                     },
                     Target = {
                         Enabled = false,
-                        Style = "Glow",
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     },
                     Threat = {
                         Enabled = false,
@@ -1929,6 +1974,9 @@ local Defaults = {
                 Frame = {
                     Width = 90,
                     Height = 52,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Layout = {"LEFT", "LEFT", 1.1000000000004, 0.10000000000036, 1},
                     GrowthDirection = "LEFT_DOWN",
                     SortBy = "GROUP",
@@ -2004,12 +2052,14 @@ local Defaults = {
                         Enabled = true,
                         Color = {1, 1, 1},
                         HighlightOpacity = 1,
+                        BorderThickness = 1,
                         Style = "BORDER"
                     },
                     Target = {
                         Enabled = false,
-                        Style = "Glow",
                         Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
                     },
                     Threat = {
                         Enabled = false,
@@ -2176,6 +2226,9 @@ local Defaults = {
 				Frame = {
 					Width = 90,
 					Height = 52,
+					BorderColor = {0/255, 0/255, 0/255},
+					BorderOpacity = 1,
+					BorderThickness = 1,
 					Layout = {"CENTER", "CENTER", 0, 0, 1},
 					GrowthDirection = "LEFT_DOWN",
 					UnitsPerColumn = 5,
@@ -2246,17 +2299,19 @@ local Defaults = {
 						Size = 24,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
-					Mouseover = {
-						Enabled = true,
-						Color = {1, 1, 1},
-						HighlightOpacity = 0.25,
-						Style = "OVERLAY"
-					},
-					Target = {
-						Enabled = false,
-						Style = "Glow",
-						Color = {1, 1, 1},
-					},
+                    Mouseover = {
+                        Enabled = true,
+                        Color = {1, 1, 1},
+                        HighlightOpacity = 0.75,
+                        BorderThickness = 1,
+                        Style = "OVERLAY"
+                    },
+                    Target = {
+                        Enabled = false,
+                        Color = {1, 1, 1},
+                        BorderThickness = 3,
+                        Style = "Border"
+                    },
 					Threat = {
 						Enabled = false,
 					},

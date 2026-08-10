@@ -16,16 +16,17 @@ end)
 function ZF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
     if TargetIndicatorDB then
-        if TargetIndicatorDB.Style == "Border" then
-            unitFrame.TargetIndicator = unitFrame.Container
+        if TargetIndicatorDB.Style == "Border" then -- shown as "Outline" in UI until I can figure out a safe way to change the DB without breaking profiles
+            unitFrame.TargetIndicator = unitFrame.ContainerBorder
         else
+            local t = TargetIndicatorDB.BorderThickness
             unitFrame.TargetIndicatorFrame = CreateFrame("Frame", ZF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
             unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
             unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
             unitFrame.TargetIndicatorFrame:SetBackdropColor(0, 0, 0, 0)
-            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
-            unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
-            unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
+            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+            unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
+            unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
             unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
             unitFrame.TargetIndicator:SetAlpha(0)
         end
@@ -35,10 +36,9 @@ end
 function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
     if unitFrame and TargetIndicatorDB then
-        if unitFrame.TargetIndicator and unitFrame.TargetIndicator ~= unitFrame.Container then unitFrame.TargetIndicator:SetAlpha(0) end
-        if TargetIndicatorDB.Style == "Border" then
-            unitFrame.TargetIndicator = unitFrame.Container
-            unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
+        if unitFrame.TargetIndicator and unitFrame.TargetIndicator ~= unitFrame.ContainerBorder then unitFrame.TargetIndicator:SetAlpha(0) end
+        if TargetIndicatorDB.Style == "Border" then -- shown as "Outline" in UI until I can figure out a safe way to change the DB without breaking profiles
+            unitFrame.TargetIndicator = unitFrame.ContainerBorder
             ZF:UpdateTargetGlowIndicator(unitFrame, unit)
             return
         end
@@ -48,11 +48,12 @@ function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
             unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
         end
         unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
+        local t = TargetIndicatorDB.BorderThickness
         unitFrame.TargetIndicator:ClearAllPoints()
         unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
-        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
-        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
+        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
+        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
         unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
         ZF:UpdateTargetGlowIndicator(unitFrame, unit)
     end
@@ -61,11 +62,13 @@ end
 function ZF:UpdateTargetGlowIndicator(unitFrame, unit)
     if unitFrame and unitFrame.TargetIndicator then
         local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
+        local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+        local baseAlpha = FrameDB.BorderThickness > 0 and FrameDB.BorderOpacity or 0
         if TargetIndicatorDB.Style == "Border" then
             local isTarget = TargetIndicatorDB.Enabled and UnitIsUnit("target", unit == "partyplayer" and "player" or unit)
-            unitFrame.Container:SetBackdropBorderColor(isTarget and TargetIndicatorDB.Color[1] or 0, isTarget and TargetIndicatorDB.Color[2] or 0, isTarget and TargetIndicatorDB.Color[3] or 0, isTarget and (TargetIndicatorDB.Color[4] or 1) or 1)
+            unitFrame.ContainerBorder:SetBackdropBorderColor(isTarget and TargetIndicatorDB.Color[1] or FrameDB.BorderColor[1], isTarget and TargetIndicatorDB.Color[2] or FrameDB.BorderColor[2], isTarget and TargetIndicatorDB.Color[3] or FrameDB.BorderColor[3], isTarget and (TargetIndicatorDB.Color[4] or 1) or baseAlpha)
         else
-            unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
+            unitFrame.ContainerBorder:SetBackdropBorderColor(FrameDB.BorderColor[1], FrameDB.BorderColor[2], FrameDB.BorderColor[3], baseAlpha)
             if TargetIndicatorDB.Enabled then
                 unitFrame.TargetIndicator:SetAlphaFromBoolean(UnitIsUnit("target", unit == "partyplayer" and "player" or unit), 1, 0)
             else
@@ -85,7 +88,12 @@ function ZF:RegisterTargetGlowIndicatorFrame(frameName, unit)
 		ZF:UpdateTargetGlowIndicator(unitFrame, unit)
 	else
 		ZF.TargetHighlightEvtFrames[unitFrame] = nil
-		if unitFrame.TargetIndicator == unitFrame.Container then unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1) elseif unitFrame.TargetIndicator then unitFrame.TargetIndicator:SetAlpha(0) end
+		if unitFrame.TargetIndicator == unitFrame.ContainerBorder then
+			local FrameDB = DB.Frame
+			unitFrame.ContainerBorder:SetBackdropBorderColor(FrameDB.BorderColor[1], FrameDB.BorderColor[2], FrameDB.BorderColor[3], FrameDB.BorderThickness > 0 and FrameDB.BorderOpacity or 0)
+		elseif unitFrame.TargetIndicator then
+			unitFrame.TargetIndicator:SetAlpha(0)
+		end
 	end
 end
 
