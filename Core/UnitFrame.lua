@@ -33,6 +33,9 @@ local function ApplyScripts(unitFrame)
     unitFrame:SetAttribute("*type2", "togglemenu")
     unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
     unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+    unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
+        if attribute == "unit" then frame.unit = value end
+    end)
 end
 
 function ZF:CreateUnitFrame(unitFrame, unit)

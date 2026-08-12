@@ -21,6 +21,7 @@ local function handleFrame(baseName)
 
 	if(frame) then
 		frame:UnregisterAllEvents()
+		frame:Hide()
 		frame:SetRolesets('alwaysBlocked')
 
 		local health = frame.healthBar or frame.healthbar or frame.HealthBar or (frame.HealthBarsContainer and frame.HealthBarsContainer.healthBar)
