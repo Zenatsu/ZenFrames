@@ -2,8 +2,6 @@
 
 ## V1.0.6
 
-- Changed target and mouseover indicators style names to better represent what they do
-- Added Frame border options: Border Color, Border Thickness, Border Opacity (0 thickness to hide, or set opacity to 0%)
 - Fixed the addon breaking after the new patch update
 - Fixed buffs, debuffs, and custom auras not showing up
 - Fixed dispel highlighting (the colored border for dispellable debuffs) not working
