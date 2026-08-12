@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## V1.0.6
+## V1.0.7
 
 - Fixed the addon breaking after the new patch update
 - Fixed buffs, debuffs, and custom auras not showing up
@@ -9,6 +9,11 @@
 - Fixed cast bar not showing spell names, target names, or the interrupt shield icon
 - Fixed the role icon (tank/healer/dps) not showing on party and raid frames
 - Fixed the ready check icon texture option not applying
+
+## V1.0.6
+
+- Changed target and mouseover indicators style names to better represent what they do
+- Added Frame border options: Border Color, Border Thickness, Border Opacity (0 thickness to hide, or set opacity to 0%)
 
 ## V1.0.5
 
