@@ -7,7 +7,7 @@ local PreviewClasses ={
 function ZF:ApplyUnitPreviewContent(unitFrame, unit)
     unitFrame.isUnitPreview = true
     ZF:UpdateUnitFrame(unitFrame, unit)
-    
+
     for tagName in pairs(ZF:GetUnitDB(unitFrame, unit).Tags) do
         ZF:UpdateUnitTag(unitFrame, unit, tagName)
         local tagFontString = unitFrame.Tags[tagName]
@@ -223,7 +223,7 @@ function ZF:RaidLayoutPreviewFrame()
     local Frame = ZF.db.profile.Units.raid.Frame
     if not ZF.RAID_CONTAINER or #ZF.RAID_PREVIEW_FRAMES == 0 then return end
 
-    local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$") 
+    local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
     unitGrowth = unitGrowth or "RIGHT"
     groupGrowth = groupGrowth or "DOWN"
     local spacing = Frame.Layout[5] or 0

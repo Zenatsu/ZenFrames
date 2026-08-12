@@ -543,8 +543,8 @@ local Defaults = {
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
                         Texture = "DEFAULT",
                     },
-                    Threat = { 
-                        Enabled = false 
+                    Threat = {
+                        Enabled = false
                     },
                 },
                 Range = {
@@ -962,8 +962,8 @@ local Defaults = {
                         BorderThickness = 3,
                         Style = "Border"
                     },
-                    Threat = { 
-                        Enabled = false 
+                    Threat = {
+                        Enabled = false
                     },
                 },
                 Auras = {
@@ -1374,8 +1374,8 @@ local Defaults = {
                         BorderThickness = 3,
                         Style = "Border"
                     },
-                    Threat = { 
-                        Enabled = false 
+                    Threat = {
+                        Enabled = false
                     },
                 },
                 Auras = {

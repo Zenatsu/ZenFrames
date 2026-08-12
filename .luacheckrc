@@ -16,12 +16,19 @@ globals = {
     "ZFDebug",            -- Core/Config/Designer.lua: exposed for /run debugging
     "StaticPopupDialogs", -- Blizzard global table; the addon adds its own popup entries into it
     "SlashCmdList",       -- Blizzard global table; the addon registers its own slash commands into it
+    "GameMenuFrame",      -- Blizzard global frame; the addon adds custom fields to it (Core/GameMenu.lua) and needs write access, not just read
     -- Addon Compartment click/tooltip callbacks (Core/Core.lua) - must be real
     -- globals, not locals: the .toc's AddonCompartmentFunc/FuncOnEnter/FuncOnLeave
     -- fields tell Blizzard to look these up by name in _G.
     "ZenFrames_OnAddonCompartmentClick",
     "ZenFrames_OnAddonCompartmentEnter",
     "ZenFrames_OnAddonCompartmentLeave",
+    -- Blizzard's slash-command convention (Core/Globals.lua): must be real,
+    -- individually-numbered globals - Blizzard looks these up by exact name.
+    "SLASH_ZF1",
+    "SLASH_ZF2",
+    "SLASH_ZF3",
+    "SLASH_ZFRELOAD1",
 }
 
 -- The Blizzard/WoW API surface this addon actually calls, read-only.
@@ -38,6 +45,8 @@ read_globals = {
     "AbbreviateNumbers",
     "Ambiguate",
     "AnchorUtil",
+    "AuraContainerSortDirection",
+    "AuraContainerSortMethod",
     "CANCEL",
     "C_AddOns",
     "C_CurveUtil",
@@ -58,13 +67,14 @@ read_globals = {
     "DropDownList2",
     "EXIT_GAME",
     "Enum",
-    "GameMenuFrame",
     "GameTooltip",
     "GetBuildInfo",
     "GetInstanceInfo",
     "GetNumGroupMembers",
     "GetNumSpecializations",
     "GetRaidRosterInfo",
+    "GetScreenHeight",
+    "GetScreenWidth",
     "GetShapeshiftFormID",
     "GetSpecialization",
     "GetSpecializationInfo",
@@ -103,6 +113,8 @@ read_globals = {
     "UUFDB", -- legacy SavedVariables table this addon migrates from on first load (the original Unhalted addon's DB)
     "UnitAffectingCombat",
     "UnitCanAttack",
+    "UnitCastingInfo",
+    "UnitChannelInfo",
     "UnitClass",
     "UnitClassBase",
     "UnitExists",
@@ -154,10 +166,7 @@ exclude_files = {
     ".claude/**",   -- stray tooling/worktree artifacts, not part of the addon
 }
 
--- Deliberately NOT declaring `RefreshSortOrders` above even though it once
--- showed up as "undefined" - that one's a real bug (Core/Config/GUI.lua:670
--- calls it before the `local function RefreshSortOrders` at line 711 is in
--- scope, so it resolves to a nonexistent global instead), not a missing
--- global. Leave it flagged until that's fixed.
-
--- ignore = { "212", "213" } -- uncomment if unused-callback-argument warnings turn out too noisy
+ignore = {
+    "212", "213", -- unused-callback-argument warnings (mostly `self` on `function ZF:X()` methods that don't need it, plus fixed-signature callback params like oUF's PostUpdate(element, unit, ...)) - not real issues, matches the codebase's own established convention (CLAUDE.md)
+    "432", -- shadowing upvalue argument 'self' - every remaining instance is a Blizzard/oUF callback (SetScript/StaticPopup OnAccept/PostUpdate) whose own `self` is the conventional, correct name, shadowing an outer `function ZF:X()`'s unused `self` - renaming would fight established API naming for no real benefit
+}

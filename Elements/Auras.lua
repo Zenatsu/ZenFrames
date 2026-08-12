@@ -1,5 +1,4 @@
 local _, ZF = ...
-local oUF = ZF.oUF
 
 local PLAYER_SCOPED_FILTER_TOKENS = {
 	CrowdControlPlayer = "CROWD_CONTROL",
@@ -76,8 +75,8 @@ local function ConfigurePrivateAuraContainer(unitFrame, unit, PrivateAurasDB)
 end
 
 local function BuildAuraSortOptions(sorting)
-	local sortMethod = (sorting == "DURATION" or sorting == "DURATION_REVERSED") and Enum.AuraContainerSortMethod.ExpirationOnly or Enum.AuraContainerSortMethod.Default
-	local sortDirection = (sorting == "BLIZZARD_REVERSED" or sorting == "DURATION_REVERSED") and Enum.AuraContainerSortDirection.Reverse or Enum.AuraContainerSortDirection.Normal
+	local sortMethod = (sorting == "DURATION" or sorting == "DURATION_REVERSED") and AuraContainerSortMethod.ExpirationOnly or AuraContainerSortMethod.Default
+	local sortDirection = (sorting == "BLIZZARD_REVERSED" or sorting == "DURATION_REVERSED") and AuraContainerSortDirection.Reverse or AuraContainerSortDirection.Normal
 	return sortMethod, sortDirection
 end
 
@@ -111,6 +110,12 @@ local function BuildAuraGroupFilters(AuraDB, baseFilter)
 	return filterStrings
 end
 
+local function BuildAuraGroupSignature(AuraDB, filterStrings, sortMethod, sortDirection, width)
+	local signature = AuraDB.Size .. "|" .. AuraDB.Num .. "|" .. width .. "|" .. AuraDB.Layout[1] .. "|" .. AuraDB.GrowthDirection .. "|" .. AuraDB.WrapDirection .. "|" .. tostring(sortMethod) .. "|" .. tostring(sortDirection) .. "|" .. (AuraDB.ShowType and "1" or "0") .. "|" .. table.concat(filterStrings, ",")
+	if AuraDB.Blacklist then signature = signature .. "|BL:" .. tostring(ZF.AURA_BLACKLIST) end
+	return signature
+end
+
 local function StyleAuraButton(unitFrame, unit, auraDB, element, button)
 	local AuraDB = ZF:GetUnitDB(unitFrame, unit).Auras[auraDB]
 	if not AuraDB then return end
@@ -140,42 +145,55 @@ local function StyleAuraButton(unitFrame, unit, auraDB, element, button)
 end
 
 local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, baseFilter, anchorParent, defaultPerRow)
-	if unitFrame[storageKey] then unitFrame[storageKey]:Hide() end
-	unitFrame[storageKey] = nil
-
-	if not AuraDB or not AuraDB.Enabled then return nil end
+	if not AuraDB or not AuraDB.Enabled then
+		if unitFrame[storageKey] then unitFrame[storageKey]:Hide() end
+		unitFrame[storageKey] = nil
+		unitFrame[storageKey .. "Signature"] = nil
+		return nil
+	end
 
 	local width = ComputeAuraContainerSize(AuraDB, defaultPerRow)
 	local sortMethod, sortDirection = BuildAuraSortOptions(AuraDB.Sorting)
-	local candidateFilters = BuildAuraCandidateFilters(AuraDB)
 	local filterStrings = BuildAuraGroupFilters(AuraDB, baseFilter)
+	local signature = BuildAuraGroupSignature(AuraDB, filterStrings, sortMethod, sortDirection, width)
 
-	local auras = unitFrame:CreateAuras({
-		initialAnchor = AuraDB.Layout[1],
-		growthX = AuraDB.GrowthDirection,
-		growthY = AuraDB.WrapDirection,
-		layoutLimit = width,
-	})
-	auras.maxFrameCount = AuraDB.Num
-	auras.showCount = true
-	auras.showBuffBorder = baseFilter == "HELPFUL" and AuraDB.ShowType or nil
-	auras.showDebuffBorder = baseFilter == "HARMFUL" and AuraDB.ShowType or nil
-	auras.tooltipAnchor = "ANCHOR_CURSOR"
-	auras.PostCreateButton = function(_, button) StyleAuraButton(unitFrame, unit, auraDB, auras, button) end
+	local auras = unitFrame[storageKey]
+	if not auras or unitFrame[storageKey .. "Signature"] ~= signature then
+		if auras then auras:Hide() end
 
-	for _, filterString in ipairs(filterStrings) do
-		auras:AddGroup(filterString, {
-			sortMethod = sortMethod,
-			sortDirection = sortDirection,
-			candidateFilters = candidateFilters,
+		local candidateFilters = BuildAuraCandidateFilters(AuraDB)
+		auras = unitFrame:CreateAuras({
+			initialAnchor = AuraDB.Layout[1],
+			growthX = AuraDB.GrowthDirection,
+			growthY = AuraDB.WrapDirection,
+			layoutLimit = width,
 		})
+		auras.maxFrameCount = AuraDB.Num
+		auras.size = AuraDB.Size
+		auras.showCount = true
+		auras.showBuffBorder = baseFilter == "HELPFUL" and AuraDB.ShowType or nil
+		auras.showDebuffBorder = baseFilter == "HARMFUL" and AuraDB.ShowType or nil
+		auras.tooltipAnchor = "ANCHOR_CURSOR"
+		auras.PostCreateButton = function(_, button) StyleAuraButton(unitFrame, unit, auraDB, auras, button) end
+
+		for _, filterString in ipairs(filterStrings) do
+			auras:AddGroup(filterString, {
+				sortMethod = sortMethod,
+				sortDirection = sortDirection,
+				candidateFilters = candidateFilters,
+			})
+		end
+
+		auras:SetUnit(unitFrame.__unit or unit)
+
+		unitFrame[storageKey] = auras
+		unitFrame[storageKey .. "Signature"] = signature
 	end
 
 	auras:ClearAllPoints()
 	auras:SetPoint(AuraDB.Layout[1], anchorParent, AuraDB.Layout[2], AuraDB.Layout[3], AuraDB.Layout[4])
 	auras:Show()
 
-	unitFrame[storageKey] = auras
 	return auras
 end
 
@@ -269,6 +287,7 @@ function ZF:CreateUnitAuras(unitFrame, unit)
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
+            unitFrame.PrivateAuraContainer:Show()
         else
             unitFrame.PrivateAuraContainer:Hide()
         end
@@ -471,7 +490,7 @@ function ZF:CreateTestAuras(unitFrame, unit)
                 if button then button:Hide() end
             end
         end
-        if unitFrame.BuffAuras or unitFrame.DebuffAuras or unitFrame.CustomAurasElement then
+        if unitFrame.BuffAuras or unitFrame.DebuffAuras or unitFrame.CustomAurasElement or unitFrame.DispelAuras then
             if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
         end
 		if unitFrame.PrivateAuraContainer then

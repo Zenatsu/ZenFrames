@@ -257,7 +257,6 @@ end
 oUF.Tags.Methods["curhpperhp"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
     local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
     if unitStatus then
@@ -278,7 +277,6 @@ end
 oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
     local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
     if unitStatus then

@@ -1,7 +1,7 @@
 local _, ZF = ...
 local oUF = ZF.oUF
 local OVERLAY_FRAME_LEVEL = 1500
-local overlays = {} 
+local overlays = {}
 local overLayer
 local selectedEntry
 local showingDropMessage = false
@@ -41,7 +41,6 @@ function ZF:CreateDesignerPreviewFrame() -- Set up the preview frame of the desi
     UnregisterUnitWatch(previewFrame)
     previewFrame:UnregisterAllEvents()
     if previewFrame:IsElementEnabled("Auras") then previewFrame:DisableElement("Auras") end
-    if previewFrame:IsElementEnabled("CustomAuras") then previewFrame:DisableElement("CustomAuras") end
     previewFrame:EnableMouse(false)
 
     if activeStyle then oUF:SetActiveStyle(activeStyle) end
@@ -92,9 +91,11 @@ function ZF:ApplyDesignerDispelHighlightPreview()
     if ZF.DESIGNER_PREVIEW_TOGGLES.DispelHighlight then
         local color = oUF.colors.dispel["Magic"]
         previewFrame.DispelHighlight:SetVertexColor(color.r, color.g, color.b)
+        previewFrame.DispelAuras:Show()
         previewFrame.DispelHighlight:Show()
     else
         previewFrame.DispelHighlight:Hide()
+        previewFrame.DispelAuras:Hide()
     end
 end
 
@@ -108,9 +109,8 @@ function ZF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     ZF.DESIGNER_PREVIEW_ACTIVE = true
     ZF:UpdateUnitFrame(previewFrame, buildUnit)
     ZF.DESIGNER_PREVIEW_ACTIVE = false
-    
+
     if previewFrame:IsElementEnabled("Auras") then previewFrame:DisableElement("Auras") end
-    if previewFrame:IsElementEnabled("CustomAuras") then previewFrame:DisableElement("CustomAuras") end
     if previewFrame:IsElementEnabled("PrivateAuras") then previewFrame:DisableElement("PrivateAuras") end
 
     previewFrame:SetSize(fDB.Width, fDB.Height)
@@ -249,7 +249,9 @@ local function BuildDesignerRegistry(unit)
             update = function(unitFrame) ZF:UpdateUnitReadyCheckIndicator(unitFrame, unit) end,
             sample = function(previewFrame)
                 local region = previewFrame.ReadyCheckIndicator if not region then return end
-                if region.readyTexture then region:SetTexture(region.readyTexture) else region:SetAtlas("UI-LFG-ReadyMark-Raid") end
+                local ReadyCheckDB = ZF:GetUnitDB(previewFrame, unit).Indicators.ReadyCheck
+                local textureSet = ZF.ReadyCheckTextures[ReadyCheckDB.Texture]
+                if textureSet then region:SetTexture(textureSet["READY"]) region:SetTexCoord(0, 1, 0, 1) else region:SetAtlas("UI-LFG-ReadyMark-Raid") end
                 region:Show()
             end,
         }),
@@ -417,12 +419,12 @@ function ZF:SetDesignerUnit(unit)
 end
 
 function ZF:ApplyDesignerSampleData()
-    local previewFrame = ZF.DESIGNER_PREVIEW_FRAME 
+    local previewFrame = ZF.DESIGNER_PREVIEW_FRAME
     if not previewFrame then return end
 
     for _, entry in ipairs(ZF.DESIGNER_WIDGETS) do
         local db = entry.getDB()
-        if entry.kind == "indicator" then 
+        if entry.kind == "indicator" then
             if db and db.Enabled then
                 for _, elementName in ipairs(entry.oUFElements) do
                     if previewFrame:IsElementEnabled(elementName) then previewFrame:DisableElement(elementName) end
@@ -434,7 +436,7 @@ function ZF:ApplyDesignerSampleData()
             if region then region:SetText(entry.label) end
         end
     end
-    
+
     if previewFrame.Totems then
         for _, totem in ipairs(previewFrame.Totems) do totem:EnableMouse(false) end
     end
@@ -493,7 +495,7 @@ function ZF:UpdateDesignerStatusText()
         overLayer.Status:SetFormattedText(STYLE.Palette.SelectedText .. "%s|r    Anchor: %s -> %s    X: %d Y: %d", selectedEntry.label, db.Layout[1], db.Layout[2], db.Layout[3], db.Layout[4])
     else
         overLayer.Status:SetText("Hover over a widget to highlight it. Click to select. Drag to move.")
-    end    
+    end
 end
 
 local function GetOverLayer()
@@ -517,13 +519,13 @@ local function CreateOverlay(entry, index)
     local overlay = CreateFrame("Button", "ZF_DesignerOverlay_" .. entry.key, layer, "BackdropTemplate")
     overlay.entry = entry
     overlay:SetFrameLevel(layer:GetFrameLevel() +10+ index) -- Always sit above the parent frame level
-    overlay:SetBackdrop(STYLE.Overlays.Backdrop)  
+    overlay:SetBackdrop(STYLE.Overlays.Backdrop)
      overlay:SetBackdropColor(unpack(STYLE.Overlays.Fill))
     overlay:SetMovable(true)
     overlay:SetClampedToScreen(true)
     overlay:RegisterForDrag("LeftButton")
-    overlay:SetScript("OnEnter", function(self) 
-        self.hovered = true 
+    overlay:SetScript("OnEnter", function(self)
+        self.hovered = true
         UpdateOverlayVisual(self)
         if not selectedEntry then overLayer.Status:SetText("Hovering: " .. self.entry.label) end
     end)
@@ -538,7 +540,7 @@ local function CreateOverlay(entry, index)
     overlay:SetScript("OnDragStart", function(self)
         ZF:SetDesignerSelection(self.entry)
         self.startX, self.startY = self:GetCenter()
-        self:StartMoving() 
+        self:StartMoving()
         local region = self.entry.getRegion(ZF.DESIGNER_PREVIEW_FRAME)
         if region then region:ClearAllPoints() region:SetPoint("CENTER", self, "CENTER", 0, 0) end
     end)
@@ -548,7 +550,7 @@ local function CreateOverlay(entry, index)
         local startX, startY = self.startX, self.startY
         self.startX, self.startY = nil, nil
         if not (startX and endX) then ZF:AnchorDesignerOverlays() return end
-        
+
         if not IsInsideCanvas(self, endX, endY) then
             ZF:RefreshDesignerWidget(self.entry)
             ShowDropRejectedMessage()

@@ -62,7 +62,7 @@ end
 local function UpdateMoverVisual(frameMover)
     if frameMover == ZF.ACTIVE_MOVER then
         frameMover:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
-        ZF.LG.PixelGlow_Start(frameMover, ZF.DesignerStyle.Palette.MoverBorder, nil, nil, nil, 4, nil, nil, false) 
+        ZF.LG.PixelGlow_Start(frameMover, ZF.DesignerStyle.Palette.MoverBorder, nil, nil, nil, 4, nil, nil, false)
 						-- Args: r (The target frame), color(R,G,B,A), N(Number of Dashes), frequency(Animation speed), length(How long the dashes are), th(Line Thickness), xOffset, yOffset(X/Y offset from the source frame), border(Draw a dark border under the dashes), key(Internal namespace for multi glow frames), frameLevel(frame level in which to draw the glow)
     elseif frameMover.hovered then
         frameMover:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.Hovered))
@@ -243,7 +243,7 @@ local function CreateMiniSlider(parent, width, minValue, maxValue, step, onCommi
     _G[slider:GetName() .. "Low"]:SetText("")
     _G[slider:GetName() .. "High"]:SetText("")
     _G[slider:GetName() .. "Text"]:SetText("")
-    
+
     slider:SetScript("OnValueChanged", function(self, value)
 		if self.mcpSuppress or InCombatLockdown() then return end
 		if not ControlPanel.isDraggingSlider then
@@ -394,8 +394,7 @@ end
 
 local function CreateFrameLayoutRows()
 
-    local dimMin, dimMax, dimStep = unpack(ZF.DesignerStyle.Sliders.Dimension)
-   	local sizeSliderRow = AddControlPanelRow("Layout", 20)
+	local sizeSliderRow = AddControlPanelRow("Layout", 20)
 	local WidthSlider = CreateMiniSlider(sizeSliderRow, 80, 20, 500, 1, function(value) CommitFrameField("Width", value) end)
 	WidthSlider:SetPoint("LEFT", sizeSliderRow, "LEFT", 4, 0)
 	local HeightSlider = CreateMiniSlider(sizeSliderRow, 80, 20, 500, 1, function(value) CommitFrameField("Height", value) end)
@@ -513,7 +512,7 @@ local function CreateGridUnitRows()
 		UIDropDownMenu_SetText(GrowthDropdown, list[FrameDB.GrowthDirection])
 	end
 
-	
+
     local SpacingSliderRow= AddControlPanelRow("Order", 20, IsGridUnit)
     local SpacingSlider = CreateMiniSlider(SpacingSliderRow, 180, -1, 100, 0.1, function(value) CommitLayoutField(5, value) end)
     SpacingSlider:SetPoint("LEFT", SpacingSliderRow, "LEFT", 4, 0)

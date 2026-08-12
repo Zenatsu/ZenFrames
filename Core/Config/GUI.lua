@@ -191,6 +191,14 @@ local function DisableAurasTestMode(unit)
 	elseif unit == "boss" then
 		ZF:ResetBossFrames()
 	elseif unit == "party" or unit == "raid" then
+		if unit == "party" then
+			for i = 1, ZF.MAX_PARTY_FRAMES do
+				if ZF["PARTY" .. i] then ZF:CreateTestAuras(ZF["PARTY" .. i], "party" .. i) end
+			end
+			if ZF.PARTYPLAYER then ZF:CreateTestAuras(ZF.PARTYPLAYER, "partyplayer") end
+		else
+			ZF:ForEachRaidFrame(function(raidFrame, frameUnit) if frameUnit then ZF:CreateTestAuras(raidFrame, frameUnit) end end, false)
+		end
 	else
 		ZF:CreateTestAuras(ZF[unit:upper()], unit)
 	end
@@ -625,11 +633,11 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback("HealthBar") end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColorContainer:AddChild(BackgroundOpacitySlider)
-   
-    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", FrameDB, "BorderColor", function() updateCallback("BorderColor") end, {width = 0.25})
-    
+
+    GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", FrameDB, "BorderColor", function() updateCallback("BorderColor") end, {width = 0.25})
+
     local BorderThicknessSlider = AG:Create("Slider")
-    BorderThicknessSlider:SetLabel("Border Thickness") 
+    BorderThicknessSlider:SetLabel("Border Thickness")
     BorderThicknessSlider:SetValue(FrameDB.BorderThickness)
     BorderThicknessSlider:SetSliderValues(0, 10, 1)
     BorderThicknessSlider:SetRelativeWidth(0.25)

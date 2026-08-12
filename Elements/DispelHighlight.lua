@@ -7,7 +7,7 @@ local DispelColorMap = {}
 local DispelColorMapGeneration = 0
 
 local function RefreshDispelColorMap()
-	table.wipe(DispelColorMap)
+	wipe(DispelColorMap)
 	if DispelTypes then
 		for dispelType, color in pairs(oUF.colors.dispel) do
 			if DispelTypes[dispelType] then DispelColorMap[dispelType] = color end
@@ -79,7 +79,7 @@ function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 		ZF:UpdateUnitDispelState(unitFrame, unit)
 	else
 		ZF:UnregisterDispelHighlightEvents(unitFrame)
-		unitFrame.DispelHighlight:Hide()
+		unitFrame.DispelAuras:Hide()
 	end
 end
 
@@ -87,30 +87,33 @@ function ZF:UpdateUnitDispelState(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
 	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 	if not DispelHighlightDB.Enabled then
-		unitFrame.DispelHighlight:Hide()
+		unitFrame.DispelAuras:Hide()
 		return
 	end
 	local unitToken = unit == "partyplayer" and "player" or unit
 
 	if not ZF.LD then
-		unitFrame.DispelHighlight:Hide()
+		unitFrame.DispelAuras:Hide()
 		return
 	end
 
 	if not UnitIsUnit(unitToken, "player") and not UnitIsFriend("player", unitToken) then
-		unitFrame.DispelHighlight:Hide()
+		unitFrame.DispelAuras:Hide()
 		return
 	end
 
 	DispelTypes = DispelTypes or ZF.LD:GetMyDispelTypes()
 	if DispelColorMapGeneration ~= (ZF.dispelColorGeneration or 0) then RefreshDispelColorMap() end
 	if not (DispelTypes.Magic or DispelTypes.Curse or DispelTypes.Disease or DispelTypes.Poison or DispelTypes.Bleed) then
-		unitFrame.DispelHighlight:Hide()
+		unitFrame.DispelAuras:Hide()
 		return
 	end
 
 	if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
-	if unitFrame.DispelAuras then unitFrame.DispelAuras:ForceUpdate() end
+	if unitFrame.DispelAuras then
+		unitFrame.DispelAuras:Show()
+		unitFrame.DispelAuras:ForceUpdate()
+	end
 end
 
 function ZF:RegisterDispelHighlightEvents(unitFrame, unit)

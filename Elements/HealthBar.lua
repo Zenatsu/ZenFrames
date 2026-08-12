@@ -57,10 +57,10 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.colorTapping = HealthBarDB.ColorWhenTapped
         HealthBar.colorDisconnected = HealthBarDB.ColorWhenDisconnected
         HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
-		HealthBar.PostUpdateColor = function(healthBar, unit, color)
+		HealthBar.PostUpdateColor = function(healthBar, currentUnit, color)
 			if color and color ~= oUF.colors.health then return end
-			local currentHealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
-			if unit == "pet" and currentHealthBarDB.ColorByClass then
+			local currentHealthBarDB = ZF:GetUnitDB(unitFrame, currentUnit).HealthBar
+			if currentUnit == "pet" and currentHealthBarDB.ColorByClass then
 				local unitColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 				if unitColor then healthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, currentHealthBarDB.ForegroundOpacity) return end
 			end
@@ -78,7 +78,6 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
             maxHP = maxHP or 1
-            curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unit, true), unitFrame.Health.smoothing)
 			SetHealthBackgroundColor(unitFrame, unit, ZF:GetUnitDB(unitFrame, unit).HealthBar)
@@ -99,7 +98,6 @@ function ZF:UpdateUnitHealthBar(unitFrame, unit)
     if InCombatLockdown() then return end
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
-    local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 
     if unitFrame then
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)

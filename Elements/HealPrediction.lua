@@ -277,4 +277,8 @@ function ZF:UpdateUnitHealPrediction(unitFrame, unit)
     if unitFrame:IsElementEnabled("Health") then unitFrame:DisableElement("Health") end
     unitFrame:EnableElement("Health")
     unitFrame.Health:ForceUpdate()
+
+    if unitFrame.Health.HealingPlayer then unitFrame.Health.HealingPlayer:SetShown(IncomingHealDB.Enabled) end
+    if unitFrame.Health.DamageAbsorb then unitFrame.Health.DamageAbsorb:SetShown(AbsorbDB.Enabled) end
+    if unitFrame.Health.HealAbsorb then unitFrame.Health.HealAbsorb:SetShown(HealAbsorbDB.Enabled) end
 end

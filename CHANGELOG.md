@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.0.8
+
+- Fixed various aura issues displaying properly and not accepting setting changes
+- Fixed game stuttering when exiting combat due to frames rebuilding themselves
+- Fixed healing absorbs from improperly displaying around combat
+- Fixed dispel highlight not displaying properly
+- Fixed cast bar textures and icons not displaying properly
+- Fixed a few indicators not displaying properly
+- Fixed player tooltip not displaying on mouseover
+
 ## V1.0.7
 
 - Fixed the addon breaking after the new patch update

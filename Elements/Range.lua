@@ -372,7 +372,7 @@ function ZF:UpdateRangeAlpha(frame, unit)
 
 	local inAlpha = RangeDB.InRange or 1
 	local outAlpha = RangeDB.OutOfRange or 0.5
-	local inRange = false
+	local inRange
 
 	if UnitIsDeadOrGhost(unit) then
 		inRange = UnitInSpellsRange(unit, "resurrect")

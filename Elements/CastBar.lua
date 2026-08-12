@@ -105,12 +105,14 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
-        unitFrame.Castbar.PostCastStart = function(frameCastBar, _, spellID, notInterruptible, name)
+        unitFrame.Castbar.PostCastStart = function(frameCastBar, _, spellID, notInterruptible, name, texture)
 			local currentCastBarDB = ZF:GetUnitDB(unitFrame, unit).CastBar
 			local currentSpellNameDB = currentCastBarDB.Text.SpellName
 			frameCastBar.zfActive = true
 			frameCastBar.zfNotInterruptible = notInterruptible
 			SetCastBarColor(frameCastBar, unit, currentCastBarDB)
+
+			if frameCastBar.Icon and texture then frameCastBar.Icon:SetTexture(texture) end
 
             local spellName = name
             if spellName then
@@ -267,7 +269,6 @@ end
 function ZF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local GeneralDB = ZF.db.profile.General
     local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
     if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then

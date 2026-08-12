@@ -307,6 +307,7 @@ function ZF:SpawnGroupFrame(groupType)
 		for _, header in ipairs(ZF.RAID_HEADERS) do header:Show() end
 	end
 	ZF:LayoutGroupFrames(groupType)
+	ZF:UpdateGroupFrame(groupType)
 end
 
 function ZF:UpdateGroupFrame(groupType)

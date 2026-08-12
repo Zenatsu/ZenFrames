@@ -3,7 +3,10 @@ local _, ZF = ...
 local function UpdateClassificationTexture(ClassificationIndicator, _, classification)
     local ClassificationIndicatorDB = ZF.db.profile.Units.target.Indicators.Classification
     local texture = ZF.ClassificationTextures[ClassificationIndicatorDB.Texture][classification]
-    if not texture then return end
+    if not texture then
+        ClassificationIndicator:Hide()
+        return
+    end
 
     local usesAtlas = ClassificationIndicatorDB.Texture == "CLASSIFICATION0" or ClassificationIndicatorDB.Texture == "CLASSIFICATION1"
     if usesAtlas then
@@ -11,6 +14,7 @@ local function UpdateClassificationTexture(ClassificationIndicator, _, classific
     else
         ClassificationIndicator:SetTexture(texture)
     end
+    ClassificationIndicator:Show()
 end
 
 function ZF:CreateUnitClassificationIndicator(unitFrame, unit)

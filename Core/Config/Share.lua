@@ -87,10 +87,10 @@ local function ParseEncodedProfile(encodedInfo)
         return nil
     end
 
-    local prefix = (encodedInfo:sub(1, #ZF_IMPORT_PREFIX) == ZF_IMPORT_PREFIX) and ZF_IMPORT_PREFIX 
+    local prefix = (encodedInfo:sub(1, #ZF_IMPORT_PREFIX) == ZF_IMPORT_PREFIX) and ZF_IMPORT_PREFIX
         or (encodedInfo:sub(1, #UUF_IMPORT_PREFIX) == UUF_IMPORT_PREFIX) and UUF_IMPORT_PREFIX
         or nil
-        
+
     if not prefix then
         return nil
     end

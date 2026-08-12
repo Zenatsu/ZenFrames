@@ -420,14 +420,6 @@ function ZF:GetUnitColor(unit)
     return 1, 1, 1
 end
 
-function ZF:GetClassColor(unitFrame)
-    local _, class = UnitClass(unitFrame.unit)
-    local classColor = RAID_CLASS_COLORS[class]
-    if classColor then
-        return {classColor.r, classColor.g, classColor.b, 1}
-    end
-end
-
 function ZF:GetNormalizedUnit(unit)
     local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit

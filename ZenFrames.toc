@@ -1,5 +1,5 @@
 ## Title: |cFF990007Zen|rFrames
-## Interface: 120007, 120100
+## Interface: 120100
 ## Version: @project-version@
 ## Author: Zenatsu
 ## Notes: A Unit Frame Addon build with a frame designer for easy customization. Inspired by UUF and Platynator.

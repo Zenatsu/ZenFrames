@@ -122,7 +122,6 @@ function ZF:CreateUnitPowerBar(unitFrame, unit)
 end
 
 function ZF:UpdateUnitPowerBar(unitFrame, unit)
-    local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
 
     if ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB) then

@@ -172,6 +172,11 @@ function ZF:SpawnUnitFrame(unit)
     if ZF[unit:upper()] then -- boss spawns as BOSS1..n above; there is no single ZF.BOSS frame to size or place
         if not InCombatLockdown() then ZF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height) end
         ZF:PlaceUnitFrame(ZF[unit:upper()], unit)
+        ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
+    elseif unit == "boss" then
+        for i = 1, ZF.MAX_BOSS_FRAMES do
+            ZF:UpdateUnitFrame(ZF[unit:upper() .. i], unit .. i)
+        end
     end
     if InCombatLockdown() then -- reload/login mid-combat: PlaceUnitFrame/LayoutBossFrames above no-op'd, retry once combat ends
         pendingSpawnUnits[unit] = true
@@ -224,7 +229,6 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
-    local isFocus = unit == "focus"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
     local isParty = ZF:GetNormalizedUnit(unit) == "party"
