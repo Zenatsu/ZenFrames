@@ -433,10 +433,10 @@ function ZF:LayoutGroupFrames(groupType)
 		for _, partyFrame in ipairs(ZF.PARTY_FRAMES) do partyFrames[#partyFrames + 1] = partyFrame end
 		table.sort(partyFrames, function(firstFrame, secondFrame)
 			if Frame.SortBy == "NAME" then
-				return (UnitName(firstFrame.unit) or firstFrame.unit or "") < (UnitName(secondFrame.unit) or secondFrame.unit or "")
+				return (UnitName(firstFrame.__unit) or firstFrame.__unit or "") < (UnitName(secondFrame.__unit) or secondFrame.__unit or "")
 			elseif Frame.SortBy == "ROLE" then
-				local firstRole = UnitGroupRolesAssigned(firstFrame.unit)
-				local secondRole = UnitGroupRolesAssigned(secondFrame.unit)
+				local firstRole = UnitGroupRolesAssigned(firstFrame.__unit)
+				local secondRole = UnitGroupRolesAssigned(secondFrame.__unit)
 				if firstRole ~= secondRole then
 					for _, orderedRole in ipairs(Frame.RoleOrder or {}) do
 						if firstRole == orderedRole then return true end
@@ -554,7 +554,7 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		ZF:UpdateGroupIndicators("party")
 		ZF:UpdateAugmentationRaidFrames()
 		for _, partyFrame in ipairs(ZF.PARTY_FRAMES) do
-			local unitGUID = UnitGUID(partyFrame.unit)
+			local unitGUID = UnitGUID(partyFrame.__unit)
 			if unitGUID ~= nil and not ZF:IsSecretValue(unitGUID) and unitGUID ~= partyFrame.unitGUID then
 				partyFrame.unitGUID = unitGUID
 				partyFrame:UpdateAllElements("GROUP_ROSTER_UPDATE")

@@ -464,11 +464,6 @@ local function Enable(self)
 		if(not element.dispelColorCurve) then
 			element.dispelColorCurve = C_CurveUtil.CreateColorCurve()
 			element.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			for _, dispelIndex in next, oUF.Enum.DispelType do
-				if(self.colors.dispel[dispelIndex]) then
-					element.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
-				end
-			end
 		end
 
 		self:RegisterEvent('UNIT_AURA', Path)

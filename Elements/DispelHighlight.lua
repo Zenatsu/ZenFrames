@@ -1,22 +1,27 @@
 local _, ZF = ...
 local oUF = ZF.oUF
 
-local dispelTypeMap = {
-    Magic = oUF.Enum.DispelType.Magic,
-    Curse = oUF.Enum.DispelType.Curse,
-    Disease = oUF.Enum.DispelType.Disease,
-    Poison = oUF.Enum.DispelType.Poison,
-    Bleed = oUF.Enum.DispelType.Bleed,
-}
-
 local DispelHighlightFrames = {}
 local DispelTypes
+local DispelColorMap = {}
+local DispelColorMapGeneration = 0
+
+local function RefreshDispelColorMap()
+	table.wipe(DispelColorMap)
+	if DispelTypes then
+		for dispelType, color in pairs(oUF.colors.dispel) do
+			if DispelTypes[dispelType] then DispelColorMap[dispelType] = color end
+		end
+	end
+	DispelColorMapGeneration = ZF.dispelColorGeneration or 0
+end
 
 local DispelEventFrame = CreateFrame("Frame")
 DispelEventFrame:RegisterEvent("SPELLS_CHANGED")
 DispelEventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
 DispelEventFrame:SetScript("OnEvent", function()
 	DispelTypes = ZF.LD and ZF.LD:GetMyDispelTypes()
+	RefreshDispelColorMap()
 	for unitFrame in pairs(DispelHighlightFrames) do ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end
 end)
 
@@ -39,33 +44,27 @@ local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
 	end
 end
 
-function ZF:UpdateDispelColorCurve(unitFrame)
-    if not unitFrame.dispelColorCurve then return end
-    unitFrame.dispelColorCurve:ClearPoints()
-    for dispelType, index in pairs(dispelTypeMap) do
-        local color = oUF.colors.dispel[index]
-        if color then
-            unitFrame.dispelColorCurve:AddPoint(index, color)
-        end
-    end
-    unitFrame.dispelColorCurveGeneration = ZF.dispelColorGeneration
-end
-
 function ZF:CreateUnitDispelHighlight(unitFrame, unit)
-	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
 	if not unitFrame.DispelHighlight then
-		local DispelHighlight = unitFrame.Health:CreateTexture(ZF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
-		ApplyDispelHighlightStyle(DispelHighlight, unitFrame, DispelHighlightDB)
-		DispelHighlight:SetBlendMode("BLEND")
-		DispelHighlight:Hide()
-
-		unitFrame.DispelHighlight = DispelHighlight
-
-		if not unitFrame.dispelColorCurve then
-			unitFrame.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-			unitFrame.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			ZF:UpdateDispelColorCurve(unitFrame)
-		end
+		local auras = unitFrame:CreateAuras()
+		auras:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
+		auras:AddGroup("HARMFUL|RAID", {
+			maxFrameCount = 1,
+			CreateButton = function(_, _, button)
+				button:SetSize(1, 1)
+				local highlight = button:CreateTexture(ZF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
+				highlight:SetBlendMode("BLEND")
+				highlight:Hide()
+				unitFrame.DispelHighlight = highlight
+				ApplyDispelHighlightStyle(highlight, unitFrame, ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight)
+				button:AddDispelTypeTexture(highlight, {
+					style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
+					showWhenHarmful = true,
+					customDispelColorMap = DispelColorMap,
+				})
+			end,
+		})
+		unitFrame.DispelAuras = auras
 	end
 
 	ZF:UpdateUnitDispelHighlight(unitFrame, unit)
@@ -74,34 +73,28 @@ end
 function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
 	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
-	if unitFrame.DispelHighlight then
-		if DispelHighlightDB.Enabled then
-			ZF:RegisterDispelHighlightEvents(unitFrame, unit)
-			ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
-			ZF:UpdateUnitDispelState(unitFrame, unit)
-		else
-			ZF:UnregisterDispelHighlightEvents(unitFrame)
-			unitFrame.DispelHighlight:Hide()
-		end
+	if DispelHighlightDB.Enabled then
+		ZF:RegisterDispelHighlightEvents(unitFrame, unit)
+		ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
+		ZF:UpdateUnitDispelState(unitFrame, unit)
+	else
+		ZF:UnregisterDispelHighlightEvents(unitFrame)
+		unitFrame.DispelHighlight:Hide()
 	end
 end
 
 function ZF:UpdateUnitDispelState(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
-	if not ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight.Enabled then
+	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+	if not DispelHighlightDB.Enabled then
 		unitFrame.DispelHighlight:Hide()
 		return
 	end
 	local unitToken = unit == "partyplayer" and "player" or unit
 
-	local LibDispel = ZF.LD
-	if not LibDispel then
+	if not ZF.LD then
 		unitFrame.DispelHighlight:Hide()
 		return
-	end
-
-	if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= ZF.dispelColorGeneration then
-		ZF:UpdateDispelColorCurve(unitFrame)
 	end
 
 	if not UnitIsUnit(unitToken, "player") and not UnitIsFriend("player", unitToken) then
@@ -109,27 +102,15 @@ function ZF:UpdateUnitDispelState(unitFrame, unit)
 		return
 	end
 
-	DispelTypes = DispelTypes or LibDispel:GetMyDispelTypes()
+	DispelTypes = DispelTypes or ZF.LD:GetMyDispelTypes()
+	if DispelColorMapGeneration ~= (ZF.dispelColorGeneration or 0) then RefreshDispelColorMap() end
 	if not (DispelTypes.Magic or DispelTypes.Curse or DispelTypes.Disease or DispelTypes.Poison or DispelTypes.Bleed) then
 		unitFrame.DispelHighlight:Hide()
 		return
 	end
 
-	local bestAura = C_UnitAuras.GetAuraDataByIndex(unitToken, 1, "HARMFUL|RAID")
-	local bestAuraInstanceID = bestAura and bestAura.auraInstanceID or nil
-
-	if bestAuraInstanceID then
-		local color = C_UnitAuras.GetAuraDispelTypeColor(unitToken, bestAuraInstanceID, unitFrame.dispelColorCurve)
-
-		if color then
-			unitFrame.DispelHighlight:SetVertexColor(color:GetRGBA())
-			unitFrame.DispelHighlight:Show()
-		else
-			unitFrame.DispelHighlight:Hide()
-		end
-	else
-		unitFrame.DispelHighlight:Hide()
-	end
+	if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
+	if unitFrame.DispelAuras then unitFrame.DispelAuras:ForceUpdate() end
 end
 
 function ZF:RegisterDispelHighlightEvents(unitFrame, unit)

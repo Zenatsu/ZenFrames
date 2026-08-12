@@ -155,7 +155,7 @@ end
 
 local function UpdateUnitOverAbsorbs(unitFrame, unit)
     local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
-    if not unitFrame.HealthPrediction or not unitFrame.HealthPrediction.damageAbsorb then return end
+    if not unitFrame.Health.DamageAbsorb then return end
 
     if not AbsorbDB.Enabled or not AbsorbDB.ShowOverAbsorb or AbsorbDB.Position ~= "ATTACH" then
         if unitFrame.HealthPrediction.overDamageAbsorb then
@@ -170,11 +170,28 @@ local function UpdateUnitOverAbsorbs(unitFrame, unit)
     if not OverAbsorbBar then return end
 
     ConfigureUnitOverAbsorbs(OverAbsorbBar, unitFrame, unit)
-    OverAbsorbBar:SetMinMaxValues(unitFrame.HealthPrediction.damageAbsorb:GetMinMaxValues())
-    OverAbsorbBar:SetValue(unitFrame.HealthPrediction.damageAbsorb:GetValue())
+    OverAbsorbBar:SetMinMaxValues(unitFrame.Health.DamageAbsorb:GetMinMaxValues())
+    OverAbsorbBar:SetValue(unitFrame.Health.DamageAbsorb:GetValue())
     OverAbsorbBar:SetWidth(unitFrame.Health:GetWidth())
     OverAbsorbBar.Clip:Show()
     OverAbsorbBar:Show()
+end
+
+local function RefreshHealthPredictionAliases(unitFrame)
+    unitFrame.HealthPrediction = unitFrame.HealthPrediction or {}
+    unitFrame.HealthPrediction.healingPlayer = unitFrame.Health.HealingPlayer
+    unitFrame.HealthPrediction.damageAbsorb = unitFrame.Health.DamageAbsorb
+    unitFrame.HealthPrediction.healAbsorb = unitFrame.Health.HealAbsorb
+end
+
+local function EnsureHealthPostUpdateChain(unitFrame)
+    if unitFrame.Health.zfHealPredictionChained then return end
+    unitFrame.Health.zfHealPredictionChained = true
+    local existingPostUpdate = unitFrame.Health.PostUpdate
+    unitFrame.Health.PostUpdate = function(healthElement, event, curHP, maxHP, ...)
+        if existingPostUpdate then existingPostUpdate(healthElement, event, curHP, maxHP, ...) end
+        UpdateUnitOverAbsorbs(unitFrame, unitFrame.__unit)
+    end
 end
 
 function ZF:CreateUnitHealPrediction(unitFrame, unit)
@@ -182,16 +199,18 @@ function ZF:CreateUnitHealPrediction(unitFrame, unit)
     local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     local HealAbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
 
-    unitFrame.HealthPrediction = {
-        healingPlayer = IncomingHealDB.Enabled and CreateIncomingHeal(unitFrame, unit),
-        damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
-        damageAbsorbClampMode = 2,
-        overDamageAbsorb = AbsorbDB.Enabled and AbsorbDB.ShowOverAbsorb and AbsorbDB.Position == "ATTACH" and CreateUnitOverAbsorbs(unitFrame, unit),
-        healAbsorb = HealAbsorbDB.Enabled and CreateUnitHealAbsorbs(unitFrame, unit),
-        healAbsorbClampMode = 1,
-        healAbsorbMode = 1,
-        PostUpdate = function(_, updateUnit) UpdateUnitOverAbsorbs(unitFrame, updateUnit) end,
-    }
+    unitFrame.Health.HealingPlayer = IncomingHealDB.Enabled and CreateIncomingHeal(unitFrame, unit) or nil
+    unitFrame.Health.DamageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit) or nil
+    unitFrame.Health.damageAbsorbClampMode = 2
+    unitFrame.Health.HealAbsorb = HealAbsorbDB.Enabled and CreateUnitHealAbsorbs(unitFrame, unit) or nil
+    unitFrame.Health.healAbsorbClampMode = 1
+    unitFrame.Health.healAbsorbMode = 1
+
+    unitFrame.HealthPrediction = unitFrame.HealthPrediction or {}
+    unitFrame.HealthPrediction.overDamageAbsorb = AbsorbDB.Enabled and AbsorbDB.ShowOverAbsorb and AbsorbDB.Position == "ATTACH" and CreateUnitOverAbsorbs(unitFrame, unit) or nil
+
+    RefreshHealthPredictionAliases(unitFrame)
+    EnsureHealthPostUpdateChain(unitFrame)
 end
 
 function ZF:UpdateUnitHealPrediction(unitFrame, unit)
@@ -199,65 +218,63 @@ function ZF:UpdateUnitHealPrediction(unitFrame, unit)
     local AbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.Absorbs
     local HealAbsorbDB = ZF:GetUnitDB(unitFrame, unit).HealPrediction.HealAbsorbs
 
-    if unitFrame.HealthPrediction then
-        if IncomingHealDB.Enabled then
-            unitFrame.HealthPrediction.healingPlayer = unitFrame.HealthPrediction.healingPlayer or CreateIncomingHeal(unitFrame, unit)
-            unitFrame.HealthPrediction.healingPlayerClampMode = 2
-            unitFrame.HealthPrediction.healingPlayer:Show()
-            if IncomingHealDB.UseStripedTexture then unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture(ZF.Media.Foreground) end
-            unitFrame.HealthPrediction.healingPlayer:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
-            local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
-            LayoutHealPredictionBar(unitFrame.HealthPrediction.healingPlayer, unitFrame, IncomingHealDB.Position, height, AttachIncomingHeal)
-            unitFrame.HealthPrediction:ForceUpdate()
-        else
-            if unitFrame.HealthPrediction.healingPlayer then
-                unitFrame.HealthPrediction.healingPlayer:Hide()
-            end
-        end
-        if AbsorbDB.Enabled then
-            unitFrame.HealthPrediction.damageAbsorb = unitFrame.HealthPrediction.damageAbsorb or CreateUnitAbsorbs(unitFrame, unit)
-            unitFrame.HealthPrediction.damageAbsorbClampMode = 2
-            unitFrame.HealthPrediction.PostUpdate = function(_, updateUnit) UpdateUnitOverAbsorbs(unitFrame, updateUnit) end
-            unitFrame.HealthPrediction.damageAbsorb:Show()
-            if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
-            unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
-            local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
-            local position = AbsorbDB.Position
-            LayoutHealPredictionBar(unitFrame.HealthPrediction.damageAbsorb, unitFrame, position, height, AttachAbsorbs)
+    if not unitFrame.Health then return end
 
-            if AbsorbDB.ShowOverAbsorb and position == "ATTACH" then
-                unitFrame.HealthPrediction.overDamageAbsorb = unitFrame.HealthPrediction.overDamageAbsorb or CreateUnitOverAbsorbs(unitFrame, unit)
-                if unitFrame.HealthPrediction.overDamageAbsorb then ConfigureUnitOverAbsorbs(unitFrame.HealthPrediction.overDamageAbsorb, unitFrame, unit) end
-            elseif unitFrame.HealthPrediction.overDamageAbsorb then
-                unitFrame.HealthPrediction.overDamageAbsorb:Hide()
-                unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide()
-            end
-            unitFrame.HealthPrediction:ForceUpdate()
-        else
-            if unitFrame.HealthPrediction.damageAbsorb then
-                unitFrame.HealthPrediction.damageAbsorb:Hide()
-            end
-            if unitFrame.HealthPrediction.overDamageAbsorb then
-                unitFrame.HealthPrediction.overDamageAbsorb:Hide()
-                unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide()
-            end
-        end
-        if HealAbsorbDB.Enabled then
-            unitFrame.HealthPrediction.healAbsorb = unitFrame.HealthPrediction.healAbsorb or CreateUnitHealAbsorbs(unitFrame, unit)
-            unitFrame.HealthPrediction.healAbsorbClampMode = 1
-            unitFrame.HealthPrediction.healAbsorb:Show()
-            if HealAbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
-            unitFrame.HealthPrediction.healAbsorb:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
-            local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
-            LayoutHealPredictionBar(unitFrame.HealthPrediction.healAbsorb, unitFrame, HealAbsorbDB.Position, height, AttachHealAbsorbs)
-            unitFrame.HealthPrediction.healAbsorb:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
-            unitFrame.HealthPrediction:ForceUpdate()
-        else
-            if unitFrame.HealthPrediction.healAbsorb then
-                unitFrame.HealthPrediction.healAbsorb:Hide()
-            end
+    if IncomingHealDB.Enabled then
+        unitFrame.Health.HealingPlayer = unitFrame.Health.HealingPlayer or CreateIncomingHeal(unitFrame, unit)
+        unitFrame.Health.HealingPlayer:Show()
+        if IncomingHealDB.UseStripedTexture then unitFrame.Health.HealingPlayer:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.Health.HealingPlayer:SetStatusBarTexture(ZF.Media.Foreground) end
+        unitFrame.Health.HealingPlayer:SetStatusBarColor(IncomingHealDB.Color[1], IncomingHealDB.Color[2], IncomingHealDB.Color[3], IncomingHealDB.Color[4])
+        local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
+        LayoutHealPredictionBar(unitFrame.Health.HealingPlayer, unitFrame, IncomingHealDB.Position, height, AttachIncomingHeal)
+    elseif unitFrame.Health.HealingPlayer then
+        unitFrame.Health.HealingPlayer:Hide()
+    end
+
+    if AbsorbDB.Enabled then
+        unitFrame.Health.DamageAbsorb = unitFrame.Health.DamageAbsorb or CreateUnitAbsorbs(unitFrame, unit)
+        unitFrame.Health.damageAbsorbClampMode = 2
+        unitFrame.Health.DamageAbsorb:Show()
+        if AbsorbDB.UseStripedTexture then unitFrame.Health.DamageAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.Health.DamageAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
+        unitFrame.Health.DamageAbsorb:SetStatusBarColor(AbsorbDB.Color[1], AbsorbDB.Color[2], AbsorbDB.Color[3], AbsorbDB.Color[4])
+        local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
+        local position = AbsorbDB.Position
+        LayoutHealPredictionBar(unitFrame.Health.DamageAbsorb, unitFrame, position, height, AttachAbsorbs)
+
+        if AbsorbDB.ShowOverAbsorb and position == "ATTACH" then
+            unitFrame.HealthPrediction.overDamageAbsorb = unitFrame.HealthPrediction.overDamageAbsorb or CreateUnitOverAbsorbs(unitFrame, unit)
+            if unitFrame.HealthPrediction.overDamageAbsorb then ConfigureUnitOverAbsorbs(unitFrame.HealthPrediction.overDamageAbsorb, unitFrame, unit) end
+        elseif unitFrame.HealthPrediction.overDamageAbsorb then
+            unitFrame.HealthPrediction.overDamageAbsorb:Hide()
+            unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide()
         end
     else
-        ZF:CreateUnitHealPrediction(unitFrame, unit)
+        if unitFrame.Health.DamageAbsorb then
+            unitFrame.Health.DamageAbsorb:Hide()
+        end
+        if unitFrame.HealthPrediction.overDamageAbsorb then
+            unitFrame.HealthPrediction.overDamageAbsorb:Hide()
+            unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide()
+        end
     end
+
+    if HealAbsorbDB.Enabled then
+        unitFrame.Health.HealAbsorb = unitFrame.Health.HealAbsorb or CreateUnitHealAbsorbs(unitFrame, unit)
+        unitFrame.Health.healAbsorbClampMode = 1
+        unitFrame.Health.HealAbsorb:Show()
+        if HealAbsorbDB.UseStripedTexture then unitFrame.Health.HealAbsorb:SetStatusBarTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.Health.HealAbsorb:SetStatusBarTexture(ZF.Media.Foreground) end
+        unitFrame.Health.HealAbsorb:SetStatusBarColor(HealAbsorbDB.Color[1], HealAbsorbDB.Color[2], HealAbsorbDB.Color[3], HealAbsorbDB.Color[4])
+        local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
+        LayoutHealPredictionBar(unitFrame.Health.HealAbsorb, unitFrame, HealAbsorbDB.Position, height, AttachHealAbsorbs)
+        unitFrame.Health.HealAbsorb:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
+    elseif unitFrame.Health.HealAbsorb then
+        unitFrame.Health.HealAbsorb:Hide()
+    end
+
+    RefreshHealthPredictionAliases(unitFrame)
+    EnsureHealthPostUpdateChain(unitFrame)
+
+    if unitFrame:IsElementEnabled("Health") then unitFrame:DisableElement("Health") end
+    unitFrame:EnableElement("Health")
+    unitFrame.Health:ForceUpdate()
 end

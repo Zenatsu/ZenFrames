@@ -80,7 +80,7 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
             maxHP = maxHP or 1
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
-            unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true), unitFrame.Health.smoothing)
+            unitHP:SetValue(UnitHealthMissing(unit, true), unitFrame.Health.smoothing)
 			SetHealthBackgroundColor(unitFrame, unit, ZF:GetUnitDB(unitFrame, unit).HealthBar)
         end
 

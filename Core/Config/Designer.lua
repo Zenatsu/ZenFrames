@@ -90,7 +90,7 @@ function ZF:ApplyDesignerDispelHighlightPreview()
     local previewFrame = ZF.DESIGNER_PREVIEW_FRAME
     if not previewFrame or not previewFrame.DispelHighlight then return end
     if ZF.DESIGNER_PREVIEW_TOGGLES.DispelHighlight then
-        local color = oUF.colors.dispel[oUF.Enum.DispelType.Magic]
+        local color = oUF.colors.dispel["Magic"]
         previewFrame.DispelHighlight:SetVertexColor(color.r, color.g, color.b)
         previewFrame.DispelHighlight:Show()
     else

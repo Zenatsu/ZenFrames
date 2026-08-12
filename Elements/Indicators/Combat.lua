@@ -14,7 +14,7 @@ function ZF:CreateUnitCombatIndicator(unitFrame, unit)
             Combat:SetTexture(ZF.StatusTextures["Combat"][CombatDB.Texture])
             Combat:SetTexCoord(0, 1, 0, 1)
         end
-        if UnitAffectingCombat(unitFrame.unit) then Combat:Show() end
+        if UnitAffectingCombat(unitFrame.__unit) then Combat:Show() end
     else
         ZF:DisableIndicatorElement(unitFrame, "CombatIndicator", Combat)
     end
@@ -39,7 +39,7 @@ function ZF:UpdateUnitCombatIndicator(unitFrame, unit)
                 unitFrame.CombatIndicator:SetTexture(ZF.StatusTextures["Combat"][CombatDB.Texture])
                 unitFrame.CombatIndicator:SetTexCoord(0, 1, 0, 1)
             end
-            if UnitAffectingCombat(unitFrame.unit) then
+            if UnitAffectingCombat(unitFrame.__unit) then
                 unitFrame.CombatIndicator:Show()
             else
                 unitFrame.CombatIndicator:Hide()

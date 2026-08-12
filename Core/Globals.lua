@@ -356,11 +356,11 @@ function ZF:LoadCustomColors()
 
     if General.Colors.Dispel then
         local dispelMap = {
-            Magic = oUF.Enum.DispelType.Magic,
-            Curse = oUF.Enum.DispelType.Curse,
-            Disease = oUF.Enum.DispelType.Disease,
-            Poison = oUF.Enum.DispelType.Poison,
-            Bleed = oUF.Enum.DispelType.Bleed,
+            Magic = "Magic",
+            Curse = "Curse",
+            Disease = "Disease",
+            Poison = "Poison",
+            Bleed = "Bleed",
         }
         for dispelType, index in pairs(dispelMap) do
             local color = General.Colors.Dispel[dispelType]

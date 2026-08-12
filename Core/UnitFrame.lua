@@ -289,16 +289,8 @@ function ZF:ResetBossFrames()
 		HideFakeAuraButtons(bossFrame.DebuffContainer)
 		HideFakeAuraButtons(bossFrame.CustomAuraContainer)
 
-		if BuffsDB.Enabled or DebuffsDB.Enabled then
-			if not bossFrame:IsElementEnabled("Auras") then bossFrame:EnableElement("Auras") end
-			if bossFrame.BuffContainer and bossFrame.BuffContainer.ForceUpdate then bossFrame.BuffContainer:ForceUpdate() end
-			if bossFrame.DebuffContainer and bossFrame.DebuffContainer.ForceUpdate then bossFrame.DebuffContainer:ForceUpdate() end
-		end
-
-		if CustomDB and CustomDB.Enabled then
-			bossFrame.CustomAuras = bossFrame.CustomAuraContainer
-			if not bossFrame:IsElementEnabled("CustomAuras") then bossFrame:EnableElement("CustomAuras") end
-			if bossFrame.CustomAuraContainer and bossFrame.CustomAuraContainer.ForceUpdate then bossFrame.CustomAuraContainer:ForceUpdate() end
+		if (BuffsDB.Enabled or DebuffsDB.Enabled or (CustomDB and CustomDB.Enabled)) and not bossFrame:IsElementEnabled("Auras") then
+			bossFrame:EnableElement("Auras")
 		end
 
 		bossFrame:Hide()

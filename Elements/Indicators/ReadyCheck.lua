@@ -5,9 +5,14 @@ function ZF:CreateUnitReadyCheckIndicator(unitFrame, unit)
 	if not ReadyCheckDB then return end
 
 	local ReadyCheckIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_ReadyCheckIndicator", ReadyCheckDB.Size, ReadyCheckDB.Layout)
-	ReadyCheckIndicator.readyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
-	ReadyCheckIndicator.notReadyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
-	ReadyCheckIndicator.waitingTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
+	ReadyCheckIndicator.PostUpdate = function(textureElement, status)
+		local textureSet = ZF.ReadyCheckTextures[ReadyCheckDB.Texture]
+		local statusTexture = textureSet and (status == "ready" and textureSet["READY"] or status == "notready" and textureSet["NOTREADY"] or status == "waiting" and textureSet["WAITING"])
+		if statusTexture then
+			textureElement:SetTexture(statusTexture)
+			textureElement:SetTexCoord(0, 1, 0, 1)
+		end
+	end
 
 	if ReadyCheckDB.Enabled then
 		unitFrame.ReadyCheckIndicator = ReadyCheckIndicator
@@ -27,9 +32,6 @@ function ZF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
 		if not unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:EnableElement("ReadyCheckIndicator", ZF:GetNormalizedUnit(unit)) end
 
 		ZF:PositionIndicatorTexture(unitFrame.ReadyCheckIndicator, unitFrame.HighLevelContainer, ReadyCheckDB.Size, ReadyCheckDB.Layout)
-		unitFrame.ReadyCheckIndicator.readyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["READY"]
-		unitFrame.ReadyCheckIndicator.notReadyTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["NOTREADY"]
-		unitFrame.ReadyCheckIndicator.waitingTexture = ZF.ReadyCheckTextures[ReadyCheckDB.Texture] and ZF.ReadyCheckTextures[ReadyCheckDB.Texture]["WAITING"]
 		if unitFrame.ReadyCheckIndicator.ForceUpdate then unitFrame.ReadyCheckIndicator:ForceUpdate() end
 	elseif unitFrame.ReadyCheckIndicator then
 		ZF:DisableIndicatorElement(unitFrame, "ReadyCheckIndicator", unitFrame.ReadyCheckIndicator)

@@ -6,6 +6,7 @@ function ZF:CreateUnitRoleIndicator(unitFrame, unit)
 
     local RoleIndicator = ZF:CreateIndicatorTexture(unitFrame, unit, "_RoleIndicator", RoleDB.Size, RoleDB.Layout)
     RoleIndicator.PostUpdate = function(textureElement, role)
+        role = role == Enum.LFGRole.Tank and "TANK" or role == Enum.LFGRole.Healer and "HEALER" or role == Enum.LFGRole.Damage and "DAMAGER" or nil
         local showRole = (role == "TANK" and RoleDB.ShowTank ~= false) or (role == "HEALER" and RoleDB.ShowHealer ~= false) or (role == "DAMAGER" and RoleDB.ShowDamager ~= false)
         if not showRole then
             textureElement:Hide()
