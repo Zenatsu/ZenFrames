@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.0.8hf1
+
+- Fixed buff container being hidden behind health bars (affected multiple different frames)
+- Fixed Target Designer Target Frame preview. (This one is on me, I was too focused on fixing auras that I didn't check in other places for more broke things)
+
 ## v1.0.8
 
 - Fixed various aura issues displaying properly and not accepting setting changes

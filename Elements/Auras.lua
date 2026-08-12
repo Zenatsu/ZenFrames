@@ -192,6 +192,7 @@ local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, bas
 
 	auras:ClearAllPoints()
 	auras:SetPoint(AuraDB.Layout[1], anchorParent, AuraDB.Layout[2], AuraDB.Layout[3], AuraDB.Layout[4])
+	auras:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 15)
 	auras:Show()
 
 	return auras
