@@ -4,6 +4,13 @@
 
 - Changed target and mouseover indicators style names to better represent what they do
 - Added Frame border options: Border Color, Border Thickness, Border Opacity (0 thickness to hide, or set opacity to 0%)
+- Fixed the addon breaking after the new patch update
+- Fixed buffs, debuffs, and custom auras not showing up
+- Fixed dispel highlighting (the colored border for dispellable debuffs) not working
+- Fixed incoming heal, absorb, and heal absorb bars not showing or updating
+- Fixed cast bar not showing spell names, target names, or the interrupt shield icon
+- Fixed the role icon (tank/healer/dps) not showing on party and raid frames
+- Fixed the ready check icon texture option not applying
 
 ## V1.0.5
 

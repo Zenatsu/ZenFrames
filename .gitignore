@@ -2,6 +2,7 @@
 *.log
 WowUp/
 .claude
+CLAUDE.md
 .vscode
 .git
 ZenFrames-Dev.toc

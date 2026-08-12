@@ -1,6 +1,7 @@
 package-as: ZenFrames
 ignore:
   - .claude
+  - CLAUDE.md
   - .vscode
   - .luacheckrc
   - .gitignore
