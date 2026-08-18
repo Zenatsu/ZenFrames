@@ -12,7 +12,29 @@ ZF.DesignerStyle = {
         OverlayBleed  = 4,
         OverlayMinHit = 16,
         WindowWidth   = 1100,
-        WindowHeight  = 600,
+        WindowHeight  = 880,
+        InfoLabelHeight = 24,
+        InfoLabelFontSize = 12,
+        AuraBlacklistWindowWidth = 420,
+        AuraBlacklistWindowHeight = 520,
+    },
+
+    -- Shared AceGUI SetRelativeWidth fractions, so every row-split reads from one place.
+    Widths = {
+        Pct100 = 1,
+        Pct75  = 0.75,
+        Pct70  = 0.7,
+        Pct66  = 0.66,
+        Pct60  = 0.6,
+        Pct50  = 0.5,
+        Pct40  = 0.4,
+        Pct34  = 0.34,
+        Pct33  = 0.33,
+        Pct30  = 0.3,
+        Pct29  = 0.29,
+        Pct25  = 0.25,
+        Pct20  = 0.2,
+        Pct19  = 0.19,
     },
 
     Movers = {
@@ -31,6 +53,22 @@ ZF.DesignerStyle = {
         FontSize  = {8, 64, 1},
         Dimension = {1, 3000, 0.1},   -- frame width/height
         Opacity   = {0, 1, 0.01},
+        BorderThickness = {1, 10, 1},        -- Mouseover / Target Indicator border thickness
+        FrameBorderThickness = {0, 10, 1},   -- Frame settings border thickness
+        IconSize = {8, 64, 1},               -- Totem icon size, tag icon size
+        Spacing = {0, 100, 1},               -- Totems indicator spacing
+        HoldTime = {0, 5, 0.1},              -- Cast bar interrupted/failed hold time
+        MaxChars = {1, 64, 1},               -- Spell name text max characters
+        BarHeight = {1, 64, 0.1},            -- Alternative power bar height
+        PortraitSize = {8, 128, 0.1},        -- Portrait width/height
+        AuraSpacing = {-5, 5, 1},            -- Buff/debuff/custom aura spacing
+        AuraCount = {1, 24, 1},              -- Aura count / per-row
+        BorderScale = {-1, 3, 0.1},          -- Private aura border scale
+        PrivateAuraSize = {8, 128, 1},       -- Private aura icon size
+        PrivateAuraSpacing = {-20, 100, 1},  -- Private aura spacing
+        PrivateAuraCount = {1, 12, 1},       -- Private auras to display
+        TagUpdateRate = {1, 10, 0.5},        -- Tag updates per second
+        ShadowOffset = {-5, 5, 1},           -- Font shadow X/Y offset
     },
 
     -- Shared colors
@@ -45,8 +83,8 @@ ZF.DesignerStyle = {
 
     -- Outline around the preview canvas
     Canvas = {
-        Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
-            edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1,
+        Backdrop = { bgFile = ZF.Media.Solid,
+            edgeFile = ZF.Media.Solid, edgeSize = 1,
             insets = {left = 0, right = 0, top = 0, bottom = 0} },
         Fill   = {0, 0, 0, 0},   -- transparent outline only
         Border = {1, 1, 1, 0.4}, -- white at 40%
@@ -55,7 +93,7 @@ ZF.DesignerStyle = {
 
     -- Panel drawn behind the widget-options
      OptionsPanel = {
-        Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
+        Backdrop = { bgFile = ZF.Media.Solid,
             edgeFile = ZF.LSM:Fetch("border", "Blizzard Tooltip"),
             edgeSize = 16,
             insets = {left = 5, right = 5, top = 5, bottom = 5} },
@@ -65,8 +103,8 @@ ZF.DesignerStyle = {
     },
 
     Overlays = {
-        Backdrop = { bgFile = "Interface\\Buttons\\WHITE8X8",
-            edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1,
+        Backdrop = { bgFile = ZF.Media.Solid,
+            edgeFile = ZF.Media.Solid, edgeSize = 1,
             insets = {left = 0, right = 0, top = 0, bottom = 0} },
         Fill = {0, 0, 0, 0}, -- keep transparent so widgets stay readable
         Padding = {left=0, right=0, top=0, bottom=0}

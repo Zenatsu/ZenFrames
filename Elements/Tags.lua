@@ -1,28 +1,37 @@
 local _, ZF = ...
 
+local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
+	ZF:ApplyFontStringStyle(fontString, ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
+	fontString:ClearAllPoints()
+	fontString:SetPoint(TagDB.Layout[1], parent, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
+	fontString:SetJustifyH(ZF:SetJustification(TagDB.Layout[1]))
+	if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
+		fontString:SetJustifyV("TOP")
+	elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
+		fontString:SetJustifyV("BOTTOM")
+	else
+		fontString:SetJustifyV("MIDDLE")
+	end
+end
+
+local function ApplyTagBinding(unitFrame, fontString, unit, TagDB)
+	if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
+		unitFrame:Tag(fontString, TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
+	else
+		unitFrame:Tag(fontString, TagDB.Tag)
+	end
+	fontString.ZFTagString = TagDB.Tag
+	fontString.ZFTagUnit = unit
+end
+
 local function CreateUnitTag(unitFrame, unit, tagDB)
 	local GeneralDB = ZF.db.profile.General
 	local TagDB = ZF:GetUnitDB(unitFrame, unit).Tags[tagDB]
 
 	if not unitFrame.Tags[tagDB] then
 		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(ZF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
-		ZF:ApplyFontStringStyle(unitFrame.Tags[tagDB], ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
-		unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-		unitFrame.Tags[tagDB]:SetJustifyH(ZF:SetJustification(TagDB.Layout[1]))
-		if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
-			unitFrame.Tags[tagDB]:SetJustifyV("TOP")
-		elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
-			unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
-		else
-			unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
-		end
-		if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
-			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
-		else
-			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
-		end
-		unitFrame.Tags[tagDB].ZFTagString = TagDB.Tag
-		unitFrame.Tags[tagDB].ZFTagUnit = unit
+		ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
+		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
 end
 
@@ -33,26 +42,10 @@ function ZF:UpdateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then CreateUnitTag(unitFrame, unit, tagDB) end
 	if not unitFrame.Tags[tagDB] then return end
 
-	ZF:ApplyFontStringStyle(unitFrame.Tags[tagDB], ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
-	unitFrame.Tags[tagDB]:ClearAllPoints()
-	unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-	unitFrame.Tags[tagDB]:SetJustifyH(ZF:SetJustification(TagDB.Layout[1]))
-	if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
-		unitFrame.Tags[tagDB]:SetJustifyV("TOP")
-	elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
-		unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
-	else
-		unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
-	end
+	ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
 	if unitFrame.Tags[tagDB].ZFTagString ~= TagDB.Tag or unitFrame.Tags[tagDB].ZFTagUnit ~= unit then
 		unitFrame.Tags[tagDB].extraUnits = nil
-		if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
-			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
-		else
-			unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
-		end
-		unitFrame.Tags[tagDB].ZFTagString = TagDB.Tag
-		unitFrame.Tags[tagDB].ZFTagUnit = unit
+		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
 	unitFrame.Tags[tagDB]:UpdateTag()
 end

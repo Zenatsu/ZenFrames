@@ -12,16 +12,46 @@ local function ClearGroupFrameUnit(unitFrame)
     unitFrame.ZFGroupUnit = nil
 end
 
-local function ComputeUnitGrowthAnchor(unitGrowth, spacing)
-    local point = unitGrowth == "RIGHT" and "RIGHT" or unitGrowth == "UP" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "LEFT"
-    local xOffset = unitGrowth == "RIGHT" and -spacing or unitGrowth == "LEFT" and spacing or 0
-    local yOffset = unitGrowth == "UP" and -spacing or unitGrowth == "DOWN" and spacing or 0
-    return point, xOffset, yOffset
+local function RefreshGroupFrameIndicators(frame, unit, rangeUnit, UnitDB, onlyUpdateRoles)
+    if not onlyUpdateRoles then
+        if frame.DispelHighlightUnit and frame.DispelHighlightUnit ~= unit then ZF:UnregisterDispelHighlightEvents(frame) end
+        ZF:RegisterRangeFrame(frame, rangeUnit or unit)
+        ZF:RegisterTargetGlowIndicatorFrame(frame, unit)
+        if frame.ZFGroupUnit ~= unit then
+            frame.ZFGroupUnit = unit
+            if frame.DispelHighlight then ZF:UpdateUnitDispelHighlight(frame, unit) end
+        end
+    end
+    if UnitDB.PowerBar.Enabled and UnitDB.PowerBar.OnlyShowHealers then ZF:UpdateUnitPowerBar(frame, unit) end
+    ZF:UpdateUnitRoleIndicator(frame, unit)
 end
 
+local UNIT_GROWTH_ANCHOR = {
+    RIGHT = {point = "RIGHT", xSign = -1, ySign = 0},
+    LEFT = {point = "LEFT", xSign = 1, ySign = 0},
+    UP = {point = "TOP", xSign = 0, ySign = -1},
+    DOWN = {point = "BOTTOM", xSign = 0, ySign = 1},
+}
+
+local function ComputeUnitGrowthAnchor(unitGrowth, spacing)
+    local anchor = UNIT_GROWTH_ANCHOR[unitGrowth] or UNIT_GROWTH_ANCHOR.LEFT
+    return anchor.point, anchor.xSign * spacing, anchor.ySign * spacing
+end
+
+local GROUP_GROWTH_HORIZONTAL_ANCHOR = { LEFT = "RIGHT", RIGHT = "LEFT" }
+local GROUP_GROWTH_VERTICAL_ANCHOR = { UP = "BOTTOM", DOWN = "TOP" }
+local GROUP_GROWTH_COLUMN_ANCHOR = { RIGHT = "LEFT", LEFT = "RIGHT", UP = "BOTTOM" }
+
+local PARTY_GROWTH_ANCHOR = {
+    UP = {anchor = "BOTTOMLEFT", xSign = 0, ySign = 1},
+    LEFT = {anchor = "TOPRIGHT", xSign = -1, ySign = 0},
+    RIGHT = {anchor = "TOPLEFT", xSign = 1, ySign = 0},
+    DOWN = {anchor = "TOPLEFT", xSign = 0, ySign = -1},
+}
+
 local function ComputeGroupAnchorPoint(unitGrowth, groupGrowth)
-    local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
-    local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"
+    local horizontalAnchor = GROUP_GROWTH_HORIZONTAL_ANCHOR[groupGrowth] or (unitGrowth == "RIGHT" and "RIGHT" or "LEFT")
+    local verticalAnchor = GROUP_GROWTH_VERTICAL_ANCHOR[groupGrowth] or (unitGrowth == "DOWN" and "BOTTOM" or "TOP")
     return horizontalAnchor, verticalAnchor
 end
 
@@ -31,6 +61,13 @@ local function CreateBackdropContainer(frameName)
     container:SetBackdropColor(0, 0, 0, 0)
     container:SetBackdropBorderColor(0, 0, 0, 0)
     return container
+end
+
+local function PositionGroupContainer(container, FrameDB, visibilityState)
+    container:ClearAllPoints()
+    container:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+    container:SetFrameStrata(FrameDB.FrameStrata)
+    RegisterStateDriver(container, "visibility", visibilityState)
 end
 
 local function HideBlizzardFrame(frameName)
@@ -88,7 +125,7 @@ function ZF:LayoutAugmentationRaidFrames()
 	local columns = math.ceil(frameCount / unitsPerColumn)
 	local rows = math.min(frameCount, unitsPerColumn)
 	local point, xOffset, yOffset = ComputeUnitGrowthAnchor(unitGrowth, spacing)
-	local columnAnchorPoint = groupGrowth == "RIGHT" and "LEFT" or groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "UP" and "BOTTOM" or "TOP"
+	local columnAnchorPoint = GROUP_GROWTH_COLUMN_ANCHOR[groupGrowth] or "TOP"
 	local columnWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and FrameDB.Width or (FrameDB.Width + spacing) * rows - spacing
 	local columnHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (FrameDB.Height + spacing) * rows - spacing or FrameDB.Height
 
@@ -123,6 +160,49 @@ function ZF:LayoutAugmentationRaidFrames()
 	header:SetPoint(verticalAnchor .. horizontalAnchor, ZF.AUGMENTATION_RAID_CONTAINER, verticalAnchor .. horizontalAnchor)
 end
 
+local function BuildRaidRosterLookup()
+	local byFullName, byShortName = {}, {}
+	for raidIndex = 1, GetNumGroupMembers() do
+		local rosterName = GetRaidRosterInfo(raidIndex)
+		if rosterName then
+			byFullName[rosterName:lower()] = rosterName
+			local shortName = Ambiguate(rosterName, "short"):lower()
+			local existing = byShortName[shortName]
+			if not existing then
+				byShortName[shortName] = rosterName
+			elseif type(existing) == "string" then
+				byShortName[shortName] = {existing, rosterName}
+			else
+				existing[#existing + 1] = rosterName
+			end
+		end
+	end
+	return byFullName, byShortName
+end
+
+local function ResolveConfiguredRosterNames(configuredNames, byFullName, byShortName)
+	local names, seen = {}, {}
+	for configuredName in (configuredNames or ""):gmatch("[^,;\n]+") do
+		local configuredNameLower = strtrim(configuredName):lower()
+		if configuredNameLower ~= "" then
+			local rosterName = byFullName[configuredNameLower]
+			local candidates = not rosterName and byShortName[configuredNameLower]
+			if type(candidates) == "string" then
+				rosterName = candidates
+			elseif candidates then
+				for _, shortName in ipairs(candidates) do
+					if not seen[shortName] then rosterName = shortName break end
+				end
+			end
+			if rosterName and not seen[rosterName] then
+				seen[rosterName] = true
+				names[#names + 1] = rosterName
+			end
+		end
+	end
+	return names
+end
+
 function ZF:UpdateAugmentationRaidFrames()
 	local AugmentationDB = ZF.db.profile.Units.augmentation
 	local isAugmentation = AugmentationDB.Enabled and ZF:IsAugmentationEvoker()
@@ -146,42 +226,8 @@ function ZF:UpdateAugmentationRaidFrames()
 		return
 	end
 
-	local names = {}
-	local seen, rosterByFullName, rosterByShortName = {}, {}, {}
-	for raidIndex = 1, GetNumGroupMembers() do
-		local rosterName = GetRaidRosterInfo(raidIndex)
-		if rosterName then
-			rosterByFullName[rosterName:lower()] = rosterName
-			local shortName = Ambiguate(rosterName, "short"):lower()
-			local shortNames = rosterByShortName[shortName]
-			if not shortNames then
-				rosterByShortName[shortName] = rosterName
-			elseif type(shortNames) == "string" then
-				rosterByShortName[shortName] = {shortNames, rosterName}
-			else
-				shortNames[#shortNames + 1] = rosterName
-			end
-		end
-	end
-
-	for configuredName in (AugmentationDB.Names or ""):gmatch("[^,;\n]+") do
-		local configuredNameLower = strtrim(configuredName):lower()
-		if configuredNameLower ~= "" then
-			local rosterName = rosterByFullName[configuredNameLower]
-			local shortNames = not rosterName and rosterByShortName[configuredNameLower]
-			if type(shortNames) == "string" then
-				rosterName = shortNames
-			elseif shortNames then
-				for _, shortName in ipairs(shortNames) do
-					if not seen[shortName] then rosterName = shortName break end
-				end
-			end
-			if rosterName and not seen[rosterName] then
-				seen[rosterName] = true
-				names[#names + 1] = rosterName
-			end
-		end
-	end
+	local rosterByFullName, rosterByShortName = BuildRaidRosterLookup()
+	local names = ResolveConfiguredRosterNames(AugmentationDB.Names, rosterByFullName, rosterByShortName)
 	local active = #names > 0
 	ZF.AUGMENTATION_RAID_FRAME_COUNT = #names
 	local nameList = table.concat(names, ",")
@@ -235,10 +281,7 @@ function ZF:SpawnGroupFrame(groupType)
 	local FrameDB = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		ZF.PARTY_CONTAINER = ZF.PARTY_CONTAINER or CreateBackdropContainer("ZF_PartyContainer")
-		ZF.PARTY_CONTAINER:ClearAllPoints()
-		ZF.PARTY_CONTAINER:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-		ZF.PARTY_CONTAINER:SetFrameStrata(FrameDB.FrameStrata)
-		RegisterStateDriver(ZF.PARTY_CONTAINER, "visibility", "[group:party,nogroup:raid] show; hide")
+		PositionGroupContainer(ZF.PARTY_CONTAINER, FrameDB, "[group:party,nogroup:raid] show; hide")
 		for i = 1, ZF.MAX_PARTY_FRAMES do
 			local partyFrame = oUF:Spawn("party" .. i, ZF:FetchFrameName("party" .. i))
 			partyFrame.partyIndex = i + 1
@@ -268,10 +311,7 @@ function ZF:SpawnGroupFrame(groupType)
 		ZF.PARTY_CONTAINER:Show()
 	elseif groupType == "raid" then
 		ZF.RAID_CONTAINER = ZF.RAID_CONTAINER or CreateBackdropContainer("ZF_RaidContainer")
-		ZF.RAID_CONTAINER:ClearAllPoints()
-		ZF.RAID_CONTAINER:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-		ZF.RAID_CONTAINER:SetFrameStrata(FrameDB.FrameStrata)
-		RegisterStateDriver(ZF.RAID_CONTAINER, "visibility", "show")
+		PositionGroupContainer(ZF.RAID_CONTAINER, FrameDB, "show")
 		local unitGrowth = (FrameDB.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_")
 		local spacing = FrameDB.Layout[5] or 0
 		local point, unitXOffset, unitYOffset = ComputeUnitGrowthAnchor(unitGrowth, spacing)
@@ -325,19 +365,13 @@ function ZF:UpdateGroupFrame(groupType)
 	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER then ZF:SpawnGroupFrame("party") else
-			ZF.PARTY_CONTAINER:ClearAllPoints()
-			ZF.PARTY_CONTAINER:SetPoint(UnitDB.Frame.Layout[1], UIParent, UnitDB.Frame.Layout[2], UnitDB.Frame.Layout[3], UnitDB.Frame.Layout[4])
-			ZF.PARTY_CONTAINER:SetFrameStrata(UnitDB.Frame.FrameStrata)
-			RegisterStateDriver(ZF.PARTY_CONTAINER, "visibility", "[group:party,nogroup:raid] show; hide")
+			PositionGroupContainer(ZF.PARTY_CONTAINER, UnitDB.Frame, "[group:party,nogroup:raid] show; hide")
 		end
 		for i = 1, ZF.MAX_PARTY_FRAMES do if ZF["PARTY" .. i] then ZF:UpdateUnitFrame(ZF["PARTY" .. i], "party" .. i) end end
 		if ZF.PARTYPLAYER then ZF:UpdateUnitFrame(ZF.PARTYPLAYER, "partyplayer") end
 	elseif groupType == "raid" then
 		if not ZF.RAID_CONTAINER then ZF:SpawnGroupFrame("raid") else
-			ZF.RAID_CONTAINER:ClearAllPoints()
-			ZF.RAID_CONTAINER:SetPoint(UnitDB.Frame.Layout[1], UIParent, UnitDB.Frame.Layout[2], UnitDB.Frame.Layout[3], UnitDB.Frame.Layout[4])
-			ZF.RAID_CONTAINER:SetFrameStrata(UnitDB.Frame.FrameStrata)
-			RegisterStateDriver(ZF.RAID_CONTAINER, "visibility", "show")
+			PositionGroupContainer(ZF.RAID_CONTAINER, UnitDB.Frame, "show")
 		end
 		ZF:ForEachRaidFrame(function(raidFrame, unit, assignedUnit)
 			if not unit or unit == "raid" then
@@ -365,46 +399,16 @@ function ZF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
 		for i = 1, ZF.MAX_PARTY_FRAMES do
 			local partyFrame = ZF["PARTY" .. i]
 			if partyFrame then
-				if not onlyUpdateRoles then
-					if partyFrame.DispelHighlightUnit and partyFrame.DispelHighlightUnit ~= "party" .. i then ZF:UnregisterDispelHighlightEvents(partyFrame) end
-					ZF:RegisterRangeFrame(partyFrame, "party" .. i)
-					ZF:RegisterTargetGlowIndicatorFrame(partyFrame, "party" .. i)
-					if partyFrame.ZFGroupUnit ~= "party" .. i then
-						partyFrame.ZFGroupUnit = "party" .. i
-						if partyFrame.DispelHighlight then ZF:UpdateUnitDispelHighlight(partyFrame, "party" .. i) end
-					end
-				end
-				if UnitDB.PowerBar.Enabled and UnitDB.PowerBar.OnlyShowHealers then ZF:UpdateUnitPowerBar(partyFrame, "party" .. i) end
-				ZF:UpdateUnitRoleIndicator(partyFrame, "party" .. i)
+				RefreshGroupFrameIndicators(partyFrame, "party" .. i, nil, UnitDB, onlyUpdateRoles)
 			end
 		end
 		if ZF.PARTYPLAYER then
-			if not onlyUpdateRoles then
-				if ZF.PARTYPLAYER.DispelHighlightUnit and ZF.PARTYPLAYER.DispelHighlightUnit ~= "partyplayer" then ZF:UnregisterDispelHighlightEvents(ZF.PARTYPLAYER) end
-				ZF:RegisterRangeFrame(ZF.PARTYPLAYER, "player")
-				ZF:RegisterTargetGlowIndicatorFrame(ZF.PARTYPLAYER, "partyplayer")
-				if ZF.PARTYPLAYER.ZFGroupUnit ~= "partyplayer" then
-					ZF.PARTYPLAYER.ZFGroupUnit = "partyplayer"
-					if ZF.PARTYPLAYER.DispelHighlight then ZF:UpdateUnitDispelHighlight(ZF.PARTYPLAYER, "partyplayer") end
-				end
-			end
-			if UnitDB.PowerBar.Enabled and UnitDB.PowerBar.OnlyShowHealers then ZF:UpdateUnitPowerBar(ZF.PARTYPLAYER, "partyplayer") end
-			ZF:UpdateUnitRoleIndicator(ZF.PARTYPLAYER, "partyplayer")
+			RefreshGroupFrameIndicators(ZF.PARTYPLAYER, "partyplayer", "player", UnitDB, onlyUpdateRoles)
 		end
 	elseif groupType == "raid" then
 		ZF:ForEachRaidFrame(function(raidFrame, unit)
 			if unit and unit ~= "raid" then
-				if not onlyUpdateRoles then
-					if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then ZF:UnregisterDispelHighlightEvents(raidFrame) end
-					ZF:RegisterRangeFrame(raidFrame, unit)
-					ZF:RegisterTargetGlowIndicatorFrame(raidFrame, unit)
-					if raidFrame.ZFGroupUnit ~= unit then
-						raidFrame.ZFGroupUnit = unit
-						if raidFrame.DispelHighlight then ZF:UpdateUnitDispelHighlight(raidFrame, unit) end
-					end
-				end
-				if UnitDB.PowerBar.Enabled and UnitDB.PowerBar.OnlyShowHealers then ZF:UpdateUnitPowerBar(raidFrame, unit) end
-				ZF:UpdateUnitRoleIndicator(raidFrame, unit)
+				RefreshGroupFrameIndicators(raidFrame, unit, nil, UnitDB, onlyUpdateRoles)
 			elseif not onlyUpdateRoles then
 				ClearGroupFrameUnit(raidFrame)
 			end
@@ -450,19 +454,13 @@ function ZF:LayoutGroupFrames(groupType)
 		local spacing = Frame.Layout[5] or 0
 		local horizontal = Frame.GrowthDirection == "LEFT" or Frame.GrowthDirection == "RIGHT"
 		ZF.PARTY_CONTAINER:SetSize(math.max(horizontal and (Frame.Width + spacing) * #partyFrames - spacing or Frame.Width, Frame.Width), math.max(horizontal and Frame.Height or (Frame.Height + spacing) * #partyFrames - spacing, Frame.Height))
+		local growth = PARTY_GROWTH_ANCHOR[Frame.GrowthDirection] or PARTY_GROWTH_ANCHOR.DOWN
 		for index, partyFrame in ipairs(partyFrames) do
 			partyFrame:ClearAllPoints()
 			partyFrame:SetSize(Frame.Width, Frame.Height)
 			partyFrame:SetFrameStrata(Frame.FrameStrata)
-			if Frame.GrowthDirection == "UP" then
-				partyFrame:SetPoint("BOTTOMLEFT", ZF.PARTY_CONTAINER, "BOTTOMLEFT", 0, (index - 1) * (Frame.Height + spacing))
-			elseif Frame.GrowthDirection == "LEFT" then
-				partyFrame:SetPoint("TOPRIGHT", ZF.PARTY_CONTAINER, "TOPRIGHT", -((index - 1) * (Frame.Width + spacing)), 0)
-			elseif Frame.GrowthDirection == "RIGHT" then
-				partyFrame:SetPoint("TOPLEFT", ZF.PARTY_CONTAINER, "TOPLEFT", (index - 1) * (Frame.Width + spacing), 0)
-			else
-				partyFrame:SetPoint("TOPLEFT", ZF.PARTY_CONTAINER, "TOPLEFT", 0, -((index - 1) * (Frame.Height + spacing)))
-			end
+			local step = index - 1
+			partyFrame:SetPoint(growth.anchor, ZF.PARTY_CONTAINER, growth.anchor, growth.xSign * step * (Frame.Width + spacing), growth.ySign * step * (Frame.Height + spacing))
 		end
 	elseif groupType == "raid" then
 		if not ZF.RAID_CONTAINER then return end

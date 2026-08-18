@@ -80,11 +80,17 @@ local function BuildAuraSortOptions(sorting)
 	return sortMethod, sortDirection
 end
 
-local function BuildAuraCandidateFilters(AuraDB)
-	if AuraDB.Blacklist then
-		return { excludeSpellIDs = ZF.AURA_BLACKLIST }
+local function BuildAuraBlacklist(AuraDB)
+	if not AuraDB.Blacklist then return nil end
+	local disabled = ZF.db.profile.General.AuraBlacklistDisabled
+	if not next(disabled) then
+		return { excludeSpellIDs = ZF.db.global.AuraBlacklist }
 	end
-	return nil
+	local effective = {}
+	for spellId in pairs(ZF.db.global.AuraBlacklist) do
+		if not disabled[spellId] then effective[spellId] = true end
+	end
+	return { excludeSpellIDs = effective }
 end
 
 local function BuildAuraGroupFilters(AuraDB, baseFilter)
@@ -112,7 +118,7 @@ end
 
 local function BuildAuraGroupSignature(AuraDB, filterStrings, sortMethod, sortDirection, width)
 	local signature = AuraDB.Size .. "|" .. AuraDB.Num .. "|" .. width .. "|" .. AuraDB.Layout[1] .. "|" .. AuraDB.GrowthDirection .. "|" .. AuraDB.WrapDirection .. "|" .. tostring(sortMethod) .. "|" .. tostring(sortDirection) .. "|" .. (AuraDB.ShowType and "1" or "0") .. "|" .. table.concat(filterStrings, ",")
-	if AuraDB.Blacklist then signature = signature .. "|BL:" .. tostring(ZF.AURA_BLACKLIST) end
+	if AuraDB.Blacklist then signature = signature .. "|BL:" .. tostring(ZF.auraBlacklistGeneration or 0) end
 	return signature
 end
 
@@ -122,7 +128,7 @@ local function StyleAuraButton(unitFrame, unit, auraDB, element, button)
 
 	local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
 	buttonBorder:SetAllPoints()
-	buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+	buttonBorder:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
 	buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
 
 	if button.Icon then button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93) end
@@ -161,7 +167,7 @@ local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, bas
 	if not auras or unitFrame[storageKey .. "Signature"] ~= signature then
 		if auras then auras:Hide() end
 
-		local candidateFilters = BuildAuraCandidateFilters(AuraDB)
+		local candidateFilters = BuildAuraBlacklist(AuraDB)
 		auras = unitFrame:CreateAuras({
 			initialAnchor = AuraDB.Layout[1],
 			growthX = AuraDB.GrowthDirection,

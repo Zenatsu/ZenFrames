@@ -19,6 +19,26 @@ local function SetCastBarColor(castBar, unit, CastBarDB)
 	castBar:SetStatusBarColor(r, g, b, a)
 end
 
+local function ApplyCastBarIconPosition(castBar, icon, container, iconPosition, height)
+	icon:ClearAllPoints()
+	castBar:ClearAllPoints()
+	if iconPosition == "LEFT" then
+		icon:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
+		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", height - 1, -1)
+		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -1, 1)
+	elseif iconPosition == "RIGHT" then
+		icon:SetPoint("TOPRIGHT", container, "TOPRIGHT", -1, -1)
+		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
+		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -(height - 1), 1)
+	end
+end
+
+local function ApplyCastBarNoIconPosition(castBar, container)
+	castBar:ClearAllPoints()
+	castBar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
+	castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -1, 1)
+end
+
 function ZF:CreateUnitCastBar(unitFrame, unit)
     local GeneralDB = ZF.db.profile.General
     local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
@@ -61,22 +81,11 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
     CastBar.Icon = CastBar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
     CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
     CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    CastBar.Icon:ClearAllPoints()
-    if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
-        CastBar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-        CastBar:ClearAllPoints()
-        CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
-        CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-    elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
-        CastBar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
-        CastBar:ClearAllPoints()
-        CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-        CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
-    elseif not CastBarDB.Icon.Enabled then
+    if CastBarDB.Icon.Enabled then
+        ApplyCastBarIconPosition(CastBar, CastBar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height)
+    else
         CastBar.Icon:Hide()
-        CastBar:ClearAllPoints()
-        CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-        CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+        ApplyCastBarNoIconPosition(CastBar, CastBarContainer)
     end
 
     local SpellNameText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
@@ -105,8 +114,10 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
+        unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
+
         unitFrame.Castbar.PostCastStart = function(frameCastBar, _, spellID, notInterruptible, name, texture)
-			local currentCastBarDB = ZF:GetUnitDB(unitFrame, unit).CastBar
+			local currentCastBarDB = unitFrame.CastBarHookDB
 			local currentSpellNameDB = currentCastBarDB.Text.SpellName
 			frameCastBar.zfActive = true
 			frameCastBar.zfNotInterruptible = notInterruptible
@@ -136,11 +147,11 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar.PostCastInterruptible = function(frameCastBar, _, _, notInterruptible)
 			frameCastBar.zfNotInterruptible = notInterruptible
             if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0) end
-			SetCastBarColor(frameCastBar, unit, ZF:GetUnitDB(unitFrame, unit).CastBar)
+			SetCastBarColor(frameCastBar, unit, unitFrame.CastBarHookDB)
         end
         unitFrame.Castbar.PostCastFail = function(frameCastBar)
 			frameCastBar.zfActive = nil
-			frameCastBar:SetStatusBarColor(unpack(ZF:GetUnitDB(unitFrame, unit).CastBar.InterruptedFailedColor))
+			frameCastBar:SetStatusBarColor(unpack(unitFrame.CastBarHookDB.InterruptedFailedColor))
             if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
         end
         unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
@@ -168,6 +179,7 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
 
     if CastBarDB.Enabled then
         unitFrame.Castbar = unitFrame.Castbar or ZF:CreateUnitCastBar(unitFrame, unit)
+        unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
         CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
@@ -210,30 +222,12 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
                 unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                unitFrame.Castbar.Icon:ClearAllPoints()
-                if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
-                    unitFrame.Castbar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-                elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
-                    unitFrame.Castbar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
-                elseif not CastBarDB.Icon.Enabled then
-                    unitFrame.Castbar.Icon:Hide()
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-                end
+                ApplyCastBarIconPosition(unitFrame.Castbar, unitFrame.Castbar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height)
                 unitFrame.Castbar.Icon:Show()
             else
                 if unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
                 unitFrame.Castbar.Icon = nil
-                unitFrame.Castbar:ClearAllPoints()
-                unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                ApplyCastBarNoIconPosition(unitFrame.Castbar, CastBarContainer)
             end
 
             if unitFrame.Castbar.Text then

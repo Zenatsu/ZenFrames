@@ -224,8 +224,22 @@ function ZF:PlaceUnitFrame(unitFrame, unit)
     end
 end
 
+local pendingUpdateUnits = {}
+local UpdateUnitFrameRetryFrame = CreateFrame("Frame")
+UpdateUnitFrameRetryFrame:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    for unit in pairs(pendingUpdateUnits) do
+        pendingUpdateUnits[unit] = nil
+        if ZF[unit:upper()] then ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end
+    end
+end)
+
 function ZF:UpdateUnitFrame(unitFrame, unit)
-    if InCombatLockdown() then return end
+    if InCombatLockdown() then
+        pendingUpdateUnits[unit] = true
+        UpdateUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    end
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"

@@ -44,6 +44,33 @@ local function Update3DPortrait(unitFrame, _, unit)
 	if unitPortrait.PostUpdate then return unitPortrait:PostUpdate(unit, portraitChanged) end
 end
 
+local function ComputePortraitZoomTexCoord(zoom)
+	zoom = zoom or 0
+	local inset = zoom * 0.5
+	return inset, 1 - inset, inset, 1 - inset
+end
+
+local function ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
+	if PortraitDB.Enabled then
+		unitFrame.Portrait = unitPortrait
+		unitFrame.Portrait:Show()
+		unitFrame.Portrait.Backdrop:Show()
+	else
+		if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
+		unitPortrait:Hide()
+		unitPortrait.Border:Hide()
+		unitPortrait.Backdrop:Hide()
+	end
+end
+
+local function PositionPortraitBackdrop(unitFrame, PortraitDB)
+	local backdrop = unitFrame.Portrait.Backdrop
+	backdrop:ClearAllPoints()
+	backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+	backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+	unitFrame.Portrait:SetAllPoints(backdrop)
+end
+
 local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 	local portraitBackdrop = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
 	portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
@@ -75,22 +102,12 @@ function ZF:CreateUnitPortrait(unitFrame, unit)
 
 		unitPortrait.Fallback = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait3DFallback", "ARTWORK")
 		unitPortrait.Fallback:SetAllPoints(portraitBackdrop)
-		unitPortrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
+		unitPortrait.Fallback:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
 		unitPortrait.Fallback:Hide()
 
 		unitPortrait.Border = border
 
-		if PortraitDB.Enabled then
-			unitFrame.Portrait = unitPortrait
-			unitFrame.Portrait:Show()
-			unitFrame.Portrait.Backdrop:Show()
-		else
-			if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
-			unitPortrait:Hide()
-			unitPortrait.Border:Hide()
-			unitPortrait.Backdrop:Hide()
-		end
-
+		ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
 		return unitPortrait
 	end
 
@@ -98,22 +115,12 @@ function ZF:CreateUnitPortrait(unitFrame, unit)
 
 	local unitPortrait = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
 	unitPortrait:SetAllPoints(portraitBackdrop)
-	unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
+	unitPortrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
 	unitPortrait.showClass = PortraitDB.UseClassPortrait
 	unitPortrait.Backdrop = portraitBackdrop
 	unitPortrait.Border = border
 
-	if PortraitDB.Enabled then
-		unitFrame.Portrait = unitPortrait
-		unitFrame.Portrait:Show()
-		unitFrame.Portrait.Backdrop:Show()
-	else
-		if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
-		unitPortrait:Hide()
-		unitPortrait.Border:Hide()
-		unitPortrait.Backdrop:Hide()
-	end
-
+	ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
 	return unitPortrait
 end
 
@@ -142,25 +149,17 @@ function ZF:UpdateUnitPortrait(unitFrame, unit)
 		if not unitFrame.Portrait then unitFrame.Portrait = ZF:CreateUnitPortrait(unitFrame, unit) end
 		if not unitFrame:IsElementEnabled("Portrait") then unitFrame:EnableElement("Portrait") end
 
+		PositionPortraitBackdrop(unitFrame, PortraitDB)
 		if unitFrame.Portrait:IsObjectType("PlayerModel") then
-			unitFrame.Portrait.Backdrop:ClearAllPoints()
-			unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-			unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-			unitFrame.Portrait:SetAllPoints(unitFrame.Portrait.Backdrop)
-			unitFrame.Portrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
+			unitFrame.Portrait.Fallback:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
 			unitFrame.Portrait:SetCamDistanceScale(1)
 			unitFrame.Portrait:SetPortraitZoom(1)
 			unitFrame.Portrait:SetPosition(0, 0, 0)
-			unitFrame.Portrait.Backdrop:Show()
 		else
-			unitFrame.Portrait.Backdrop:ClearAllPoints()
-			unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-			unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-			unitFrame.Portrait:SetAllPoints(unitFrame.Portrait.Backdrop)
-			unitFrame.Portrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
+			unitFrame.Portrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
 			unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait
-			unitFrame.Portrait.Backdrop:Show()
 		end
+		unitFrame.Portrait.Backdrop:Show()
 
 		unitFrame.Portrait:Show()
 		unitFrame.Portrait.Border:Show()

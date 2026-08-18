@@ -265,7 +265,7 @@ local function updateAura(element, unit, data, position)
 end
 
 local function UpdateCustomAuras(self, event, unit, updateInfo)
-	if(self.unit ~= unit) then return end
+	if(self.__unit ~= unit) then return end
 
 	local element = self.CustomAuras
 	if(not element) then return end
@@ -421,7 +421,7 @@ local function UpdateCustomAuras(self, event, unit, updateInfo)
 end
 
 local function Update(self, event, unit, updateInfo)
-	if(self.unit ~= unit) then return end
+	if(self.__unit ~= unit) then return end
 
 	UpdateCustomAuras(self, event, unit, updateInfo)
 

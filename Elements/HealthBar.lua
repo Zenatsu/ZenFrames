@@ -30,9 +30,28 @@ local function SetHealthBackgroundColor(unitFrame, unit, HealthBarDB, forceUpdat
     end
 end
 
+local function ApplyHealthBarSettings(unitFrame, unit, HealthBarDB)
+    local HealthBar = unitFrame.Health
+    HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
+    HealthBar:SetStatusBarTexture(ZF.Media.Foreground)
+    HealthBar.colorClass = HealthBarDB.ColorByClass
+    HealthBar.colorReaction = HealthBarDB.ColorByClass
+    HealthBar.colorHealth = not HealthBarDB.ColorByClass
+    HealthBar.colorTapping = HealthBarDB.ColorWhenTapped
+    HealthBar.colorDisconnected = HealthBarDB.ColorWhenDisconnected
+    HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
+
+    if unit == "pet" and HealthBarDB.ColorByClass then
+        HealthBar.colorClass = false
+        HealthBar.colorReaction = false
+        HealthBar.colorHealth = false
+    end
+end
+
 function ZF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
+    unitFrame.HealthBarDB = HealthBarDB
     local unitContainer = unitFrame.Container
 
     if not unitFrame.HealthBar then
@@ -48,39 +67,26 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
         local HealthBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
         HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-        HealthBar:SetStatusBarTexture(ZF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
-        HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
-        HealthBar.colorClass = HealthBarDB.ColorByClass
-        HealthBar.colorReaction = HealthBarDB.ColorByClass
-        HealthBar.colorHealth = not HealthBarDB.ColorByClass
-        HealthBar.colorTapping = HealthBarDB.ColorWhenTapped
-        HealthBar.colorDisconnected = HealthBarDB.ColorWhenDisconnected
-        HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
-		HealthBar.PostUpdateColor = function(healthBar, currentUnit, color)
+		HealthBar.PostUpdateColor = function(healthBar, _, color)
+			local currentHealthBarDB = unitFrame.HealthBarDB
 			if color and color ~= oUF.colors.health then return end
-			local currentHealthBarDB = ZF:GetUnitDB(unitFrame, currentUnit).HealthBar
-			if currentUnit == "pet" and currentHealthBarDB.ColorByClass then
+			if unit == "pet" and currentHealthBarDB.ColorByClass then
 				local unitColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 				if unitColor then healthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, currentHealthBarDB.ForegroundOpacity) return end
 			end
 			healthBar:SetStatusBarColor(currentHealthBarDB.Foreground[1], currentHealthBarDB.Foreground[2], currentHealthBarDB.Foreground[3], currentHealthBarDB.ForegroundOpacity)
 		end
 
-        if unit == "pet" and HealthBarDB.ColorByClass then
-            HealthBar.colorClass = false
-            HealthBar.colorReaction = false
-            HealthBar.colorHealth = false
-        end
-
         unitFrame.Health = HealthBar
+        ApplyHealthBarSettings(unitFrame, unit, HealthBarDB)
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
             maxHP = maxHP or 1
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unit, true), unitFrame.Health.smoothing)
-			SetHealthBackgroundColor(unitFrame, unit, ZF:GetUnitDB(unitFrame, unit).HealthBar)
+			SetHealthBackgroundColor(unitFrame, unit, unitFrame.HealthBarDB)
         end
 
         if HealthBarDB.Inverse then
@@ -98,6 +104,7 @@ function ZF:UpdateUnitHealthBar(unitFrame, unit)
     if InCombatLockdown() then return end
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
+    unitFrame.HealthBarDB = HealthBarDB
 
     if unitFrame then
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
@@ -106,19 +113,7 @@ function ZF:UpdateUnitHealthBar(unitFrame, unit)
 
     if unitFrame.Health then
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-        unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
-        unitFrame.Health.colorClass = HealthBarDB.ColorByClass
-        unitFrame.Health.colorReaction = HealthBarDB.ColorByClass
-        unitFrame.Health.colorHealth = not HealthBarDB.ColorByClass
-        unitFrame.Health.colorTapping = HealthBarDB.ColorWhenTapped
-        unitFrame.Health.colorDisconnected = HealthBarDB.ColorWhenDisconnected
-        unitFrame.Health.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
-        unitFrame.Health:SetStatusBarTexture(ZF.Media.Foreground)
-        if unit == "pet" and HealthBarDB.ColorByClass then
-            unitFrame.Health.colorClass = false
-            unitFrame.Health.colorReaction = false
-            unitFrame.Health.colorHealth = false
-        end
+        ApplyHealthBarSettings(unitFrame, unit, HealthBarDB)
     end
 
     if unitFrame.HealthBackground then

@@ -21,6 +21,7 @@ ZF.AG = LibStub("AceGUI-3.0")
 ZF.LD = LibStub("LibDispel-1.0")
 ZF.LG = LibStub("LibCustomGlow-1.0")
 ZF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
+ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png" }
 ZF.INFOBUTTON = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
 ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
@@ -181,20 +182,21 @@ function ZF:IsInterruptOnCooldown()
 	return false
 end
 
+local UnitToFrame = {
+    ["player"] = "ZF_Player",
+    ["target"] = "ZF_Target",
+    ["targettarget"] = "ZF_TargetTarget",
+    ["focus"] = "ZF_Focus",
+    ["focustarget"] = "ZF_FocusTarget",
+    ["pet"] = "ZF_Pet",
+    ["augmentation"] = "ZF_Augmentation",
+    ["boss"] = "ZF_Boss",
+    ["party"] = "ZF_Party",
+    ["partyplayer"] = "ZF_PartyPlayer",
+    ["raid"] = "ZF_Raid",
+}
+
 function ZF:FetchFrameName(unit)
-    local UnitToFrame = {
-        ["player"] = "ZF_Player",
-        ["target"] = "ZF_Target",
-        ["targettarget"] = "ZF_TargetTarget",
-        ["focus"] = "ZF_Focus",
-        ["focustarget"] = "ZF_FocusTarget",
-        ["pet"] = "ZF_Pet",
-        ["augmentation"] = "ZF_Augmentation",
-        ["boss"] = "ZF_Boss",
-        ["party"] = "ZF_Party",
-        ["partyplayer"] = "ZF_PartyPlayer",
-        ["raid"] = "ZF_Raid",
-    }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "ZF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "ZF_Party" .. unitID end
@@ -209,7 +211,7 @@ function ZF:ResolveLSM()
     ZF.Media = ZF.Media or {}
     ZF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
     ZF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
-    ZF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
+    ZF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or ZF.Media.Solid
 end
 
 function ZF:GetCooldownDurationComponents(displayStyle, minValue)
@@ -288,51 +290,46 @@ local function SetupSlashCommands()
     SlashCmdList["ZF"] = function() ZF:CreateGUI() end
     if ZF.db.global.DisplayLoginMessage then ZF:PrettyPrint("'|cFF990007/zf|r' for in-game configuration.") end
 
-    -- RL command
     SLASH_ZFRELOAD1 = "/rl"
     SlashCmdList["ZFRELOAD"] = function() C_UI.Reload() end
+end
+
+local PowerTypesToString = {
+    [Enum.PowerType.Mana or 0] = "MANA",
+    [Enum.PowerType.Rage or 1] = "RAGE",
+    [Enum.PowerType.Focus or 2] = "FOCUS",
+    [Enum.PowerType.Energy or 3] = "ENERGY",
+    [Enum.PowerType.ComboPoints or 4] = "COMBO_POINTS",
+    [Enum.PowerType.Runes or 5] = "RUNES",
+    [Enum.PowerType.RunicPower or 6] = "RUNIC_POWER",
+    [Enum.PowerType.SoulShards or 7] = "SOUL_SHARDS",
+    [Enum.PowerType.LunarPower or 8] = "LUNAR_POWER",
+    [Enum.PowerType.HolyPower or 9] = "HOLY_POWER",
+    [Enum.PowerType.Alternate or 10] = "ALTERNATE",
+    [Enum.PowerType.Maelstrom or 11] = "MAELSTROM",
+    [Enum.PowerType.Chi or 12] = "CHI",
+    [Enum.PowerType.Insanity or 13] = "INSANITY",
+    [Enum.PowerType.ArcaneCharges or 16] = "ARCANE_CHARGES",
+    [Enum.PowerType.Fury or 17] = "FURY",
+    [Enum.PowerType.Pain or 18] = "PAIN",
+    [Enum.PowerType.Essence or 19] = "ESSENCE",
+}
+
+local function ApplyPowerColorTable(colorTable)
+    for powerType, color in pairs(colorTable) do
+        local powerTypeString = PowerTypesToString[powerType]
+        if powerTypeString then
+            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
+            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
+        end
+    end
 end
 
 function ZF:LoadCustomColors()
     local General = ZF.db.profile.General
 
-    -- Map power type enums to their string names
-    local PowerTypesToString = {
-        [Enum.PowerType.Mana or 0] = "MANA",
-        [Enum.PowerType.Rage or 1] = "RAGE",
-        [Enum.PowerType.Focus or 2] = "FOCUS",
-        [Enum.PowerType.Energy or 3] = "ENERGY",
-        [Enum.PowerType.ComboPoints or 4] = "COMBO_POINTS",
-        [Enum.PowerType.Runes or 5] = "RUNES",
-        [Enum.PowerType.RunicPower or 6] = "RUNIC_POWER",
-        [Enum.PowerType.SoulShards or 7] = "SOUL_SHARDS",
-        [Enum.PowerType.LunarPower or 8] = "LUNAR_POWER",
-        [Enum.PowerType.HolyPower or 9] = "HOLY_POWER",
-        [Enum.PowerType.Alternate or 10] = "ALTERNATE",
-        [Enum.PowerType.Maelstrom or 11] = "MAELSTROM",
-        [Enum.PowerType.Chi or 12] = "CHI",
-        [Enum.PowerType.Insanity or 13] = "INSANITY",
-        [Enum.PowerType.ArcaneCharges or 16] = "ARCANE_CHARGES",
-        [Enum.PowerType.Fury or 17] = "FURY",
-        [Enum.PowerType.Pain or 18] = "PAIN",
-        [Enum.PowerType.Essence or 19] = "ESSENCE",
-    }
-
-    for powerType, color in pairs(General.Colors.Power) do
-        local powerTypeString = PowerTypesToString[powerType]
-        if powerTypeString then
-            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
-            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
-        end
-    end
-
-    for powerType, color in pairs(General.Colors.SecondaryPower) do
-        local powerTypeString = PowerTypesToString[powerType]
-        if powerTypeString then
-            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
-            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
-        end
-    end
+    ApplyPowerColorTable(General.Colors.Power)
+    ApplyPowerColorTable(General.Colors.SecondaryPower)
 
     for reaction, color in pairs(General.Colors.Reaction) do
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
@@ -396,14 +393,13 @@ function ZF:CopyTable(originalTable, destinationTable)
     end
 end
 
+local JUSTIFICATION_BY_ANCHOR = {
+    TOPLEFT = "LEFT", LEFT = "LEFT", BOTTOMLEFT = "LEFT",
+    TOPRIGHT = "RIGHT", RIGHT = "RIGHT", BOTTOMRIGHT = "RIGHT",
+}
+
 function ZF:SetJustification(anchorFrom)
-    if anchorFrom == "TOPLEFT" or anchorFrom == "LEFT" or anchorFrom == "BOTTOMLEFT" then
-        return "LEFT"
-    elseif anchorFrom == "TOPRIGHT" or anchorFrom == "RIGHT" or anchorFrom == "BOTTOMRIGHT" then
-        return "RIGHT"
-    else
-        return "CENTER"
-    end
+    return JUSTIFICATION_BY_ANCHOR[anchorFrom] or "CENTER"
 end
 
 function ZF:GetUnitColor(unit)
@@ -441,15 +437,16 @@ function ZF:IsAugmentationEvoker()
 	return specializationIndex and C_SpecializationInfo.GetSpecializationInfo(specializationIndex) == 1473 or false
 end
 
+local SpecsNeedingAltPower = {
+    PRIEST = { 258 },
+    MAGE   = { 62, 63, 64 },
+    PALADIN = { 70 },
+    SHAMAN  = { 262, 263 },
+    EVOKER  = { 1467, 1473 },
+    DRUID = { 102, 103, 104 },
+}
+
 function ZF:RequiresAlternativePowerBar()
-    local SpecsNeedingAltPower = {
-        PRIEST = { 258 },           -- Shadow
-        MAGE   = { 62, 63, 64 },        -- Fire, Frost
-        PALADIN = { 70 },           -- Ret
-        SHAMAN  = { 262, 263 },     -- Ele, Enh
-        EVOKER  = { 1467, 1473 },   -- Dev, Aug
-        DRUID = { 102, 103, 104 },    -- Balance, Feral, Guardian
-    }
     local class = select(2, UnitClass("player"))
     local specIndex = GetSpecialization()
     if not specIndex then return false end
@@ -513,7 +510,6 @@ function ZFG:UpdateAllTags()
     end
 end
 
--- Thanks Details / Plater for this.
 function ZF:CleanTruncateUTF8String(text)
     local DetailsFramework = _G.DF
     if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
@@ -562,29 +558,25 @@ local function NormalizeBarPosition(value, fallback)
     return fallback
 end
 
+local function ResolveBarPosition(BarDB, swapFlagDB, defaultPosition, swappedPosition)
+    if not BarDB then return defaultPosition end
+    if BarDB.Position then
+        return NormalizeBarPosition(BarDB.Position, defaultPosition)
+    end
+    if swapFlagDB and swapFlagDB.SwapPositionWithSecondary then
+        return swappedPosition
+    end
+    return defaultPosition
+end
+
 function ZF:GetConfiguredPowerBarPosition(unit, unitFrame)
 	local PowerBarDB = ZF:GetUnitDB(unitFrame, unit).PowerBar
-    if not PowerBarDB then return "BOTTOM" end
-    if PowerBarDB.Position then
-        return NormalizeBarPosition(PowerBarDB.Position, "BOTTOM")
-    end
-    if PowerBarDB.SwapPositionWithSecondary then
-        return "TOP"
-    end
-    return "BOTTOM"
+    return ResolveBarPosition(PowerBarDB, PowerBarDB, "BOTTOM", "TOP")
 end
 
 function ZF:GetConfiguredSecondaryPowerBarPosition(unit, unitFrame)
 	local UnitDB = ZF:GetUnitDB(unitFrame, unit)
-    local SecondaryPowerBarDB = UnitDB.SecondaryPowerBar
-    if not SecondaryPowerBarDB then return "TOP" end
-    if SecondaryPowerBarDB.Position then
-        return NormalizeBarPosition(SecondaryPowerBarDB.Position, "TOP")
-    end
-    if UnitDB.PowerBar and UnitDB.PowerBar.SwapPositionWithSecondary then
-        return "BOTTOM"
-    end
-    return "TOP"
+    return ResolveBarPosition(UnitDB.SecondaryPowerBar, UnitDB.PowerBar, "TOP", "BOTTOM")
 end
 
 function ZF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
@@ -681,45 +673,14 @@ ZF.AURA_FILTERS = {
     }
 }
 
-ZF.AURA_BLACKLIST = {
-    -- Rogue Poisons
-    [2823] = true,      -- Deadly Poison
-    [315584] = true,    -- Instant Poison
-    [3408] = true,      -- Crippling Poison
-    [381637] = true,    -- Atrophic Poison
-    [381664] = true,    -- Amplifying Poison
-    [8679] = true,      -- Wound Poison
-
-    -- Shaman Imbuements
-    [319773] = true,    -- Windfury Weapon
-    [319778] = true,    -- Flametongue Weapon
-    [382021] = true,    -- Earthliving Weapon
-    [382022] = true,    -- Earthliving Weapon
-    [457496] = true,    -- Tidecaller's Guard
-    [457481] = true,    -- Tidecaller's Guard
-    [462757] = true,    -- Thunderstrike Ward
-    [462742] = true,    -- Thunderstrike Ward
-
-    -- Skyriding
-    [404464] = true,    -- Flight Style: Skyriding
-    [404468] = true,    -- Flight Style: Steady
-    [427490] = true,    -- Ride Along
-    [447959] = true,    -- Ride Along - Enabled
-    [447960] = true,    -- Ride Along - Inactive
-
-    -- Other
-    [160455] = true,    -- Hunter Pet Fatigued
-    [26013] = true,     -- Deserter
-    [264689] = true,    -- Hunter Pet Fatigued
-    [377234] = true,    -- Thrill of the Skies
-    [390435] = true,    -- Exhaustion
-    [433568] = true,    -- Rite of Sanctification
-    [433583] = true,    -- Rite of Adjuration
-    [57723] = true,     -- Exhaustion
-    [57724] = true,     -- Sated
-    [71041] = true,     -- Dungeon Deserter
-    [80354] = true,     -- Temporal Displacement
-    [95809] = true,     -- Hunter Pet Insanity
+local DEFAULT_AURA_ID_BLACKLIST = {
+    2823, 315584, 3408, 381637, 381664, 8679,
+    433568, 433583,
+    319773, 319778, 382021, 382022, 457496, 457481, 462757, 462742,
+    404464, 404468, 427490, 447959, 447960,
+    160455, 264689, 95809,
+    390435, 57723, 57724, 80354,
+    26013, 71041,
 }
 
 local RefreshProfilesRetryFrame = CreateFrame("Frame")
@@ -752,7 +713,6 @@ local function MergeMatchingKeys(source, target)
 	end
 end
 
--- Overwrites current select unit with target unit's settings. Non-reverseable.
 function ZF:CopyUnitSettings(sourceUnit, targetUnit)
 	local sourceDB = ZF:GetUnitDB(nil, sourceUnit)
 	local targetDB = ZF:GetUnitDB(nil, targetUnit)

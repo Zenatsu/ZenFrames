@@ -1,16 +1,7 @@
 local _, ZF = ...
 local ZenFrames = LibStub("AceAddon-3.0"):NewAddon("ZenFrames")
 
-StaticPopupDialogs["ZF_UUFDB_MIGRATED"] = {
-    text = "Hey, welcome to Zen Frames, Your old Unhalted profiles should be copied over but please go over your settings and make sure everything is as you like it, some data might have not carried over properly from the refactor. Love ya, bye!",
-    button1 = OKAY,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-}
-
 function ZenFrames:OnInitialize()
-    -- One-time move off the inherited UUFDB name: only fires when UUFDB actually has data
     local migratedFromUUFDB = false
     if _G.UUFDB and next(_G.UUFDB) and (not _G.ZFDB or not next(_G.ZFDB)) then
         ZFDB = CopyTable(UUFDB)
@@ -21,6 +12,7 @@ function ZenFrames:OnInitialize()
     ZF:MigrateGlobalSettings(_G.ZFDB)
 
     ZF.db = LibStub("AceDB-3.0"):New("ZFDB", ZF:GetDefaultDB(), true)
+    -- ZF:SeedAuraBlacklist()
     ZF.LDS:EnhanceDatabase(ZF.db, "ZenFrames")
     ZF.TAG_UPDATE_INTERVAL = ZF.db.profile.General.TagUpdateInterval or 0.25
     ZF.SEPARATOR = ZF.db.profile.General.Separator or "||"
@@ -35,7 +27,12 @@ function ZenFrames:OnInitialize()
 
     local playerSpecializationChangedEventFrame = CreateFrame("Frame")
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, ZF.RefreshProfiles) end end)
+    playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...)
+        if InCombatLockdown() then return end
+        if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end
+        local unit = ...
+        if unit == "player" then C_Timer.After(0.1, ZF.RefreshProfiles) end
+    end)
 
     local guiWasShownBeforeCombat = false
     local combatUIWatcherFrame = CreateFrame("Frame")
@@ -50,7 +47,6 @@ function ZenFrames:OnInitialize()
             if guiWasShownBeforeCombat then ZF:SetMainGUIShown(true) end
             guiWasShownBeforeCombat = false
             ZF:SetMoverOverlayShown(true)
-            ZF:UpdateAllUnitFrames()
         end
     end)
 

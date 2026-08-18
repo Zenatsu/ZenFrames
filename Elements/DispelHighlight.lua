@@ -30,7 +30,7 @@ local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
 	if DispelHighlightDB.Style == "GRADIENT" then
 		texture:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
 		texture:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-		texture:SetTexture("Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png")
+		texture:SetTexture(ZF.Media.Gradient)
 		texture:SetAlpha(1)
 	else
 		local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
@@ -39,7 +39,7 @@ local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
 		else
 			texture:SetAllPoints(unitFrame.Health)
 		end
-		texture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		texture:SetTexture(ZF.Media.Solid)
 		texture:SetAlpha(0.75)
 	end
 end
@@ -73,6 +73,7 @@ end
 function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
 	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+	unitFrame.DispelHighlightDB = DispelHighlightDB
 	if DispelHighlightDB.Enabled then
 		ZF:RegisterDispelHighlightEvents(unitFrame, unit)
 		ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
@@ -85,7 +86,7 @@ end
 
 function ZF:UpdateUnitDispelState(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
-	local DispelHighlightDB = ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight
+	local DispelHighlightDB = unitFrame.DispelHighlightDB
 	if not DispelHighlightDB.Enabled then
 		unitFrame.DispelAuras:Hide()
 		return

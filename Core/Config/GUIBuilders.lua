@@ -13,7 +13,7 @@ function Builders.CreateEnableToggle(parent, label, db, updateCallback, opts)
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel(label)
     Toggle:SetValue(db.Enabled)
-    Toggle:SetRelativeWidth(opts.width or 1)
+    Toggle:SetRelativeWidth(opts.width or STYLE.Widths.Pct100)
     parent:AddChild(Toggle)
 
     local panels = {}
@@ -39,7 +39,7 @@ function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, op
     AnchorFromDropdown:SetList(Builders.AnchorPoints[1], Builders.AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(layoutDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) layoutDB.Layout[1] = value updateCallback() end)
     Container:AddChild(AnchorFromDropdown)
 
@@ -47,11 +47,11 @@ function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, op
     AnchorToDropdown:SetList(Builders.AnchorPoints[1], Builders.AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(layoutDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) layoutDB.Layout[2] = value updateCallback() end)
     Container:AddChild(AnchorToDropdown)
 
-    local xyWidth = opts.xyWidth or (opts.includeSize and 0.33 or 0.5)
+    local xyWidth = opts.xyWidth or (opts.includeSize and STYLE.Widths.Pct33 or STYLE.Widths.Pct50)
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
@@ -98,7 +98,7 @@ function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, 
         ColorPicker:SetHasAlpha(false)
         ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) db[colorKey] = {r, g, b} updateCallback() end)
     end
-    ColorPicker:SetRelativeWidth(opts.width or 0.5)
+    ColorPicker:SetRelativeWidth(opts.width or STYLE.Widths.Pct50)
     if opts.disabled then ColorPicker:SetDisabled(true) end
     parent:AddChild(ColorPicker)
 
@@ -109,7 +109,7 @@ function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, 
         OpacitySlider:SetValue(db[opts.opacityKey])
         OpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
         OpacitySlider:SetIsPercent(true)
-        OpacitySlider:SetRelativeWidth(opts.opacityWidth or opts.width or 0.5)
+        OpacitySlider:SetRelativeWidth(opts.opacityWidth or opts.width or STYLE.Widths.Pct50)
         OpacitySlider:SetCallback("OnValueChanged", function(_, _, value) db[opts.opacityKey] = value updateCallback() end)
         parent:AddChild(OpacitySlider)
     end
@@ -132,7 +132,7 @@ function Builders.CreateCheckbox(parent, label, db, key, updateCallback, opts)
     local Checkbox = AG:Create("CheckBox")
     Checkbox:SetLabel(label)
     Checkbox:SetValue(db[key])
-    Checkbox:SetRelativeWidth(opts.width or 1)
+    Checkbox:SetRelativeWidth(opts.width or STYLE.Widths.Pct100)
     if opts.disabled then Checkbox:SetDisabled(true) end
     Checkbox:SetCallback("OnValueChanged", function(_, _, value)
         db[key] = value
@@ -150,7 +150,7 @@ function Builders.CreateSlider(parent, label, db, key, updateCallback, opts)
     Slider:SetLabel(label)
     Slider:SetValue(db[key])
     Slider:SetSliderValues(unpack(opts.sliderValues))
-    Slider:SetRelativeWidth(opts.width or 1)
+    Slider:SetRelativeWidth(opts.width or STYLE.Widths.Pct100)
     if opts.isPercent then Slider:SetIsPercent(true) end
     if opts.disabled then Slider:SetDisabled(true) end
     Slider:SetCallback("OnValueChanged", function(_, _, value)
@@ -169,7 +169,7 @@ function Builders.CreateDropdown(parent, label, db, key, updateCallback, opts)
     Dropdown:SetList(opts.list, opts.order)
     Dropdown:SetLabel(label)
     Dropdown:SetValue(db[key])
-    Dropdown:SetRelativeWidth(opts.width or 1)
+    Dropdown:SetRelativeWidth(opts.width or STYLE.Widths.Pct100)
     if opts.disabled then Dropdown:SetDisabled(true) end
     Dropdown:SetCallback("OnValueChanged", function(_, _, value)
         db[key] = value
@@ -186,7 +186,7 @@ function Builders.CreateReloadPrompt(parent, label, db, key, opts)
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel(label)
     Toggle:SetValue(db[key])
-    Toggle:SetRelativeWidth(opts.width or 1)
+    Toggle:SetRelativeWidth(opts.width or STYLE.Widths.Pct100)
     parent:AddChild(Toggle)
 
     Toggle:SetCallback("OnValueChanged", function(_, _, value)

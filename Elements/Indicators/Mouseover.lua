@@ -1,85 +1,59 @@
 local _, ZF = ...
 
-function ZF:CreateUnitMouseoverIndicator(unitFrame, unit)
-    local MouseoverDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
-	if unitFrame.MouseoverHighlight then return unitFrame.MouseoverHighlight end
-
-    local MouseoverHighlight = CreateFrame("Frame", nil, unitFrame.Health, "BackdropTemplate")
-
+local function ApplyMouseoverStyle(highlight, healthBar, MouseoverDB)
+    highlight:ClearAllPoints()
 
     if MouseoverDB.Style == "BORDER" then
         local t = MouseoverDB.BorderThickness
-        MouseoverHighlight:ClearAllPoints()
-        MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", -t, t)
-        MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", t, -t)
-        MouseoverHighlight:SetBackdrop({ bgFile = ZF.BACKDROP.bgFile, edgeFile = ZF.BACKDROP.edgeFile, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
-        MouseoverHighlight:SetBackdropColor(0,0,0,0)
-        MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
+        highlight:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -t, t)
+        highlight:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", t, -t)
+        highlight:SetBackdrop({ bgFile = ZF.BACKDROP.bgFile, edgeFile = ZF.BACKDROP.edgeFile, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+        highlight:SetBackdropColor(0, 0, 0, 0)
+        highlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
     elseif MouseoverDB.Style == "GRADIENT" then
-        MouseoverHighlight:ClearAllPoints()
-        MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-        MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
-        MouseoverHighlight:SetBackdrop({
-            bgFile = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png",
+        highlight:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
+        highlight:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
+        highlight:SetBackdrop({
+            bgFile = ZF.Media.Gradient,
             edgeFile = nil,
             tile = false, tileSize = 0, edgeSize = 0,
             insets = { left = 0, right = 0, top = 0, bottom = 0 },
         })
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
-        MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
+        highlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
     else
-        MouseoverHighlight:ClearAllPoints()
-        MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-        MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
-        MouseoverHighlight:SetBackdrop(ZF.BACKDROP)
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
-        MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
+        highlight:SetPoint("TOPLEFT", healthBar, "TOPLEFT", 0, 0)
+        highlight:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", 0, 0)
+        highlight:SetBackdrop(ZF.BACKDROP)
+        highlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
     end
+end
 
+function ZF:CreateUnitMouseoverIndicator(unitFrame, unit)
+    if unitFrame.MouseoverHighlight then return unitFrame.MouseoverHighlight end
+    local MouseoverDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
+    unitFrame.MouseoverIndicatorDB = MouseoverDB
 
+    local MouseoverHighlight = CreateFrame("Frame", nil, unitFrame.Health, "BackdropTemplate")
+    ApplyMouseoverStyle(MouseoverHighlight, unitFrame.Health, MouseoverDB)
     MouseoverHighlight:Hide()
     MouseoverHighlight:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
-	unitFrame.MouseoverHighlight = MouseoverHighlight
-    unitFrame:HookScript("OnEnter", function() local DB = ZF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
-    unitFrame:HookScript("OnLeave", function() local DB = ZF:GetUnitDB(unitFrame, unit).Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
+    unitFrame.MouseoverHighlight = MouseoverHighlight
+
+    unitFrame:HookScript("OnEnter", function() if unitFrame.MouseoverIndicatorDB.Enabled then MouseoverHighlight:Show() end end)
+    unitFrame:HookScript("OnLeave", function() if unitFrame.MouseoverIndicatorDB.Enabled then MouseoverHighlight:Hide() end end)
 
     return MouseoverHighlight
 end
 
 function ZF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     local MouseoverDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Mouseover
+    unitFrame.MouseoverIndicatorDB = MouseoverDB
 
     if MouseoverDB.Enabled then
         unitFrame.MouseoverHighlight = unitFrame.MouseoverHighlight or ZF:CreateUnitMouseoverIndicator(unitFrame, unit)
-
-        if MouseoverDB.Style == "BORDER" then
-            local t = MouseoverDB.BorderThickness
-            unitFrame.MouseoverHighlight:ClearAllPoints()
-            unitFrame.MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", -t, t)
-            unitFrame.MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", t, -t)
-            unitFrame.MouseoverHighlight:SetBackdrop({ bgFile = ZF.BACKDROP.bgFile, edgeFile = ZF.BACKDROP.edgeFile, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
-            unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
-        elseif MouseoverDB.Style == "GRADIENT" then
-            unitFrame.MouseoverHighlight:ClearAllPoints()
-            unitFrame.MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-            unitFrame.MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
-            unitFrame.MouseoverHighlight:SetBackdrop({
-                bgFile = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png",
-                edgeFile = nil,
-                tile = false, tileSize = 0, edgeSize = 0,
-                insets = { left = 0, right = 0, top = 0, bottom = 0 },
-            })
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-        else
-            unitFrame.MouseoverHighlight:ClearAllPoints()
-            unitFrame.MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-            unitFrame.MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
-            unitFrame.MouseoverHighlight:SetBackdrop(ZF.BACKDROP)
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-        end
+        ApplyMouseoverStyle(unitFrame.MouseoverHighlight, unitFrame.Health, MouseoverDB)
 
         if unitFrame:IsMouseOver() then unitFrame.MouseoverHighlight:Show() else unitFrame.MouseoverHighlight:Hide() end
     else

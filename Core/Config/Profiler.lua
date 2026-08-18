@@ -169,11 +169,9 @@ function ZF:ImportSavedVariables(encodedInfo, profileName)
                 ApplyImportedProfileToCurrent(data.profile)
             end,
         }
-        StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
+        local popup = StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
+        if popup then popup:SetFrameStrata("TOOLTIP") end
     end
-    local popup = StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
-    if popup then popup:SetFrameStrata("TOOLTIP") end
-
 end
 
 function ZFG:ExportZF(profileKey)

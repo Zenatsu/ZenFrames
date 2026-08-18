@@ -9,13 +9,16 @@ unitIsTargetEvtFrame:SetScript("OnEvent", function(_, event, eventUnit)
 	local changedUnit = eventUnit and eventUnit .. "target"
 	for frame, unit in pairs(ZF.TargetHighlightEvtFrames) do
 		local unitChanged = event == "PLAYER_TARGET_CHANGED" or (event == "PLAYER_FOCUS_CHANGED" and (unit == "focus" or unit == "focustarget")) or unit == changedUnit
-		if unitChanged and ZF:GetUnitDB(frame, unit).Indicators.Target.Enabled then ZF:UpdateTargetGlowIndicator(frame, unit) end
+		if unitChanged and frame.TargetIndicatorDB.Enabled then ZF:UpdateTargetGlowIndicator(frame, unit) end
 	end
 end)
 
 function ZF:CreateUnitTargetGlowIndicator(unitFrame, unit)
-    local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
+    local UnitDB = ZF:GetUnitDB(unitFrame, unit)
+    local TargetIndicatorDB = UnitDB.Indicators.Target
     if TargetIndicatorDB then
+        unitFrame.TargetIndicatorDB = TargetIndicatorDB
+        unitFrame.TargetGlowFrameDB = UnitDB.Frame
         if TargetIndicatorDB.Style == "Border" then -- shown as "Outline" in UI until I can figure out a safe way to change the DB without breaking profiles
             unitFrame.TargetIndicator = unitFrame.ContainerBorder
         else
@@ -24,7 +27,7 @@ function ZF:CreateUnitTargetGlowIndicator(unitFrame, unit)
             unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
             unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
             unitFrame.TargetIndicatorFrame:SetBackdropColor(0, 0, 0, 0)
-            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
             unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
             unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
             unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
@@ -36,6 +39,8 @@ end
 function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
     if unitFrame and TargetIndicatorDB then
+        unitFrame.TargetIndicatorDB = TargetIndicatorDB
+        unitFrame.TargetGlowFrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
         if unitFrame.TargetIndicator and unitFrame.TargetIndicator ~= unitFrame.ContainerBorder then unitFrame.TargetIndicator:SetAlpha(0) end
         if TargetIndicatorDB.Style == "Border" then -- shown as "Outline" in UI until I can figure out a safe way to change the DB without breaking profiles
             unitFrame.TargetIndicator = unitFrame.ContainerBorder
@@ -51,7 +56,7 @@ function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
         local t = TargetIndicatorDB.BorderThickness
         unitFrame.TargetIndicator:ClearAllPoints()
         unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
         unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
         unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
         unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
@@ -61,8 +66,8 @@ end
 
 function ZF:UpdateTargetGlowIndicator(unitFrame, unit)
     if unitFrame and unitFrame.TargetIndicator then
-        local TargetIndicatorDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Target
-        local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
+        local TargetIndicatorDB = unitFrame.TargetIndicatorDB
+        local FrameDB = unitFrame.TargetGlowFrameDB
         local baseAlpha = FrameDB.BorderThickness > 0 and FrameDB.BorderOpacity or 0
         if TargetIndicatorDB.Style == "Border" then
             local isTarget = TargetIndicatorDB.Enabled and UnitIsUnit("target", unit == "partyplayer" and "player" or unit)

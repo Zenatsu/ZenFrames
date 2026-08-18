@@ -54,9 +54,6 @@ local function OpenZFConfig()
     ZF:CreateGUI()
 end
 
--- Returns true once GameMenuFrame.ZF exists, whether that happened just
--- now or on a previous call - lets the caller below decide whether it still
--- needs to wait for Blizzard_GameMenu to load.
 local function InstallGameMenuButton()
     if not GameMenuFrame then return false end
     if GameMenuFrame.ZF then return true end
