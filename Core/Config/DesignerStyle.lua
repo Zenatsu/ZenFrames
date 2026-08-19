@@ -16,10 +16,11 @@ ZF.DesignerStyle = {
         InfoLabelHeight = 24,
         InfoLabelFontSize = 12,
         AuraBlacklistWindowWidth = 420,
-        AuraBlacklistWindowHeight = 520,
+        AuraBlacklistWindowHeight = 530,
+        AuraBlacklistRowScrollHeight = 380,
     },
 
-    -- Shared AceGUI SetRelativeWidth fractions, so every row-split reads from one place.
+    -- Shared AceGUI SetRelativeWidth percentages, so every row-split reads from one place.
     Widths = {
         Pct100 = 1,
         Pct75  = 0.75,

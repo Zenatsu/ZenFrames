@@ -3,7 +3,7 @@
     <Script file="Core.lua"/>
     <Script file="Defaults/SingleUnit.lua"/>
     <Script file="Defaults/GroupUnit.lua"/>
-    <Script file="Defaults.lua"/>
+    <Script file="Defaults/Defaults.lua"/>
     <Script file="Globals.lua"/>
     <Script file="GameMenu.lua"/>
     <Script file="UnitFrame.lua"/>

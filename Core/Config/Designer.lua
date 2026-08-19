@@ -87,15 +87,18 @@ end
 
 function ZF:ApplyDesignerDispelHighlightPreview()
     local previewFrame = ZF.DESIGNER_PREVIEW_FRAME
-    if not previewFrame or not previewFrame.DispelHighlight then return end
+    if not previewFrame or not previewFrame.DispelHighlightDB then return end
     if ZF.DESIGNER_PREVIEW_TOGGLES.DispelHighlight then
+        if not previewFrame.DispelHighlightPreview then
+            previewFrame.DispelHighlightPreview = previewFrame.Health:CreateTexture(nil, "OVERLAY")
+            previewFrame.DispelHighlightPreview:SetBlendMode("BLEND")
+        end
+        ZF:ApplyDispelHighlightStyle(previewFrame.DispelHighlightPreview, previewFrame, previewFrame.DispelHighlightDB)
         local color = oUF.colors.dispel["Magic"]
-        previewFrame.DispelHighlight:SetVertexColor(color.r, color.g, color.b)
-        previewFrame.DispelAuras:Show()
-        previewFrame.DispelHighlight:Show()
-    else
-        previewFrame.DispelHighlight:Hide()
-        previewFrame.DispelAuras:Hide()
+        previewFrame.DispelHighlightPreview:SetVertexColor(color.r, color.g, color.b)
+        previewFrame.DispelHighlightPreview:Show()
+    elseif previewFrame.DispelHighlightPreview then
+        previewFrame.DispelHighlightPreview:Hide()
     end
 end
 

@@ -12,7 +12,7 @@ function ZenFrames:OnInitialize()
     ZF:MigrateGlobalSettings(_G.ZFDB)
 
     ZF.db = LibStub("AceDB-3.0"):New("ZFDB", ZF:GetDefaultDB(), true)
-    -- ZF:SeedAuraBlacklist()
+    ZF:SeedAuraBlacklist()
     ZF.LDS:EnhanceDatabase(ZF.db, "ZenFrames")
     ZF.TAG_UPDATE_INTERVAL = ZF.db.profile.General.TagUpdateInterval or 0.25
     ZF.SEPARATOR = ZF.db.profile.General.Separator or "||"

@@ -243,6 +243,7 @@ function ZF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     end
 	if CooldownTextDB.Advanced and unit then CooldownTextDB = ZF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
     if not textRegion then
+        if icon.SetCountdownFormatter then return end
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
@@ -674,14 +675,30 @@ ZF.AURA_FILTERS = {
 }
 
 local DEFAULT_AURA_ID_BLACKLIST = {
-    2823, 315584, 3408, 381637, 381664, 8679,
-    433568, 433583,
-    319773, 319778, 382021, 382022, 457496, 457481, 462757, 462742,
-    404464, 404468, 427490, 447959, 447960,
-    160455, 264689, 95809,
-    390435, 57723, 57724, 80354,
-    26013, 71041,
+    2823, 315584, 3408, 381637, 381664, 8679, -- Rogue
+    433568, 433583, -- Pally
+    319773, 319778, 382021, 382022, 457496, 457481, 462757, 462742, -- Shammy
+    404464, 404468, 427490, 447959, 447960, -- Skyriding
+    160455, 264689, 95809, -- Hunter
+    390435, 57723, 57724, 80354, -- Bloodlust Debuffs
+    26013, 71041, -- Deserter
 }
+
+function ZF:SeedAuraBlacklist()
+    if ZF.db.global.AuraBlacklistSeeded then return end
+    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
+        ZF.db.global.AuraBlacklist[spellId] = true
+    end
+    ZF.db.global.AuraBlacklistSeeded = true
+end
+
+function ZF:RestoreDefaultAuraBlacklist()
+    wipe(ZF.db.global.AuraBlacklist)
+    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
+        ZF.db.global.AuraBlacklist[spellId] = true
+    end
+    ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
+end
 
 local RefreshProfilesRetryFrame = CreateFrame("Frame")
 RefreshProfilesRetryFrame:SetScript("OnEvent", function(self)

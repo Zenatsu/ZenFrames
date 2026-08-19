@@ -25,7 +25,7 @@ DispelEventFrame:SetScript("OnEvent", function()
 	for unitFrame in pairs(DispelHighlightFrames) do ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end
 end)
 
-local function ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
+function ZF:ApplyDispelHighlightStyle(texture, unitFrame, DispelHighlightDB)
 	texture:ClearAllPoints()
 	if DispelHighlightDB.Style == "GRADIENT" then
 		texture:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
@@ -56,7 +56,7 @@ function ZF:CreateUnitDispelHighlight(unitFrame, unit)
 				highlight:SetBlendMode("BLEND")
 				highlight:Hide()
 				unitFrame.DispelHighlight = highlight
-				ApplyDispelHighlightStyle(highlight, unitFrame, ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight)
+				ZF:ApplyDispelHighlightStyle(highlight, unitFrame, ZF:GetUnitDB(unitFrame, unit).HealthBar.DispelHighlight)
 				button:AddDispelTypeTexture(highlight, {
 					style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
 					showWhenHarmful = true,
@@ -76,7 +76,6 @@ function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 	unitFrame.DispelHighlightDB = DispelHighlightDB
 	if DispelHighlightDB.Enabled then
 		ZF:RegisterDispelHighlightEvents(unitFrame, unit)
-		ApplyDispelHighlightStyle(unitFrame.DispelHighlight, unitFrame, DispelHighlightDB)
 		ZF:UpdateUnitDispelState(unitFrame, unit)
 	else
 		ZF:UnregisterDispelHighlightEvents(unitFrame)

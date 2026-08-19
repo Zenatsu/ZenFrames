@@ -217,6 +217,20 @@ StaticPopupDialogs["ZF_INVALID_SPELL_ID"] = {
     hideOnEscape = true,
 }
 
+StaticPopupDialogs["ZF_RESTORE_DEFAULT_BLACKLIST"] = {
+    text = "This will remove all custom entries and restore to the default blacklist. Continue?",
+    button1 = YES,
+    button2 = NO,
+    OnAccept = function()
+        ZF:RestoreDefaultAuraBlacklist()
+        ZF:RefreshAuraBlacklistWindow()
+        ZF:UpdateAllUnitFrames()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
+
 local AuraBlacklistWindow
 
 local function CreateAuraBlacklistWindow(RowScroll)
@@ -242,7 +256,7 @@ local function CreateAuraBlacklistWindow(RowScroll)
         DeleteButton:SetCallback("OnClick", function()
             ZF.db.global.AuraBlacklist[spellId] = nil
             ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) +1
-            ZF: RefreshAuraBlacklistWindow()
+            ZF:RefreshAuraBlacklistWindow()
             ZF:UpdateAllUnitFrames()
         end)
         Row:AddChild(DeleteButton)
@@ -274,15 +288,19 @@ function ZF:ShowAuraBlacklistWindow()
             local spellId = tonumber(IDEditBox:GetText())
             local info = spellId and C_Spell.GetSpellInfo(spellId)
             if not info then
-                StaticPopup_Show("ZF_INVALID_SPELL_ID")
+                local popup = StaticPopup_Show("ZF_INVALID_SPELL_ID")
+                if popup then popup:SetFrameStrata("TOOLTIP") end
                 return
             end
+            local popup = StaticPopup_Show("ZF_INVALID_SPELL_ID")
+            if popup then popup:SetFrameStrata("TOOLTIP") end
             ZF.db.global.AuraBlacklist[spellId] = true
             ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
             IDEditBox:SetText("")
             ZF:RefreshAuraBlacklistWindow()
             ZF:UpdateAllUnitFrames()
         end
+
         IDEditBox:SetCallback("OnEnterPressed", TryAddSpell)
 
         local AddButton = AG:Create("Button")
@@ -295,6 +313,7 @@ function ZF:ShowAuraBlacklistWindow()
         AuraBlacklistWindow:AddChild(AddRow)
 
         local RowScroll = GUIWidgets.CreateScrollFrame(AuraBlacklistWindow)
+        RowScroll:SetHeight(STYLE.Layout.AuraBlacklistRowScrollHeight)
         AuraBlacklistWindow.RowScroll = RowScroll
 
         local RestoreButton = AG:Create("Button")
@@ -306,6 +325,7 @@ function ZF:ShowAuraBlacklistWindow()
 
     CreateAuraBlacklistWindow(AuraBlacklistWindow.RowScroll)
     AuraBlacklistWindow:Show()
+    AuraBlacklistWindow.frame:Raise()
 end
 
 function ZF:RefreshAuraBlacklistWindow()
