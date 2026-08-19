@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.0.9
+
+- Major restructoring of the addon, nothing on the UI or UX side should be affected (profiles should be intact)
+- Added an Advanced blacklist feature
+  - You can add your own spell ID to blacklist a spell of your choice
+  - You can remove any spell ID in the blacklist, including the default offered ID's
+  - You can restore the list back to the default offered ID's
+
 ## v1.0.8hf1
 
 - Fixed buff container being hidden behind health bars (affected multiple different frames)
