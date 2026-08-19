@@ -16,6 +16,12 @@ end
 
 local function RepositionGameMenu()
     if not GameMenuFrame or not GameMenuFrame.ZF then return end
+    if ZF.db and not ZF.db.global.ShowGameMenuButton then
+        GameMenuFrame.ZFAddedHeight = 0
+        GameMenuFrame.ZFAdjustedHeight = nil
+        GameMenuFrame.ZF:Hide()
+        return
+    end
     local menuHeight = GameMenuFrame:GetHeight()
     if GameMenuFrame.ZFAdjustedHeight == menuHeight then
         menuHeight = menuHeight - (GameMenuFrame.ZFAddedHeight or 0)

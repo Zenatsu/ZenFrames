@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.0.9hf1
+
+- Fixed "Restore to Defaults" pop-up confirm window frame layer
+- Removed redundant "okay" button when adding a spell ID
+- Added toggle for the Game Menu button
+- Changed Advanced button behavor: If blacklist is not toggled, the button is disabled
+
 ## v1.0.9
 
 - Major restructoring of the addon, nothing on the UI or UX side should be affected (profiles should be intact)
