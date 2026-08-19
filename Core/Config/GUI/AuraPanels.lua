@@ -125,7 +125,7 @@ local function CreateAuraBuffConfigSettings(containerParent, unit, auraDB, rebui
     local BlacklistToggle = AG:Create("CheckBox")
     BlacklistToggle:SetLabel("Blacklist")
     BlacklistToggle:SetValue(AuraDB.Blacklist or false)
-    BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value UpdateAuras() end)
+    BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value UpdateAuras() RefreshAuraGUI() end)
     BlacklistToggle:SetRelativeWidth(auraDB == "Debuffs" and STYLE.Widths.Pct33 or STYLE.Widths.Pct50)
     FilterContainer:AddChild(BlacklistToggle)
 
@@ -179,7 +179,8 @@ local function CreateAuraBuffConfigSettings(containerParent, unit, auraDB, rebui
     RefreshAuraGUI = function()
         BuilderRefresh()
         BlacklistToggle:SetDisabled(not AuraDB.Enabled)
-        GUIWidgets.DeepDisable(FilterContainer, not AuraDB.Enabled or AuraDB.OnlyShowPlayer, BlacklistToggle)
+        AdvancedBlacklistButton:SetDisabled(not AuraDB.Enabled or not AuraDB.Blacklist)
+        GUIWidgets.DeepDisable(FilterContainer, not AuraDB.Enabled or AuraDB.OnlyShowPlayer, BlacklistToggle, AdvancedBlacklistButton)
         for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(not AuraDB.Enabled or AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UpdateAuras() RefreshAuraGUI() end)

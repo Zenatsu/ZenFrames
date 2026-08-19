@@ -186,6 +186,16 @@ local function CreateGlobalToggleSettings(containerParent)
     DisplayLoginMessageToggle:SetCallback("OnValueChanged", function(_, _, value) ZF.db.global.DisplayLoginMessage = value end)
     DisplayLoginMessageToggle:SetRelativeWidth(STYLE.Widths.Pct33)
     ToggleContainer:AddChild(DisplayLoginMessageToggle)
+
+    local ShowGameMenuButtonToggle = AG:Create("CheckBox")
+    ShowGameMenuButtonToggle:SetLabel("Show Game Menu Button")
+    ShowGameMenuButtonToggle:SetValue(ZF.db.global.ShowGameMenuButton)
+    ShowGameMenuButtonToggle:SetCallback("OnValueChanged", function(_, _, value)
+        ZF.db.global.ShowGameMenuButton = value
+        if GameMenuFrame then GameMenuFrame:Layout() end
+    end)
+    ShowGameMenuButtonToggle:SetRelativeWidth(STYLE.Widths.Pct33)
+    ToggleContainer:AddChild(ShowGameMenuButtonToggle)
 end
 
 local function CreateGlobalTagSettings(containerParent)

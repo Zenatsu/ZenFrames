@@ -191,6 +191,7 @@ local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, bas
 		end
 
 		auras:SetUnit(unitFrame.__unit or unit)
+		auras:ForceUpdate()
 
 		unitFrame[storageKey] = auras
 		unitFrame[storageKey .. "Signature"] = signature

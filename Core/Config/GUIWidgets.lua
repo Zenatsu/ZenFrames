@@ -4,12 +4,14 @@ local STYLE = ZF.DesignerStyle
 ZF.GUIWidgets = {}
 local Widgets = ZF.GUIWidgets
 
-function Widgets.DeepDisable(widget, disabled, exemptWidget)
-    if widget == exemptWidget then return end
+function Widgets.DeepDisable(widget, disabled, ...)
+    for i = 1, select("#", ...) do
+        if widget == select(i, ...) then return end
+    end
     if widget.SetDisabled then widget:SetDisabled(disabled) end
     if not widget.children then return end
     for _, child in ipairs(widget.children) do
-        Widgets.DeepDisable(child, disabled, exemptWidget)
+        Widgets.DeepDisable(child, disabled, ...)
     end
 end
 

@@ -5,6 +5,7 @@ local Defaults = {
         UseGlobalProfile = false,
         GlobalProfile = "Default",
         DisplayLoginMessage = true,
+        ShowGameMenuButton = true,
         AuraBlacklist = {},
         AuraBlacklistSeeded = false,
     },

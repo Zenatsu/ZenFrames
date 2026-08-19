@@ -283,6 +283,7 @@ function ZF:ShowAuraBlacklistWindow()
         local IDEditBox = AG:Create("EditBox")
         IDEditBox:SetLabel("Spell ID")
         IDEditBox:SetRelativeWidth(STYLE.Widths.Pct60)
+        IDEditBox:DisableButton(true)
 
         local function TryAddSpell()
             local spellId = tonumber(IDEditBox:GetText())
@@ -292,8 +293,6 @@ function ZF:ShowAuraBlacklistWindow()
                 if popup then popup:SetFrameStrata("TOOLTIP") end
                 return
             end
-            local popup = StaticPopup_Show("ZF_INVALID_SPELL_ID")
-            if popup then popup:SetFrameStrata("TOOLTIP") end
             ZF.db.global.AuraBlacklist[spellId] = true
             ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
             IDEditBox:SetText("")
@@ -319,7 +318,10 @@ function ZF:ShowAuraBlacklistWindow()
         local RestoreButton = AG:Create("Button")
         RestoreButton:SetText("Restore to Default")
         RestoreButton:SetFullWidth(true)
-        RestoreButton:SetCallback("OnClick", function() StaticPopup_Show("ZF_RESTORE_DEFAULT_BLACKLIST") end)
+        RestoreButton:SetCallback("OnClick", function()
+            local popup = StaticPopup_Show("ZF_RESTORE_DEFAULT_BLACKLIST")
+            if popup then popup:SetFrameStrata("TOOLTIP") end
+        end)
         AuraBlacklistWindow:AddChild(RestoreButton)
     end
 
