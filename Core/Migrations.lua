@@ -80,6 +80,28 @@ local MigrationSteps = {
             end
         end,
     },
+    {
+        fromVersion = 4,
+        migrate = function(profile)
+            local general = profile.General
+            local units = profile.Units
+            if type(general) ~= "table" or type(general.CooldownText) ~= "table" then return end
+
+            local breakpoints = general.CooldownText.CooldownBreakpoints
+            if type(breakpoints) == "table" and type(units) == "table" then
+                for _, unitDB in pairs(units) do
+                    if type(unitDB.Auras) == "table" and type(unitDB.Auras.AuraDuration) == "table" then
+                        unitDB.Auras.AuraDuration.CooldownBreakpoints = CopyTable(breakpoints)
+                    end
+                end
+                if type(units.player) == "table" and type(units.player.Indicators) == "table" and type(units.player.Indicators.Totems) == "table" then
+                    units.player.Indicators.Totems.CooldownBreakpoints = CopyTable(breakpoints)
+                end
+            end
+
+            general.CooldownText = nil
+        end,
+    },
 }
 
 local CURRENT_DB_VERSION = #MigrationSteps
@@ -99,7 +121,13 @@ function ZF:MigrateProfile(profileName, profile)
     local version = profile.DBVersion or 0
     while version < CURRENT_DB_VERSION do
         local step = MigrationSteps[version + 1]
-        if not step then break end
+        if not step or step.fromVersion ~= version then
+            print(string.format(
+                "|cffff4040ZenFrames:|r migration step mismatch for profile '%s' (expected fromVersion %d, found %s) - aborting migration, will retry next login.",
+                tostring(profileName), version, step and tostring(step.fromVersion) or "no step"
+            ))
+            break
+        end
 
         local snapshot = CopyTable(profile)
         local ok, err = pcall(step.migrate, profile)

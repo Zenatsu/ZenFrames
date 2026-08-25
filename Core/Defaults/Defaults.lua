@@ -27,19 +27,6 @@ local Defaults = {
                 InRange = 1.0,
                 OutOfRange = 0.5,
             },
-            CooldownText = {
-                Advanced = false,
-                Layout = {"CENTER", "CENTER", 0, 0},
-                FontSize = 12,
-                ScaleByIconSize = false,
-                CooldownBreakpoints = {
-                    {threshold = 0, displayStyle = "decimalSeconds", step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%.1f|r", color = {1, 1, 1, 1}},
-                    {threshold = 3, displayStyle = "secondsOnly", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d|r", color = {1, 1, 1, 1}},
-                    {threshold = 60, displayStyle = "clock", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d:%02d|r", color = {1, 1, 1, 1}, components = {{div = 60}, {mod = 60}}},
-                    {threshold = 120, displayStyle = "minutes", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dm|r", color = {1, 1, 1, 1}, components = {{div = 60}}},
-                    {threshold = 3600, displayStyle = "hours", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dh|r", color = {1, 1, 1, 1}, components = {{div = 3600}}},
-                },
-            },
             Fonts = {
                 Font = "Friz Quadrata TT",
                 FontFlag = "OUTLINE",
@@ -68,6 +55,7 @@ local Defaults = {
                     [3] = {1, 1, 0},                    -- Energy
                     [6] = {0, 0.82, 1},                 -- Runic Power
                     [8] = {0.75, 0.52, 0.9},            -- Lunar Power (Astral Power)
+                    [10] = {0.7, 0.7, 0.6},             -- Alternate
                     [11] = {0, 0.5, 1},                 -- Maelstrom
                     [13] = {0.4, 0, 0.8},               -- Insanity
                     [17] = {0.79, 0.26, 0.99},          -- Fury

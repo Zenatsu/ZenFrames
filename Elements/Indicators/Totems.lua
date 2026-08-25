@@ -35,7 +35,7 @@ local function CreateTotemButton(unitFrame, unit, index)
     totem.Cooldown:SetDrawSwipe(true)
     totem.Cooldown:SetHideCountdownNumbers(false)
     totem.Cooldown:SetReverse(true)
-    ZF:ApplyCooldownText(totem.Cooldown)
+    ZF:ApplyDurationText(totem.Cooldown, nil, unitFrame.TotemsDB)
 
     return totem
 end
@@ -44,6 +44,7 @@ function ZF:CreateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
     local TotemsDB = ZF.db.profile.Units.player.Indicators.Totems
     if not TotemsDB.Enabled then return end
+    unitFrame.TotemsDB = TotemsDB
 
     local totems = {}
     for index = 1, #totemPriorities do
@@ -57,10 +58,6 @@ function ZF:CreateUnitTotems(unitFrame, unit)
         totems[totemPriorities[slot]]:SetAttribute("totem-slot", slot)
     end
 
-    totems.PostUpdate = function(self, slot)
-        ZF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
-    end
-
     unitFrame.Totems = totems
     return totems
 end
@@ -68,6 +65,7 @@ end
 function ZF:UpdateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
     local TotemsDB = ZF.db.profile.Units.player.Indicators.Totems
+    unitFrame.TotemsDB = TotemsDB
 
     if TotemsDB.Enabled then
         unitFrame.Totems = unitFrame.Totems or ZF:CreateUnitTotems(unitFrame, unit)
@@ -76,7 +74,7 @@ function ZF:UpdateUnitTotems(unitFrame, unit)
         for index = 1, #unitFrame.Totems do
             local totem = unitFrame.Totems[index]
             PositionTotem(totem, TotemsDB, index, unitFrame.HighLevelContainer)
-            ZF:ApplyCooldownText(totem.Cooldown)
+            ZF:ApplyDurationText(totem.Cooldown, nil, unitFrame.TotemsDB)
             totem:Show()
         end
 

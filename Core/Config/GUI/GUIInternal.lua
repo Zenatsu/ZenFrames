@@ -1,9 +1,6 @@
 local _, ZF = ...
-local LSM = ZF.LSM
 local AG = ZF.AG
 local GUIWidgets = ZF.GUIWidgets
-local GUIBuilders = ZF.GUIBuilders
-local STYLE = ZF.DesignerStyle
 
 ZF.GUIInternal = ZF.GUIInternal or {}
 local GUIInternal = ZF.GUIInternal
@@ -48,8 +45,8 @@ local function UpdateUnitSettings(unit, updateCallback)
 		ZF:UpdateGroupFrame("party")
 	elseif unit == "raid" then
 		ZF:UpdateGroupFrame("raid")
-	elseif unit == "augmentation" then
-		ZF:UpdateAugmentationRaidFrames()
+	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:UpdateAuxiliaryRaidGroup(unit)
 	elseif updateCallback then
 		updateCallback()
 	end
@@ -60,7 +57,7 @@ local function UpdateUnitSettings(unit, updateCallback)
     end
 end
 
-local UnitDBToUnitPrettyName = {
+local UnitDBToUnitStylizedName = {
     player = "Player",
     target = "Target",
     targettarget = "Target of Target",
@@ -87,7 +84,7 @@ local CooldownBreakpointStyles = {
     {"decimalSeconds", "seconds", "secondsOnly", "clock", "minutes", "hours", "days"},
 }
 
-local CooldownBreakpointSettings = {
+local DurationBreakpointSettings = {
     decimalSeconds = {step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%.1f"},
     seconds = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%ds"},
     secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, min = 1, format = "%d"},
@@ -112,6 +109,7 @@ local Power = {
     [7] = "Soul Shards",
     [8] = "Astral Power",
     [9] = "Holy Power",
+    [10] = "Alternate",
     [11] = "Maelstrom",
     [12] = "Chi",
     [13] = "Insanity",
@@ -167,8 +165,8 @@ for _, style in ipairs({"Blizzard", "Color", "White", "ElvUI", "Square"}) do
 end
 
 local function DisableAurasTestMode(unit)
-	if unit == "augmentation" then
-		ZF:ForEachAugmentationRaidFrame(function(unitFrame, frameUnit)
+	if ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:ForEachAuxiliaryRaidFrame(unit, function(unitFrame, frameUnit)
 			if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
 		end, false)
 	elseif unit == "boss" then
@@ -190,7 +188,7 @@ end
 local function DisableAllTestModes()
 	ZF.MOVERS_UNLOCKED = false
 	ZF:ForEachUnitDB(function(_, unit)
-		if unit == "party" or unit == "raid" or unit == "augmentation" then
+		if unit == "party" or unit == "raid" or ZF.AUXILIARY_RAID_GROUPS[unit] then
 			DisableAurasTestMode(unit)
 		elseif ZF[unit:upper()] then
 			ZF:CreateTestAuras(ZF[unit:upper()], unit)
@@ -250,9 +248,9 @@ GUIInternal.GetDefaultUnitDB = GetDefaultUnitDB
 GUIInternal.GetSavedSubTab = GetSavedSubTab
 GUIInternal.CreateDesignerPreviewToggle = CreateDesignerPreviewToggle
 GUIInternal.UpdateUnitSettings = UpdateUnitSettings
-GUIInternal.UnitDBToUnitPrettyName = UnitDBToUnitPrettyName
+GUIInternal.UnitDBToUnitStylizedName = UnitDBToUnitStylizedName
 GUIInternal.CooldownBreakpointStyles = CooldownBreakpointStyles
-GUIInternal.CooldownBreakpointSettings = CooldownBreakpointSettings
+GUIInternal.DurationBreakpointSettings = DurationBreakpointSettings
 GUIInternal.AnchorPoints = AnchorPoints
 GUIInternal.AuraAnchorParents = AuraAnchorParents
 GUIInternal.FrameStrataList = FrameStrataList

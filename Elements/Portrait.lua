@@ -50,6 +50,10 @@ local function ComputePortraitZoomTexCoord(zoom)
 	return inset, 1 - inset, inset, 1 - inset
 end
 
+local function ApplyPortraitBorderStyle(border, PortraitDB)
+	ZF:ApplyBorderStyle(border, PortraitDB, math.min(PortraitDB.Width, PortraitDB.Height), {0, 0, 0, 0})
+end
+
 local function ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
 	if PortraitDB.Enabled then
 		unitFrame.Portrait = unitPortrait
@@ -79,7 +83,7 @@ local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 
 	local border = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
 	border:SetAllPoints(portraitBackdrop)
-	ZF:ApplyBackdropStyle(border, {0, 0, 0, 0}, {0, 0, 0, 1})
+	ApplyPortraitBorderStyle(border, PortraitDB)
 	border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
 
 	return portraitBackdrop, border
@@ -162,6 +166,7 @@ function ZF:UpdateUnitPortrait(unitFrame, unit)
 		unitFrame.Portrait.Backdrop:Show()
 
 		unitFrame.Portrait:Show()
+		ApplyPortraitBorderStyle(unitFrame.Portrait.Border, PortraitDB)
 		unitFrame.Portrait.Border:Show()
 		unitFrame.Portrait:ForceUpdate()
 	else

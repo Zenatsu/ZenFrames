@@ -5,10 +5,7 @@ local GUIBuilders = ZF.GUIBuilders
 local STYLE = ZF.DesignerStyle
 local GUIInternal = ZF.GUIInternal
 local GetUnitDB = GUIInternal.GetUnitDB
-local AnchorPoints = GUIInternal.AnchorPoints
-local CooldownBreakpointStyles = GUIInternal.CooldownBreakpointStyles
-local CooldownBreakpointSettings = GUIInternal.CooldownBreakpointSettings
-local UnitDBToUnitPrettyName = GUIInternal.UnitDBToUnitPrettyName
+local UnitDBToUnitStylizedName = GUIInternal.UnitDBToUnitStylizedName
 
 local function CreateClearFocusEditBox(parent, label, width)
     local editBox = AG:Create("EditBox")
@@ -20,155 +17,6 @@ local function CreateClearFocusEditBox(parent, label, width)
     editBox:SetCallback("OnTextChanged", function() editBox:ClearFocus() end)
     parent:AddChild(editBox)
     return editBox
-end
-
-local function CreateCooldownTextSettings(containerParent)
-    local CooldownTextDB = ZF.db.profile.General.CooldownText
-    local CooldownTextContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Settings")
-
-    GUIBuilders.CreateCheckbox(CooldownTextContainer, "Advanced", CooldownTextDB, "Advanced", function()
-        ZF:UpdateAllUnitFrames()
-        containerParent:ReleaseChildren()
-        CreateCooldownTextSettings(containerParent)
-        containerParent:DoLayout()
-    end, {
-        width = CooldownTextDB.Advanced and STYLE.Widths.Pct100 or STYLE.Widths.Pct50,
-        tooltip = "Advanced Settings will allow you to customize cooldown text for each unit individually.",
-    })
-
-    local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB)
-        local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
-        ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-        ScaleByIconSizeCheckbox:SetValue(CooldownTextStyleDB.ScaleByIconSize)
-        ScaleByIconSizeCheckbox:SetRelativeWidth(CooldownTextDB.Advanced and STYLE.Widths.Pct100 or STYLE.Widths.Pct50)
-        StyleContainerParent:AddChild(ScaleByIconSizeCheckbox)
-
-        local function RefreshCooldownText() ZF:UpdateAllUnitFrames() end
-        GUIBuilders.CreateDropdown(StyleContainerParent, "Anchor From", CooldownTextStyleDB.Layout, 1, RefreshCooldownText, {list = AnchorPoints[1], order = AnchorPoints[2], width = STYLE.Widths.Pct50})
-        GUIBuilders.CreateDropdown(StyleContainerParent, "Anchor To", CooldownTextStyleDB.Layout, 2, RefreshCooldownText, {list = AnchorPoints[1], order = AnchorPoints[2], width = STYLE.Widths.Pct50})
-        GUIBuilders.CreateSlider(StyleContainerParent, "X Position", CooldownTextStyleDB.Layout, 3, RefreshCooldownText, {sliderValues = STYLE.Sliders.Position, width = STYLE.Widths.Pct33})
-        GUIBuilders.CreateSlider(StyleContainerParent, "Y Position", CooldownTextStyleDB.Layout, 4, RefreshCooldownText, {sliderValues = STYLE.Sliders.Position, width = STYLE.Widths.Pct33})
-
-        local FontSizeSlider = AG:Create("Slider")
-        FontSizeSlider:SetLabel("Font Size")
-        FontSizeSlider:SetValue(CooldownTextStyleDB.FontSize)
-        FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
-        FontSizeSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-        FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value ZF:UpdateAllUnitFrames() end)
-        FontSizeSlider:SetDisabled(CooldownTextStyleDB.ScaleByIconSize)
-        StyleContainerParent:AddChild(FontSizeSlider)
-        ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.ScaleByIconSize = value FontSizeSlider:SetDisabled(value) ZF:UpdateAllUnitFrames() end)
-    end
-
-    if CooldownTextDB.Advanced then
-        local function SelectCooldownTextTab(CooldownTextTabContainer, _, CooldownTextTab)
-            CooldownTextTabContainer:ReleaseChildren()
-            if CooldownTextTab == "Global" then
-                CreateCooldownTextStyleSettings(CooldownTextTabContainer, CooldownTextDB)
-            elseif CooldownTextTab == "Auras" then
-                local function SelectAuraUnit(AuraUnitContainer, _, unit)
-                    AuraUnitContainer:ReleaseChildren()
-                    CreateCooldownTextStyleSettings(AuraUnitContainer, GetUnitDB(unit).Auras.AuraDuration)
-                    containerParent:DoLayout()
-                end
-
-                local AuraUnitTabs = AG:Create("TabGroup")
-                AuraUnitTabs:SetLayout("Flow")
-                AuraUnitTabs:SetFullWidth(true)
-				local auraUnitTabs = {
-                    { text = "Player", value = "player" },
-                    { text = "Target", value = "target" },
-                    { text = "Target of Target", value = "targettarget" },
-                    { text = "Focus", value = "focus" },
-                    { text = "Focus Target", value = "focustarget" },
-                    { text = "Pet", value = "pet" },
-                    { text = "Party", value = "party" },
-                    { text = "Raid", value = "raid" },
-				}
-				if ZF:IsAugmentationEvoker() then auraUnitTabs[#auraUnitTabs + 1] = { text = "Augmentation Raid", value = "augmentation" } end
-				auraUnitTabs[#auraUnitTabs + 1] = { text = "Boss", value = "boss" }
-				AuraUnitTabs:SetTabs(auraUnitTabs)
-                AuraUnitTabs:SetCallback("OnGroupSelected", SelectAuraUnit)
-                AuraUnitTabs:SelectTab("player")
-                CooldownTextTabContainer:AddChild(AuraUnitTabs)
-            end
-            containerParent:DoLayout()
-        end
-
-        local CooldownTextTabs = AG:Create("TabGroup")
-        CooldownTextTabs:SetLayout("Flow")
-        CooldownTextTabs:SetFullWidth(true)
-        CooldownTextTabs:SetTabs({
-            { text = "Global", value = "Global" },
-            { text = "Auras", value = "Auras" },
-        })
-        CooldownTextTabs:SetCallback("OnGroupSelected", SelectCooldownTextTab)
-        CooldownTextTabs:SelectTab("Global")
-        CooldownTextContainer:AddChild(CooldownTextTabs)
-    else
-        CreateCooldownTextStyleSettings(CooldownTextContainer, CooldownTextDB)
-    end
-
-    local Breakpoints = CooldownTextDB.CooldownBreakpoints
-    local DefaultBreakpoints = ZF:GetDefaultDB().profile.General.CooldownText.CooldownBreakpoints
-    for BreakpointIndex = 1, 5 do
-        Breakpoints[BreakpointIndex] = Breakpoints[BreakpointIndex] or CopyTable(DefaultBreakpoints[BreakpointIndex])
-        Breakpoints[BreakpointIndex].color = Breakpoints[BreakpointIndex].color or CopyTable(DefaultBreakpoints[BreakpointIndex].color)
-    end
-    while #Breakpoints > 5 do tremove(Breakpoints) end
-
-    local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Breakpoints")
-
-    local function SelectBreakpoint(BreakpointTabContainer, _, BreakpointIndex)
-        BreakpointTabContainer:ReleaseChildren()
-        local BreakpointDB = Breakpoints[BreakpointIndex]
-
-        local MinimumValue = AG:Create("EditBox")
-        MinimumValue:SetLabel("Minimum Value in Seconds")
-        MinimumValue:SetText(tostring(BreakpointDB.threshold or 0))
-        MinimumValue:SetRelativeWidth(STYLE.Widths.Pct33)
-        MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = ZF:GetCooldownDurationComponents(BreakpointDB.displayStyle, value) ZF:UpdateAllUnitFrames() end)
-        BreakpointTabContainer:AddChild(MinimumValue)
-
-        local DisplayStyle = AG:Create("Dropdown")
-        DisplayStyle:SetLabel("Display Style")
-        DisplayStyle:SetList(CooldownBreakpointStyles[1], CooldownBreakpointStyles[2])
-        DisplayStyle:SetValue(BreakpointDB.displayStyle)
-        DisplayStyle:SetRelativeWidth(STYLE.Widths.Pct33)
-        DisplayStyle:SetCallback("OnValueChanged", function(_, _, value)
-            local DisplayStyleDB = CooldownBreakpointSettings[value]
-            BreakpointDB.displayStyle = value
-            BreakpointDB.step = DisplayStyleDB.step
-            BreakpointDB.rounding = DisplayStyleDB.rounding
-            BreakpointDB.min = DisplayStyleDB.min
-            BreakpointDB.format = CreateColor(unpack(BreakpointDB.color)):WrapTextInColorCode(DisplayStyleDB.format)
-            BreakpointDB.components = ZF:GetCooldownDurationComponents(value, BreakpointDB.threshold or 0)
-            ZF:UpdateAllUnitFrames()
-        end)
-        BreakpointTabContainer:AddChild(DisplayStyle)
-
-        local ColorPicker = AG:Create("ColorPicker")
-        ColorPicker:SetLabel("Color")
-        ColorPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
-        ColorPicker:SetHasAlpha(false)
-        ColorPicker:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) ZF:UpdateAllUnitFrames() end)
-        BreakpointTabContainer:AddChild(ColorPicker)
-    end
-
-    local BreakpointTabs = AG:Create("TabGroup")
-    BreakpointTabs:SetLayout("Flow")
-    BreakpointTabs:SetFullWidth(true)
-    BreakpointTabs:SetTabs({
-        { text = "Breakpoint 1", value = 1 },
-        { text = "Breakpoint 2", value = 2 },
-        { text = "Breakpoint 3", value = 3 },
-        { text = "Breakpoint 4", value = 4 },
-        { text = "Breakpoint 5", value = 5 },
-    })
-    BreakpointTabs:SetCallback("OnGroupSelected", SelectBreakpoint)
-    BreakpointTabs:SelectTab(1)
-    BreakpointContainer:AddChild(BreakpointTabs)
 end
 
 local function CreateGlobalToggleSettings(containerParent)
@@ -247,10 +95,10 @@ end
 
 local function CreateUnitEnableToggles(containerParent, unit)
     local UnitDB = GetUnitDB(unit)
-    GUIBuilders.CreateReloadPrompt(containerParent, "Enable " .. STYLE.Palette.SelectedText .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r", UnitDB, "Enabled", {width = unit == "augmentation" and STYLE.Widths.Pct50 or STYLE.Widths.Pct33})
+    GUIBuilders.CreateReloadPrompt(containerParent, "Enable " .. STYLE.Palette.SelectedText .. (UnitDBToUnitStylizedName[unit] or unit) .. "|r", UnitDB, "Enabled", {width = unit == "augmentation" and STYLE.Widths.Pct50 or STYLE.Widths.Pct33})
 
     if unit ~= "augmentation" then
-        local HideBlizzardToggle = GUIBuilders.CreateReloadPrompt(containerParent, "Hide Blizzard " .. STYLE.Palette.SelectedText .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r", UnitDB, "ForceHideBlizzard", {width = STYLE.Widths.Pct33})
+        local HideBlizzardToggle = GUIBuilders.CreateReloadPrompt(containerParent, "Hide Blizzard " .. STYLE.Palette.SelectedText .. (UnitDBToUnitStylizedName[unit] or unit) .. "|r", UnitDB, "ForceHideBlizzard", {width = STYLE.Widths.Pct33})
         HideBlizzardToggle:SetDisabled(UnitDB.Enabled)
     end
 end
@@ -507,7 +355,6 @@ local function CreateProfileSettings(containerParent)
     SharingContainer:AddChild(ExportDefaultsButton)
 end
 
-GUIInternal.CreateCooldownTextSettings = CreateCooldownTextSettings
 GUIInternal.CreateGlobalToggleSettings = CreateGlobalToggleSettings
 GUIInternal.CreateGlobalTagSettings = CreateGlobalTagSettings
 GUIInternal.CreateUnitEnableToggles = CreateUnitEnableToggles

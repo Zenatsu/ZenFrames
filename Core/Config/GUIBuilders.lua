@@ -33,7 +33,7 @@ end
 
 function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, opts)
     opts = opts or {}
-    local Container = GUIWidgets.CreateInlineGroup(parent, opts.groupLabel or "Layout & Positioning")
+    local Container = opts.container or GUIWidgets.CreateInlineGroup(parent, opts.groupLabel or "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(Builders.AnchorPoints[1], Builders.AnchorPoints[2])
@@ -81,7 +81,7 @@ function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, op
         Container:AddChild(SizeSlider)
     end
 
-    return Container, XPosSlider, YPosSlider, SizeSlider
+    return Container, XPosSlider, YPosSlider, SizeSlider, AnchorFromDropdown, AnchorToDropdown
 end
 
 function Builders.CreateColorBlock(parent, label, db, colorKey, updateCallback, opts)
@@ -179,6 +179,71 @@ function Builders.CreateDropdown(parent, label, db, key, updateCallback, opts)
     AttachTooltip(Dropdown, opts.tooltip, "ANCHOR_BOTTOM")
     parent:AddChild(Dropdown)
     return Dropdown
+end
+
+function Builders.CreateBreakpointEditor(parent, breakpointsArray, defaultBreakpoints, updateCallback)
+    local GUIInternal = ZF.GUIInternal
+    local CooldownBreakpointStyles = GUIInternal.CooldownBreakpointStyles
+    local DurationBreakpointSettings = GUIInternal.DurationBreakpointSettings
+
+    for index = 1, 5 do
+        breakpointsArray[index] = breakpointsArray[index] or CopyTable(defaultBreakpoints[index])
+        breakpointsArray[index].color = breakpointsArray[index].color or CopyTable(defaultBreakpoints[index].color)
+    end
+    while #breakpointsArray > 5 do tremove(breakpointsArray) end
+
+    local function SelectBreakpoint(BreakpointTabContainer, _, BreakpointIndex)
+        BreakpointTabContainer:ReleaseChildren()
+        local BreakpointDB = breakpointsArray[BreakpointIndex]
+
+        local MinimumValue = AG:Create("EditBox")
+        MinimumValue:SetLabel("Minimum Value in Seconds")
+        MinimumValue:SetText(tostring(BreakpointDB.threshold or 0))
+        MinimumValue:SetRelativeWidth(STYLE.Widths.Pct33)
+        MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = ZF:GetDurationComponents(BreakpointDB.displayStyle, value) updateCallback() end)
+        BreakpointTabContainer:AddChild(MinimumValue)
+
+        local DisplayStyle = AG:Create("Dropdown")
+        DisplayStyle:SetLabel("Display Style")
+        DisplayStyle:SetList(CooldownBreakpointStyles[1], CooldownBreakpointStyles[2])
+        DisplayStyle:SetValue(BreakpointDB.displayStyle)
+        DisplayStyle:SetRelativeWidth(STYLE.Widths.Pct33)
+        DisplayStyle:SetCallback("OnValueChanged", function(_, _, value)
+            local DisplayStyleDB = DurationBreakpointSettings[value]
+            BreakpointDB.displayStyle = value
+            BreakpointDB.step = DisplayStyleDB.step
+            BreakpointDB.rounding = DisplayStyleDB.rounding
+            BreakpointDB.min = DisplayStyleDB.min
+            BreakpointDB.format = CreateColor(unpack(BreakpointDB.color)):WrapTextInColorCode(DisplayStyleDB.format)
+            BreakpointDB.components = ZF:GetDurationComponents(value, BreakpointDB.threshold or 0)
+            updateCallback()
+        end)
+        BreakpointTabContainer:AddChild(DisplayStyle)
+
+        local ColorPicker = AG:Create("ColorPicker")
+        ColorPicker:SetLabel("Color")
+        ColorPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
+        ColorPicker:SetHasAlpha(false)
+        ColorPicker:SetRelativeWidth(STYLE.Widths.Pct33)
+        ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(DurationBreakpointSettings[BreakpointDB.displayStyle].format) updateCallback() end)
+        BreakpointTabContainer:AddChild(ColorPicker)
+    end
+
+    local BreakpointTabs = AG:Create("TabGroup")
+    BreakpointTabs:SetLayout("Flow")
+    BreakpointTabs:SetFullWidth(true)
+    BreakpointTabs:SetTabs({
+        { text = "Breakpoint 1", value = 1 },
+        { text = "Breakpoint 2", value = 2 },
+        { text = "Breakpoint 3", value = 3 },
+        { text = "Breakpoint 4", value = 4 },
+        { text = "Breakpoint 5", value = 5 },
+    })
+    BreakpointTabs:SetCallback("OnGroupSelected", SelectBreakpoint)
+    BreakpointTabs:SelectTab(1)
+    parent:AddChild(BreakpointTabs)
+
+    return BreakpointTabs
 end
 
 function Builders.CreateReloadPrompt(parent, label, db, key, opts)

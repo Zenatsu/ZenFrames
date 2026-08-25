@@ -118,6 +118,7 @@ local function ApplyImportedProfileToCurrent(profile)
         return
     end
 
+    ZF:MigrateProfile("import", profile)
     MergeInto(ZF.db.profile, profile)
     ZF:MigrateProfile("current", ZF.db.profile)
 
@@ -140,7 +141,7 @@ end
 function ZF:ImportSavedVariables(encodedInfo, profileName)
     local data = ParseEncodedProfile(encodedInfo)
     if not data then
-        ZF:PrettyPrint("Invalid Import String.")
+        ZF:StylizedPrint("Invalid Import String.")
         return
     end
 
@@ -161,7 +162,7 @@ function ZF:ImportSavedVariables(encodedInfo, profileName)
                 local editBox = self.EditBox
                 local newProfileName = editBox:GetText() or string.format("Imported_%s-%s-%s", date("%d"), date("%m"), date("%Y"))
                 if not newProfileName or newProfileName == "" then
-                    ZF:PrettyPrint("Please enter a valid profile name.")
+                    ZF:StylizedPrint("Please enter a valid profile name.")
                     return
                 end
 
@@ -171,27 +172,5 @@ function ZF:ImportSavedVariables(encodedInfo, profileName)
         }
         local popup = StaticPopup_Show("ZF_IMPORT_NEW_PROFILE")
         if popup then popup:SetFrameStrata("TOOLTIP") end
-    end
-end
-
-function ZFG:ExportZF(profileKey)
-    local profile = ZF.db.profiles[profileKey]
-    if not profile then return nil end
-
-    local profileData = { profile = profile, }
-    return BuildEncodedProfile(profileData)
-end
-
-function ZFG:ImportZF(importString, profileKey)
-    local profileData = ParseEncodedProfile(importString)
-    if not profileData then
-        ZF:PrettyPrint("Invalid Import String.")
-        return
-    end
-
-    if type(profileData.profile) == "table" then
-        ZF.db.profiles[profileKey] = profileData.profile
-        ZF:MigrateProfile(profileKey, ZF.db.profiles[profileKey])
-        ZF.db:SetProfile(profileKey)
     end
 end

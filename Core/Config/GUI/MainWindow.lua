@@ -14,7 +14,6 @@ local CreateFontSettings = GUIInternal.CreateFontSettings
 local CreateTextureSettings = GUIInternal.CreateTextureSettings
 local CreateRangeSettings = GUIInternal.CreateRangeSettings
 local CreateGlobalTagSettings = GUIInternal.CreateGlobalTagSettings
-local CreateCooldownTextSettings = GUIInternal.CreateCooldownTextSettings
 local CreateColorSettings = GUIInternal.CreateColorSettings
 local CreateTagReferenceSettings = GUIInternal.CreateTagReferenceSettings
 local CreateProfileSettings = GUIInternal.CreateProfileSettings
@@ -39,7 +38,7 @@ function ZF:SetMainGUIShown(shown)
         Container:Show()
     else
         local realOnClose = Container.events["OnClose"]
-        Container.events["OnClose"] = function() end
+        Container.events["OnClose"] = function(_) end
         Container:Hide()
         Container.events["OnClose"] = realOnClose
     end
@@ -58,7 +57,7 @@ function ZF:CreateGUI()
     isGUIOpen = true
 
     Container = AG:Create("Frame")
-    Container:SetTitle(ZF.PRETTY_ADDON_NAME)
+    Container:SetTitle(ZF.STYLIZED_ADDON_NAME)
     Container:SetLayout("Fill")
     Container:SetWidth(STYLE.Layout.WindowWidth)
     Container:SetHeight(STYLE.Layout.WindowHeight)
@@ -106,8 +105,6 @@ function ZF:CreateGUI()
                 elseif GlobalTab == "GlobalFonts" then CreateFontSettings(GlobalTabContainer)
                 elseif GlobalTab == "GlobalTextures" then CreateTextureSettings(GlobalTabContainer)
                 elseif GlobalTab == "GlobalRange" then CreateRangeSettings(GlobalTabContainer)
-                elseif GlobalTab == "GlobalTags" then CreateGlobalTagSettings(GlobalTabContainer)
-                elseif GlobalTab == "CooldownText" then CreateCooldownTextSettings(GlobalTabContainer)
                 end
                 ScrollFrame:DoLayout()
             end
@@ -120,8 +117,6 @@ function ZF:CreateGUI()
                 { text = "Fonts", value = "GlobalFonts" },
                 { text = "Textures", value = "GlobalTextures" },
                 { text = "Range", value = "GlobalRange" },
-                { text = "Tag Settings", value = "GlobalTags" },
-                { text = "Cooldown Text", value = "CooldownText" },
             })
             GlobalTabGroup:SetCallback("OnGroupSelected", SelectGlobalTab)
             GlobalTabGroup:SelectTab(generalLastTab)
@@ -132,6 +127,7 @@ function ZF:CreateGUI()
             ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+            CreateGlobalTagSettings(ScrollFrame)
             CreateTagReferenceSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then
@@ -178,7 +174,7 @@ function ZF:CreateGUI()
             ToggleMoversButton:SetCallback("OnClick", function() ZF:ToggleMovers() end)
             DesignerSettingsContainer:AddChild(ToggleMoversButton)
 
-            local hasCastBarPortrait = unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "party" and unit ~= "raid" and unit ~= "Augmentation"
+            local hasCastBarPortrait = unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "party" and unit ~= "raid" and unit ~= "augmentation"
             local playerHasSecondaryPower = unit == "player" and (UnitClassBase("player") == "DEATHKNIGHT" or ZF:GetSecondaryPowerType() ~= nil)
             local requiresAlternativePowerBar = unit == "player" and ZF:RequiresAlternativePowerBar()
             local designerTab = {
@@ -187,16 +183,17 @@ function ZF:CreateGUI()
                 { text = "Auras", value = "Auras" },
                 { text = "Power Bar", value = "PowerBar" },
             }
+
+            if unit == "augmentation" then
+                table.insert(designerTab, 2, { text = "Players", value = "Players"})
+            end
+
             if hasCastBarPortrait then
                 designerTab[#designerTab + 1] = { text = "Cast Bar", value = "CastBar" }
                 designerTab[#designerTab + 1] = { text = "Portrait", value = "Portrait" }
             end
             designerTab[#designerTab + 1] = { text = "Indicators", value = "Indicators" }
             designerTab[#designerTab + 1] = { text = "Tags", value = "Tags" }
-
-            if unit == "augmentation" then
-                designerTab[#designerTab + 1] = { text = "Players", value = "Players"}
-            end
 
             local nextPowerTabIndex = 4
             if playerHasSecondaryPower then
@@ -208,6 +205,7 @@ function ZF:CreateGUI()
             end
 
             local tabStripHeight = STYLE.Layout.TabStripHeight
+            if #designerTab > 8 then tabStripHeight = tabStripHeight + 20 end
 
             DesignerTabGroup = AG:Create("TabGroup")
             DesignerTabGroup:SetLayout("Flow")
@@ -288,6 +286,7 @@ end
 
 function ZF:OpenGUIToUnit(unit)
     if InCombatLockdown() then return end
+	if unit == "maintank" or unit == "mainassist" then unit = "raid" end
 	if unit == "augmentation" and not ZF:IsAugmentationEvoker() then return end
     ZF:CreateGUI()
 	if ZFGUI.MainNavigation then ZFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end

@@ -66,6 +66,9 @@ ZF.DefaultsUnits.party = {
                     Enabled = true,
                     OnlyShowHealers = true,
                     Height = 1,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
                     Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
                     ColorByType = true,
@@ -139,6 +142,7 @@ ZF.DefaultsUnits.party = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
+                        CooldownBreakpoints = ZF.DefaultCooldownBreakpoints,
                     },
                     PrivateAuras = {
 						AnchorRegion = "Frame",
@@ -318,6 +322,9 @@ ZF.DefaultsUnits.raid = {
                     Enabled = true,
                     OnlyShowHealers = true,
                     Height = 1,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
                     Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
                     Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
                     ColorByType = true,
@@ -391,6 +398,7 @@ ZF.DefaultsUnits.raid = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
+                        CooldownBreakpoints = ZF.DefaultCooldownBreakpoints,
                     },
                     PrivateAuras = {
 						AnchorRegion = "Frame",
@@ -569,6 +577,9 @@ ZF.DefaultsUnits.augmentation = {
 					Enabled = false,
 					OnlyShowHealers = true,
 					Height = 1,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
 					Foreground = {0.031372549019608, 0.031372549019608, 0.031372549019608},
 					Background = {0.50196078431373, 0.50196078431373, 0.50196078431373},
 					ColorByType = true,
@@ -642,6 +653,7 @@ ZF.DefaultsUnits.augmentation = {
 						Layout = {"CENTER", "CENTER", 0, 0},
 						FontSize = 12,
 						ScaleByIconSize = false,
+						CooldownBreakpoints = ZF.DefaultCooldownBreakpoints,
 					},
 					PrivateAuras = {
 						AnchorRegion = "Frame",
@@ -755,4 +767,30 @@ ZF.DefaultsUnits.augmentation = {
 						Tag = "",
 					},
 				}
+}
+ZF.DefaultsUnits.maintank = {
+	Enabled = false,
+	IncludeInRaidGroups = true,
+	Frame = {
+		Width = 90,
+		Height = 52,
+		Layout = {"LEFT", "LEFT", 1.1, 220, 1},
+		GrowthDirection = "RIGHT_DOWN",
+		UnitsPerColumn = 2,
+		SortBy = "INDEX",
+		FrameStrata = "LOW",
+	},
+}
+ZF.DefaultsUnits.mainassist = {
+	Enabled = false,
+	IncludeInRaidGroups = true,
+	Frame = {
+		Width = 90,
+		Height = 52,
+		Layout = {"LEFT", "LEFT", 1.1, -220, 1},
+		GrowthDirection = "RIGHT_DOWN",
+		UnitsPerColumn = 5,
+		SortBy = "INDEX",
+		FrameStrata = "LOW",
+	},
 }

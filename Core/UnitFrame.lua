@@ -27,6 +27,17 @@ SpawnUnitFrameRetryFrame:SetScript("OnEvent", function(self)
     end
 end)
 
+local pendingBossReset = false
+local BossResetRetryFrame = CreateFrame("Frame")
+BossResetRetryFrame:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    if pendingBossReset then
+        pendingBossReset = false
+        ZF:LayoutBossFrames()
+        ZF:ResetBossFrames()
+    end
+end)
+
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
@@ -40,7 +51,11 @@ end
 
 function ZF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
-	if unitFrame:GetParent() == ZF.AUGMENTATION_RAID_HEADER then unitFrame.isAugmentationRaidFrame = true end
+	local auxiliaryGroupKey = ZF.AuxiliaryHeaderOwner[unitFrame:GetParent()]
+	if auxiliaryGroupKey then
+		unitFrame.auxiliaryRaidGroup = auxiliaryGroupKey
+		if ZF.AUXILIARY_RAID_GROUPS[auxiliaryGroupKey].ownStyle then unitFrame.isAugmentationRaidFrame = true end
+	end
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
@@ -109,7 +124,11 @@ function ZF:CreateUnitFrame(unitFrame, unit)
 end
 
 function ZF:LayoutBossFrames()
-    if InCombatLockdown() then return end -- AnchorUtil.VerticalLayout calls SetPoint on the secure-templated boss frames
+    if InCombatLockdown() then -- AnchorUtil.VerticalLayout calls SetPoint on the secure-templated boss frames
+        pendingBossReset = true
+        BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    end
     local Frame = ZF.db.profile.Units.boss.Frame
     if #ZF.BOSS_FRAMES == 0 then return end
     local bossFrames = ZF.BOSS_FRAMES
@@ -128,8 +147,13 @@ end
 
 function ZF:SpawnUnitFrame(unit)
     local UnitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)]
-	local augmentationEnabled = unit == "raid" and ZF.db.profile.Units.augmentation.Enabled and ZF:IsAugmentationEvoker()
-	if not UnitDB or (not UnitDB.Enabled and not augmentationEnabled) then
+	local auxiliaryGroupNeeded = false
+	if unit == "raid" then
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do
+			if ZF:IsAuxiliaryRaidGroupActive(groupKey) then auxiliaryGroupNeeded = true break end
+		end
+	end
+	if not UnitDB or (not UnitDB.Enabled and not auxiliaryGroupNeeded) then
         if UnitDB and UnitDB.ForceHideBlizzard then
 			if unit == "raid" then ZF:HideBlizzardRaidFrames() else oUF:DisableBlizzard(unit) end
 		end
@@ -141,12 +165,14 @@ function ZF:SpawnUnitFrame(unit)
 	if unit == "raid" then
 		ZF:EnsureRaidStyleRegistered()
 	else
-		oUF:RegisterStyle(ZF:FetchFrameName(unit), function(unitFrame) ZF:CreateUnitFrame(unitFrame, unit) end)
+		oUF:RegisterStyle(ZF:FetchFrameName(unit), function(unitFrame, objectUnit) ZF:CreateUnitFrame(unitFrame, objectUnit or unit) end)
 	end
     oUF:SetActiveStyle(ZF:FetchFrameName(unit))
 	if unit == "raid" then
 		if UnitDB.Enabled and not ZF.RAID_CONTAINER then ZF:SpawnGroupFrame("raid") end
-		if augmentationEnabled then ZF:SpawnAugmentationRaidFrames() end
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do
+			if ZF:IsAuxiliaryRaidGroupActive(groupKey) then ZF:SpawnAuxiliaryRaidGroup(groupKey) end
+		end
 		return
 	elseif unit == "party" then
 		return ZF:SpawnGroupFrame(unit)
@@ -287,7 +313,11 @@ local function HideFakeAuraButtons(container)
 end
 
 function ZF:ResetBossFrames()
-	if InCombatLockdown() then return end
+	if InCombatLockdown() then
+		pendingBossReset = true
+		BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	local BossDB = ZF.db.profile.Units.boss
 	local BuffsDB = BossDB.Auras.Buffs
 	local DebuffsDB = BossDB.Auras.Debuffs
@@ -333,5 +363,5 @@ function ZF:UpdateAllUnitFrames()
 	ZF:UpdateBossFrame()
 	ZF:UpdateGroupFrame("party")
 	ZF:UpdateGroupFrame("raid")
-	ZF:UpdateAugmentationRaidFrames()
+	for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
 end

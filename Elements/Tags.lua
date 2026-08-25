@@ -80,8 +80,8 @@ function ZF:UpdateUnitTags(unit, tagName)
 		UpdateFrameTags(ZF.PARTYPLAYER, "partyplayer")
 	elseif unit == "raid" then
 		ZF:ForEachRaidFrame(UpdateFrameTags, true)
-	elseif unit == "augmentation" then
-		ZF:ForEachAugmentationRaidFrame(UpdateFrameTags, false)
+	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:ForEachAuxiliaryRaidFrame(unit, UpdateFrameTags, true)
 	else
 		UpdateFrameTags(ZF[unit:upper()], unit)
 	end

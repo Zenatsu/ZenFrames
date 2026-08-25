@@ -7,13 +7,29 @@ ZF.PARTY_FRAMES = {}
 ZF.MAX_PARTY_FRAMES = 4
 ZF.RAID_FRAMES = {}
 ZF.RAID_PREVIEW_FRAMES = {}
-ZF.AUGMENTATION_RAID_FRAMES = {}
 ZF.RAID_HEADERS = {}
-ZF.AUGMENTATION_RAID_FRAME_COUNT = 0
 ZF.MAX_RAID_FRAMES = 40
 ZF.MAX_RAID_GROUPS = 8
 ZF.MAX_RAID_FRAMES_PER_GROUP = 5
-local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
+
+ZF.AUXILIARY_RAID_GROUPS = {
+    augmentation = { label = "Augmentation", membership = "ROSTER_NAMES", ownStyle = true,  maxUnits = ZF.MAX_RAID_FRAMES },
+    maintank     = { label = "Main Tank",    membership = "MAINTANK",     ownStyle = false, maxUnits = 2 },
+    mainassist   = { label = "Main Assist",  membership = "MAINASSIST",   ownStyle = false, maxUnits = 5 },
+}
+ZF.AUXILIARY_RAID_GROUP_ORDER = {"augmentation", "maintank", "mainassist"}
+ZF.AUXILIARY_RAID_FRAMES = {}
+ZF.AUXILIARY_RAID_CONTAINERS = {}
+ZF.AUXILIARY_RAID_HEADERS = {}
+ZF.AUXILIARY_RAID_FRAME_COUNTS = {}
+ZF.AUXILIARY_PREVIEW_FRAMES = {}
+ZF.AuxiliaryHeaderOwner = {}
+for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do
+    ZF.AUXILIARY_RAID_FRAMES[groupKey] = {}
+    ZF.AUXILIARY_PREVIEW_FRAMES[groupKey] = {}
+end
+
+local DurationTextFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 ZF.LSM = LibStub("LibSharedMedia-3.0")
 ZF.LDS = LibStub("LibDualSpec-1.0")
@@ -27,7 +43,7 @@ ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
 ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
 ZF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata(addonName, "Author")
 ZF.ADDON_LOGO = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ZFLogo:11:12|t"
-ZF.PRETTY_ADDON_NAME = ZF.ADDON_LOGO .. " " .. ZF.ADDON_NAME
+ZF.STYLIZED_ADDON_NAME = ZF.ADDON_LOGO .. " " .. ZF.ADDON_NAME
 
 ZF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\BetterBlizzard.blp")
 ZF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Dragonflight.tga")
@@ -157,18 +173,14 @@ ZF.InterruptSpellIDs = {
 	["WARRIOR"] = {6552},
 }
 
-function ZF:PrettyPrint(MSG) print(ZF.ADDON_NAME .. ":|r " .. MSG) end
+function ZF:StylizedPrint(MSG) print(ZF.ADDON_NAME .. ":|r " .. MSG) end
 
 function ZF:GetInterruptSpellID()
 	local playerInterrupt = ZF.InterruptSpellIDs[UnitClassBase("player")]
 	if not playerInterrupt then return end
 	for i = 1, #playerInterrupt do
 		local spellID = playerInterrupt[i]
-		if C_SpellBook.IsSpellKnownOrInSpellBook then
-			if C_SpellBook.IsSpellKnownOrInSpellBook(spellID) or C_SpellBook.IsSpellKnownOrInSpellBook(spellID, Enum.SpellBookSpellBank.Pet) then return spellID end
-		elseif IsSpellKnown and IsSpellKnown(spellID) then
-			return spellID
-		end
+		if C_SpellBook.IsSpellKnownOrInSpellBook(spellID) or C_SpellBook.IsSpellKnownOrInSpellBook(spellID, Enum.SpellBookSpellBank.Pet) then return spellID end
 	end
 end
 
@@ -177,7 +189,7 @@ function ZF:IsInterruptOnCooldown()
 	if not spellID then return false end
 	if C_Spell.GetSpellCooldown then
 		local cooldownInfo = C_Spell.GetSpellCooldown(spellID)
-		return cooldownInfo and cooldownInfo.isEnabled and cooldownInfo.isActive and not cooldownInfo.isOnGCD or false
+		return cooldownInfo and cooldownInfo.isEnabled and cooldownInfo.startTime > 0 and cooldownInfo.duration > 0 and not cooldownInfo.isOnGCD or false
 	end
 	return false
 end
@@ -214,7 +226,7 @@ function ZF:ResolveLSM()
     ZF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or ZF.Media.Solid
 end
 
-function ZF:GetCooldownDurationComponents(displayStyle, minValue)
+function ZF:GetDurationComponents(displayStyle, minValue)
     if displayStyle == "clock" then
         if minValue >= 86400 then
             return {{div = 86400}, {div = 3600, mod = 24}}
@@ -231,23 +243,21 @@ function ZF:GetCooldownDurationComponents(displayStyle, minValue)
     end
 end
 
-function ZF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
-    if not icon then return end
-    local CooldownTextDB = ZF.db.profile.General.CooldownText
-    for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
+function ZF:ApplyDurationText(icon, textRegion, DurationTextDB)
+    if not icon or not DurationTextDB then return end
+    for _, breakpoint in ipairs(DurationTextDB.CooldownBreakpoints) do
         if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
     end
     if icon.SetCountdownFormatter then
-        CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
-        icon:SetCountdownFormatter(CooldownDurationFormatter)
+        DurationTextFormatter:SetBreakpoints(DurationTextDB.CooldownBreakpoints)
+        icon:SetCountdownFormatter(DurationTextFormatter)
     end
-	if CooldownTextDB.Advanced and unit then CooldownTextDB = ZF:GetUnitDB(unitFrame, unit).Auras.AuraDuration end
     if not textRegion then
         if icon.SetCountdownFormatter then return end
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
-					ZF:ApplyCooldownText(icon, region, unit, unitFrame)
+					ZF:ApplyDurationText(icon, region, DurationTextDB)
                     return
                 end
             end
@@ -256,17 +266,17 @@ function ZF:ApplyCooldownText(icon, textRegion, unit, unitFrame)
     end
 
     local FontsDB = ZF.db.profile.General.Fonts
-    if CooldownTextDB.ScaleByIconSize then
+    if DurationTextDB.ScaleByIconSize then
         local iconWidth = icon:GetWidth()
         local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
-        local fontSize = CooldownTextDB.FontSize * scaleFactor
+        local fontSize = DurationTextDB.FontSize * scaleFactor
         if fontSize < 1 then fontSize = 12 end
         textRegion:SetFont(ZF.Media.Font, fontSize, FontsDB.FontFlag)
     else
-        textRegion:SetFont(ZF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
+        textRegion:SetFont(ZF.Media.Font, DurationTextDB.FontSize, FontsDB.FontFlag)
     end
     textRegion:ClearAllPoints()
-    textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
+    textRegion:SetPoint(DurationTextDB.Layout[1], icon, DurationTextDB.Layout[2], DurationTextDB.Layout[3], DurationTextDB.Layout[4])
     if FontsDB.Shadow.Enabled then
         textRegion:SetShadowColor(FontsDB.Shadow.Color[1], FontsDB.Shadow.Color[2], FontsDB.Shadow.Color[3], FontsDB.Shadow.Color[4])
         textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
@@ -289,7 +299,7 @@ local function SetupSlashCommands()
     SLASH_ZF2 = "/ZenFrames"
     SLASH_ZF3 = "/uf"
     SlashCmdList["ZF"] = function() ZF:CreateGUI() end
-    if ZF.db.global.DisplayLoginMessage then ZF:PrettyPrint("'|cFF990007/zf|r' for in-game configuration.") end
+    if ZF.db.global.DisplayLoginMessage then ZF:StylizedPrint("'|cFF990007/zf|r' for in-game configuration.") end
 
     SLASH_ZFRELOAD1 = "/rl"
     SlashCmdList["ZFRELOAD"] = function() C_UI.Reload() end
@@ -381,6 +391,7 @@ function ZF:Init()
     ZF:ResolveLSM()
     ZF:LoadCustomColors()
     ZF:SetTagUpdateInterval()
+    ZF.Initialized = true
 end
 
 function ZF:CopyTable(originalTable, destinationTable)
@@ -744,7 +755,7 @@ function ZF:CopyUnitSettings(sourceUnit, targetUnit)
 	elseif targetUnit == "boss" then
 		ZF:UpdateBossFrame()
 	elseif targetUnit == "augmentation" then
-		ZF:UpdateAugmentationRaidFrames()
+		ZF:UpdateAuxiliaryRaidGroup("augmentation")
 	else
 		local liveFrame = ZF[targetUnit:upper()]
 		if liveFrame then ZF:UpdateUnitFrame(liveFrame, targetUnit) end

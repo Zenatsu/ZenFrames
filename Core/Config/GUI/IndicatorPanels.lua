@@ -177,17 +177,6 @@ local function CreateSimpleIndicatorPanel(spec, containerParent, unit, updateCal
 	Refresh()
 end
 
-local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.RaidTargetMarker, containerParent, unit, updateCallback) end
-local function CreateAssistantSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.LeaderAssistant, containerParent, unit, updateCallback) end
-local function CreatePvPIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.PvP, containerParent, unit, updateCallback) end
-local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Resurrect, containerParent, unit, updateCallback) end
-local function CreateSummonIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Summon, containerParent, unit, updateCallback) end
-local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Phase, containerParent, unit, updateCallback) end
-local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.ReadyCheck, containerParent, unit, updateCallback) end
-local function CreateQuestIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Quest, containerParent, unit, updateCallback) end
-local function CreateClassificationIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Classification, containerParent, unit, updateCallback) end
-local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback) CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Role, containerParent, unit, updateCallback) end
-
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = GetUnitDB(unit).Indicators[statusDB]
 
@@ -290,12 +279,7 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
 end
 
 local function CreateThreatIndicatorSettings(containerParent, unit, updateCallback)
-    GetUnitDB(unit).Indicators.Threat = GetUnitDB(unit).Indicators.Threat or {}
-    local DefaultThreatDB = GetDefaultUnitDB(unit).Indicators.Threat
-    for key, value in pairs(DefaultThreatDB) do
-        if GetUnitDB(unit).Indicators.Threat[key] == nil then GetUnitDB(unit).Indicators.Threat[key] = type(value) == "table" and {unpack(value)} or value end
-    end
-    local ThreatIndicatorDB = GetUnitDB(unit).Indicators.Threat
+    local ThreatIndicatorDB = SeedIndicatorDB(unit, "Threat")
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Threat Indicator Settings")
     local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(ToggleContainer, "Enable " .. STYLE.Palette.SelectedText .. "Threat|r Indicator", ThreatIndicatorDB, updateCallback)
@@ -371,6 +355,11 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
     LayoutContainer:AddChild(SizeSlider)
 
+    local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Text Breakpoints")
+    panelsToDisable[3] = BreakpointContainer
+    local DefaultTotemsIndicatorDB = ZF:GetDefaultDB().profile.Units.player.Indicators.Totems
+    GUIBuilders.CreateBreakpointEditor(BreakpointContainer, TotemsIndicatorDB.CooldownBreakpoints, DefaultTotemsIndicatorDB.CooldownBreakpoints, updateCallback)
+
     Refresh()
 end
 
@@ -438,25 +427,25 @@ local function CreateIndicatorSettings(containerParent, unit)
         ZF:SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
-            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitRaidTargetMarker(ZF[unit:upper()], unit) end, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.RaidTargetMarker, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitRaidTargetMarker(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "LeaderAssistant" then
-            CreateAssistantSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitLeaderAssistantIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.LeaderAssistant, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitLeaderAssistantIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Role" then
-            CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Role, IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Phase" then
-            CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Phase, IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
 		elseif IndicatorTab == "ReadyCheckIndicator" then
-			CreateReadyCheckIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
+			CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.ReadyCheck, IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
 		elseif IndicatorTab == "ResurrectIndicator" then
-			CreateResurrectIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
+			CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Resurrect, IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
 		elseif IndicatorTab == "Summon" then
-			CreateSummonIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
+			CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Summon, IndicatorContainer, unit, function() UpdateUnitSettings(unit, nil, "Indicators") end)
         elseif IndicatorTab == "Resting" then
             CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitRestingIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Combat" then
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCombatIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "PvP" and unit == "player" then
-            CreatePvPIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPvPIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.PvP, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPvPIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitMouseoverIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "TargetIndicator" then
@@ -466,10 +455,11 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "Totems" then
             CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitTotems(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Quest" and unit == "target" then
-            CreateQuestIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitQuestIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Quest, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitQuestIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Classification" and unit == "target" then
-            CreateClassificationIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitQuestIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.Classification, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitClassificationIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         end
+        containerParent:DoLayout()
     end
 
     local IndicatorContainerTabGroup = AG:Create("TabGroup")

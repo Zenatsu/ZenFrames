@@ -3,7 +3,7 @@ local ZenFrames = LibStub("AceAddon-3.0"):NewAddon("ZenFrames")
 
 function ZenFrames:OnInitialize()
     local migratedFromUUFDB = false
-    if _G.UUFDB and next(_G.UUFDB) and (not _G.ZFDB or not next(_G.ZFDB)) then
+    if UUFDB and next(UUFDB) and (not ZFDB or not next(ZFDB)) then
         ZFDB = CopyTable(UUFDB)
         migratedFromUUFDB = true
     end
@@ -28,7 +28,6 @@ function ZenFrames:OnInitialize()
     local playerSpecializationChangedEventFrame = CreateFrame("Frame")
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
     playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...)
-        if InCombatLockdown() then return end
         if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end
         local unit = ...
         if unit == "player" then C_Timer.After(0.1, ZF.RefreshProfiles) end
@@ -64,7 +63,7 @@ end
 
 function ZenFrames_OnAddonCompartmentEnter(addonName, button)
     GameTooltip:SetOwner(button, "ANCHOR_LEFT")
-    GameTooltip:SetText(ZF.PRETTY_ADDON_NAME)
+    GameTooltip:SetText(ZF.STYLIZED_ADDON_NAME, 1, 1, 1)
     GameTooltip:AddLine("Click to open settings.", 1, 1, 1)
     GameTooltip:Show()
 end

@@ -182,7 +182,7 @@ local function TagEntry(unit, tagKey, label)
             elseif unit == "boss" then
                 ZF:UpdateBossFrame(unit)
             elseif unit == "augmentation" then
-                ZF:UpdateAugmentationRaidFrames()
+                ZF:UpdateAuxiliaryRaidGroup("augmentation")
             else
                 local liveFrame = GetLiveFrame(unit)
                 if liveFrame then ZF:UpdateUnitTag(liveFrame, unit, tagKey) end
@@ -206,7 +206,7 @@ local function WidgetEntry(unit, entry)
         elseif unit == "boss" then
             ZF:UpdateBossFrame(unit)
         elseif unit == "augmentation" then
-            ZF:UpdateAugmentationRaidFrames()
+            ZF:UpdateAuxiliaryRaidGroup("augmentation")
         else
             local liveFrame = GetLiveFrame(unit)
             if liveFrame then entry.update(liveFrame) end

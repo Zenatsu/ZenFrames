@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## v1.0.10
+
+- Added Main Tank and Main Assistant Frames. Toggleable through the raid mover frame options.
+- Added Border options to additional frames.
+- Added a configurable color for the Alternate power type (was stuck at the default)
+- Added Secondary Power Bar "Background Color" control
+- Fixed the interrupt-cooldown color indicator on cast bars never actually working (was checking a field that doesn't exist on the API's return data)
+- Fixed Augmentation Evoker Designer crashing when opening the Cast Bar/Portrait tabs
+- Fixed Classification indicator settings not applying live in the Designer
+- Fixed party frames missing-health overlay using the wrong unit reference
+- Fixed Dispel Highlight rendering behind the Alternative Power Bar
+- Fixed the Private Auras "Anchor Parent" dropdown showing blank on a fresh profile
+- Fixed several Power tag issues
+- Fixed the "Percentage Health with Sign" tag being missing from the tag picker
+- Fixed Aura Count style changes (font/color/hide stacks) not applying live
+- Fixed a spec-change profile refresh being dropped entirely if it happened mid-combat instead of applying after
+- Fixed the Game Menu button losing its position on accounts without a Macros button (e.g. Trial/Starter Edition)
+- Fixed a data-corruption risk when importing a profile into an already-existing profile
+- Fixed the Aura Blacklist "Restore Defaults" window corrupting the look of other windows for the rest of the session
+
 ## v1.0.9hf1
 
 - Fixed "Restore to Defaults" pop-up confirm window frame layer

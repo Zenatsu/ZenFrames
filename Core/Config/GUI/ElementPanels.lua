@@ -8,7 +8,6 @@ local GetUnitDB = GUIInternal.GetUnitDB
 local GetDefaultUnitDB = GUIInternal.GetDefaultUnitDB
 local GetSavedSubTab = GUIInternal.GetSavedSubTab
 local UpdateUnitSettings = GUIInternal.UpdateUnitSettings
-local AnchorPoints = GUIInternal.AnchorPoints
 local TopBottomList = GUIInternal.TopBottomList
 local FrameStrataList = GUIInternal.FrameStrataList
 
@@ -159,40 +158,10 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     LayoutContainer:AddChild(HoldTimeSlider)
     panelsToDisable[#panelsToDisable + 1] = HoldTimeSlider
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(CastBarDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
+    local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, CastBarDB, updateCallback, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
     panelsToDisable[#panelsToDisable + 1] = AnchorFromDropdown
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(CastBarDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
     panelsToDisable[#panelsToDisable + 1] = AnchorToDropdown
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(CastBarDB.Layout[3])
-    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    XPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
     panelsToDisable[#panelsToDisable + 1] = XPosSlider
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(CastBarDB.Layout[4])
-    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    YPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
     panelsToDisable[#panelsToDisable + 1] = YPosSlider
 
     local FrameStrataDropdown = AG:Create("Dropdown")
@@ -225,10 +194,38 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local InterruptedFailedColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Interrupted / Failed", CastBarDB, "InterruptedFailedColor", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = InterruptedFailedColorPicker
 
+    local ColorRowBreak = AG:Create("Label")
+    ColorRowBreak:SetText("")
+    ColorRowBreak:SetFullWidth(true)
+    ColorContainer:AddChild(ColorRowBreak)
+
+    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", CastBarDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
+    panelsToDisable[#panelsToDisable + 1] = BorderColorPicker
+
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetValue(CastBarDB.BorderThickness)
+    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
+    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_,_, value) CastBarDB.BorderThickness = value updateCallback() RefreshCastBarBarSettings() end)
+    ColorContainer:AddChild(BorderThicknessSlider)
+    panelsToDisable[#panelsToDisable + 1] = BorderThicknessSlider
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(CastBarDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_,_, value) CastBarDB.BorderOpacity = value updateCallback() end)
+    BorderOpacitySlider:SetIsPercent(true)
+    ColorContainer:AddChild(BorderOpacitySlider)
+    panelsToDisable[#panelsToDisable + 1] = BorderOpacitySlider
+
     RefreshCastBarBarSettings = function()
         BuilderRefresh()
         WidthSlider:SetDisabled(not CastBarDB.Enabled or CastBarDB.MatchParentWidth)
         ForegroundColorPicker:SetDisabled(not CastBarDB.Enabled or CastBarDB.ColorByClass)
+        BorderOpacitySlider:SetDisabled(not CastBarDB.Enabled or CastBarDB.BorderThickness == 0)
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value updateCallback() RefreshCastBarBarSettings() end)
 
@@ -381,17 +378,29 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     SmoothUpdatesToggle:SetRelativeWidth(toggleRelativeWidth)
     ColorContainer:AddChild(SmoothUpdatesToggle)
 
-    local ColorByTypeToggle = AG:Create("CheckBox")
+    local ColorByTypeToggle, ColorByClassToggle
+
+    ColorByTypeToggle = AG:Create("CheckBox")
     ColorByTypeToggle:SetLabel("Color By Type")
     ColorByTypeToggle:SetValue(PowerBarDB.ColorByType)
-    ColorByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorByTypeToggle:SetCallback("OnValueChanged", function(_, _, value)
+        PowerBarDB.ColorByType = value
+        if value then PowerBarDB.ColorByClass = false ColorByClassToggle:SetValue(false) end
+        UpdatePowerBarSettings()
+        RefreshPowerBarGUI()
+    end)
     ColorByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
     ColorContainer:AddChild(ColorByTypeToggle)
 
-    local ColorByClassToggle = AG:Create("CheckBox")
+    ColorByClassToggle = AG:Create("CheckBox")
     ColorByClassToggle:SetLabel("Color By Class")
     ColorByClassToggle:SetValue(PowerBarDB.ColorByClass)
-    ColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorByClass = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorByClassToggle:SetCallback("OnValueChanged", function(_, _, value)
+        PowerBarDB.ColorByClass = value
+        if value then PowerBarDB.ColorByType = false ColorByTypeToggle:SetValue(false) end
+        UpdatePowerBarSettings()
+        RefreshPowerBarGUI()
+    end)
     ColorByClassToggle:SetRelativeWidth(toggleRelativeWidth)
     ColorContainer:AddChild(ColorByClassToggle)
 
@@ -400,7 +409,6 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     ColorBackgroundByTypeToggle:SetValue(PowerBarDB.ColorBackgroundByType)
     ColorBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColorBackgroundByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
     ColorBackgroundByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
-    ColorBackgroundByTypeToggle:SetDisabled(true)
     ColorContainer:AddChild(ColorBackgroundByTypeToggle)
 
     local OnlyShowHealersToggle
@@ -430,11 +438,31 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundMultiplierSlider:SetIsPercent(true)
     ColorContainer:AddChild(BackgroundMultiplierSlider)
 
+    GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", PowerBarDB, "BorderColor", UpdatePowerBarSettings, {width = STYLE.Widths.Pct25})
+
+    local BorderToggle = AG:Create("CheckBox")
+    BorderToggle:SetLabel("Border")
+    BorderToggle:SetValue(PowerBarDB.BorderThickness > 0)
+    BorderToggle:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BorderThickness = value and 1 or 0 UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    ColorContainer:AddChild(BorderToggle)
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(PowerBarDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BorderOpacity = value UpdatePowerBarSettings() end)
+    BorderOpacitySlider:SetIsPercent(true)
+
+    ColorContainer:AddChild(BorderOpacitySlider)
+
     RefreshPowerBarGUI = function()
         BuilderRefresh()
         ForegroundColorPicker:SetDisabled(not PowerBarDB.Enabled or PowerBarDB.ColorByClass or PowerBarDB.ColorByType)
         BackgroundColorPicker:SetDisabled(not PowerBarDB.Enabled or PowerBarDB.ColorBackgroundByType)
         BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.Enabled or not PowerBarDB.ColorBackgroundByType)
+        BorderOpacitySlider:SetDisabled(not PowerBarDB.Enabled or PowerBarDB.BorderThickness == 0)
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
 
@@ -477,11 +505,36 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     ColorContainer:AddChild(ColorByTypeToggle)
 
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", SecondaryPowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct50})
-    GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", SecondaryPowerBarDB, "Background", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct50})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", SecondaryPowerBarDB, "Background", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct50})
+
+    local Spacer = AG:Create("Label")
+    Spacer:SetText("")
+    Spacer:SetRelativeWidth(STYLE.Widths.Pct29)
+    ColorContainer:AddChild(Spacer)
+
+    GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", SecondaryPowerBarDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
+
+    local BorderToggle = AG:Create("CheckBox")
+    BorderToggle:SetLabel("Border")
+    BorderToggle:SetValue(SecondaryPowerBarDB.BorderThickness > 0)
+    BorderToggle:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.BorderThickness = value and 1 or 0 updateCallback() RefreshSecondaryPowerBarGUI() end)
+    ColorContainer:AddChild(BorderToggle)
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(SecondaryPowerBarDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.BorderOpacity = value updateCallback() end)
+    BorderOpacitySlider:SetIsPercent(true)
+    ColorContainer:AddChild(BorderOpacitySlider)
 
     RefreshSecondaryPowerBarGUI = function()
         BuilderRefresh()
         ForegroundColorPicker:SetDisabled(not SecondaryPowerBarDB.Enabled or SecondaryPowerBarDB.ColorByClass or SecondaryPowerBarDB.ColorByType)
+        BackgroundColorPicker:SetDisabled(not SecondaryPowerBarDB.Enabled)
+        BorderOpacitySlider:SetDisabled(not SecondaryPowerBarDB.Enabled or SecondaryPowerBarDB.BorderThickness == 0)
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
 
@@ -524,37 +577,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(AlternativePowerBarDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(AlternativePowerBarDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(AlternativePowerBarDB.Layout[3])
-    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    XPosSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(AlternativePowerBarDB.Layout[4])
-    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    YPosSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
+    GUIBuilders.CreateLayoutPositionBlock(nil, AlternativePowerBarDB, updateCallback, {container = LayoutContainer})
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
     panelsToDisable[3] = ColorContainer
@@ -569,9 +592,29 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", AlternativePowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct33})
     GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", AlternativePowerBarDB, "Background", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct33})
 
+    GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", AlternativePowerBarDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
+
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetValue(AlternativePowerBarDB.BorderThickness)
+    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
+    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.BorderThickness = value updateCallback() RefreshAlternativePowerBarGUI() end)
+    ColorContainer:AddChild(BorderThicknessSlider)
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(AlternativePowerBarDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.BorderOpacity = value updateCallback() end)
+    BorderOpacitySlider:SetIsPercent(true)
+    ColorContainer:AddChild(BorderOpacitySlider)
+
     RefreshAlternativePowerBarGUI = function()
         BuilderRefresh()
         ForegroundColorPicker:SetDisabled(not AlternativePowerBarDB.Enabled or AlternativePowerBarDB.ColorByType)
+        BorderOpacitySlider:SetDisabled(not AlternativePowerBarDB.Enabled or AlternativePowerBarDB.BorderThickness == 0)
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
 
@@ -608,37 +651,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
     panelsToDisable[2] = LayoutContainer
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(PortraitDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(PortraitDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(PortraitDB.Layout[3])
-    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    XPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(PortraitDB.Layout[4])
-    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    YPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
+    GUIBuilders.CreateLayoutPositionBlock(nil, PortraitDB, updateCallback, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
 
     local ZoomSlider = AG:Create("Slider")
     ZoomSlider:SetLabel("Zoom")
@@ -665,10 +678,33 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
+    local BorderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Border")
+    panelsToDisable[3] = BorderContainer
+
+    GUIBuilders.CreateColorBlock(BorderContainer, "Border Color", PortraitDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
+
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetValue(PortraitDB.BorderThickness)
+    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
+    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.BorderThickness = value updateCallback() RefreshPortraitGUI() end)
+    BorderContainer:AddChild(BorderThicknessSlider)
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(PortraitDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.BorderOpacity = value updateCallback() end)
+    BorderOpacitySlider:SetIsPercent(true)
+    BorderContainer:AddChild(BorderOpacitySlider)
+
     RefreshPortraitGUI = function()
         BuilderRefresh()
         UseClassPortraitToggle:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
         ZoomSlider:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
+        BorderOpacitySlider:SetDisabled(not PortraitDB.Enabled or PortraitDB.BorderThickness == 0)
     end
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
 

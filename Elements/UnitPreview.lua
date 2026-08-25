@@ -297,3 +297,86 @@ function ZF:ExitRaidPreview()
     end
     ZF:UpdateGroupFrame("raid")
 end
+
+function ZF:SpawnAuxiliaryPreviewFrames(groupKey)
+    local entry = ZF.AUXILIARY_RAID_GROUPS[groupKey]
+    local previewFrames = ZF.AUXILIARY_PREVIEW_FRAMES[groupKey]
+    if #previewFrames > 0 then return end
+    local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
+    if not container then return end
+    ZF:EnsureRaidStyleRegistered()
+    local activeStyle = ZF.oUF:GetActiveStyle()
+    ZF.oUF:SetActiveStyle(ZF:FetchFrameName("raid"))
+    local prettyKey = groupKey:gsub("^%l", string.upper)
+    for i = 1, entry.maxUnits do
+        local previewFrame = ZF.oUF:Spawn("raid" .. i, "ZF_UnitPreview" .. prettyKey .. i)
+        previewFrame:SetParent(container)
+        previewFrames[i] = previewFrame
+    end
+    if activeStyle then ZF.oUF:SetActiveStyle(activeStyle) end
+end
+
+function ZF:LayoutAuxiliaryPreviewFrame(groupKey)
+    local Frame = ZF.db.profile.Units[groupKey].Frame
+    local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
+    local previewFrames = ZF.AUXILIARY_PREVIEW_FRAMES[groupKey]
+    if not container or #previewFrames == 0 then return end
+
+    local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
+    unitGrowth = unitGrowth or "RIGHT"
+    groupGrowth = groupGrowth or "DOWN"
+    local spacing = Frame.Layout[5] or 0
+    local unitsPerColumn = Frame.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP
+    local columnWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * unitsPerColumn - spacing
+    local columnHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * unitsPerColumn - spacing or Frame.Height
+    local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
+    local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"
+    local anchor = verticalAnchor .. horizontalAnchor
+
+    for slotIndex, previewFrame in ipairs(previewFrames) do
+        local columnIndex = math.floor((slotIndex - 1) / unitsPerColumn)
+        local rowIndex = (slotIndex - 1) % unitsPerColumn
+        local horizontalOffset = columnIndex * (columnWidth + spacing)
+        local verticalOffset = columnIndex * (columnHeight + spacing)
+        local columnXOffset = groupGrowth == "RIGHT" and horizontalOffset or groupGrowth == "LEFT" and -horizontalOffset or 0
+        local columnYOffset = groupGrowth == "UP" and verticalOffset or groupGrowth == "DOWN" and -verticalOffset or 0
+        local unitOffset = rowIndex * (Frame[(unitGrowth == "UP" or unitGrowth == "DOWN") and "Height" or "Width"] + spacing)
+        local xOffset = columnXOffset + (unitGrowth == "RIGHT" and -unitOffset or unitGrowth == "LEFT" and unitOffset or 0)
+        local yOffset = columnYOffset + (unitGrowth == "UP" and -unitOffset or unitGrowth == "DOWN" and unitOffset or 0)
+        previewFrame:ClearAllPoints()
+        previewFrame:SetSize(Frame.Width, Frame.Height)
+        previewFrame:SetPoint(anchor, container, anchor, xOffset, yOffset)
+        previewFrame:Show()
+    end
+end
+
+function ZF:EnterAuxiliaryPreview(groupKey)
+    if InCombatLockdown() then return end
+    local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
+    if not container then return end
+    container:Show()
+    ZF:SpawnAuxiliaryPreviewFrames(groupKey)
+    for i, previewFrame in ipairs(ZF.AUXILIARY_PREVIEW_FRAMES[groupKey]) do
+        previewFrame:SetAttribute("unit", nil)
+        UnregisterUnitWatch(previewFrame)
+        previewFrame:Show()
+        ZF:ApplyUnitPreviewContent(previewFrame, "raid" .. i)
+    end
+    ZF:LayoutAuxiliaryPreviewFrame(groupKey)
+end
+
+function ZF:ExitAuxiliaryPreview(groupKey)
+    if InCombatLockdown() then return end
+    for _, previewFrame in ipairs(ZF.AUXILIARY_PREVIEW_FRAMES[groupKey]) do
+        previewFrame.isUnitPreview = nil
+        previewFrame.previewClass = nil
+        previewFrame:SetAttribute("unit", nil)
+        previewFrame:Hide()
+    end
+    ZF:UpdateAuxiliaryRaidGroup(groupKey)
+end
+
+function ZF:EnterMainTankPreview() ZF:EnterAuxiliaryPreview("maintank") end
+function ZF:ExitMainTankPreview() ZF:ExitAuxiliaryPreview("maintank") end
+function ZF:EnterMainAssistPreview() ZF:EnterAuxiliaryPreview("mainassist") end
+function ZF:ExitMainAssistPreview() ZF:ExitAuxiliaryPreview("mainassist") end

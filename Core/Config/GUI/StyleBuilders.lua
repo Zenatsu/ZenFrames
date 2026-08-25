@@ -6,7 +6,7 @@ local STYLE = ZF.DesignerStyle
 local GUIInternal = ZF.GUIInternal
 local LSM = ZF.LSM
 local GetUnitDB = GUIInternal.GetUnitDB
-local UnitDBToUnitPrettyName = GUIInternal.UnitDBToUnitPrettyName
+local UnitDBToUnitStylizedName = GUIInternal.UnitDBToUnitStylizedName
 local CreateDesignerPreviewToggle = GUIInternal.CreateDesignerPreviewToggle
 local Power = GUIInternal.Power
 local Reaction = GUIInternal.Reaction
@@ -194,7 +194,7 @@ local function CreateColorSettings(containerParent)
             ZF:UpdateAllUnitFrames()
         end
 
-        GUIWidgets.CreateInformationTag(ColorsContainer,"Buttons below will reset the colors to their default values as defined by " .. ZF.PRETTY_ADDON_NAME .. ".")
+        GUIWidgets.CreateInformationTag(ColorsContainer,"Buttons below will reset the colors to their default values as defined by " .. ZF.STYLIZED_ADDON_NAME .. ".")
 
         local ResetAllColorsButton = AG:Create("Button")
         ResetAllColorsButton:SetText("All Colors")
@@ -240,7 +240,7 @@ local function CreateColorSettings(containerParent)
 
         GUIWidgets.CreateHeader(ColorsContainer, "Power")
 
-        local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
+        local PowerOrder = {0, 1, 2, 3, 6, 8, 10, 11, 13, 17, 18}
 
         for _, powerType in ipairs(PowerOrder) do
             GUIBuilders.CreateColorBlock(ColorsContainer, Power[powerType], ZF.db.profile.General.Colors.Power, powerType, UpdateColors, {width = STYLE.Widths.Pct19})
@@ -424,7 +424,7 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
     end
 
     local CopyContainer = GUIWidgets.CreateInlineGroup(containerParent, "Copy Settings From Another Unit")
-    GUIWidgets.CreateInformationTag(CopyContainer, "Copies every setting from the selected unit onto |cFFFFD100" .. (UnitDBToUnitPrettyName[unit] or unit) .. "|r, except its screen position (set via the mover).")
+    GUIWidgets.CreateInformationTag(CopyContainer, "Copies every setting from the selected unit onto |cFFFFD100" .. (UnitDBToUnitStylizedName[unit] or unit) .. "|r, except its screen position (set via the mover).")
 
     local copySourceUnit
     local CopySourceDropdown = AG:Create("Dropdown")
@@ -432,7 +432,7 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
         local values, order = {}, {}
         for _, otherUnit in ipairs({"player", "target", "targettarget", "pet", "focus", "focustarget", "party", "raid", "boss", "augmentation"}) do
             if otherUnit ~= unit and (otherUnit ~= "augmentation" or ZF:IsAugmentationEvoker()) then
-                values[otherUnit] = UnitDBToUnitPrettyName[otherUnit]
+                values[otherUnit] = UnitDBToUnitStylizedName[otherUnit]
                 order[#order + 1] = otherUnit
             end
         end
@@ -449,8 +449,8 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
     CopyButton:SetRelativeWidth(STYLE.Widths.Pct34)
     CopyButton:SetCallback("OnClick", function()
         if not copySourceUnit then return end
-        local sourceLabel = UnitDBToUnitPrettyName[copySourceUnit] or copySourceUnit
-        local targetLabel = UnitDBToUnitPrettyName[unit] or unit
+        local sourceLabel = UnitDBToUnitStylizedName[copySourceUnit] or copySourceUnit
+        local targetLabel = UnitDBToUnitStylizedName[unit] or unit
         StaticPopupDialogs["ZF_COPY_UNIT_SETTINGS"] = {
             text = ("This will overwrite ALL of |cFFFFD100%s|r's settings with |cFFFFD100%s|r's (screen position kept as-is). This cannot be undone. Continue?"):format(targetLabel, sourceLabel),
             button1 = "Copy",
@@ -479,7 +479,7 @@ local function CreateAugmentationFrameSettings(containerParent)
 	NamesEditBox:SetText(AugmentationDB.Names or "")
 	NamesEditBox:SetNumLines(8)
 	NamesEditBox:SetFullWidth(true)
-	NamesEditBox:SetCallback("OnEnterPressed", function(_, _, value) AugmentationDB.Names = value ZF:UpdateAugmentationRaidFrames() end)
+	NamesEditBox:SetCallback("OnEnterPressed", function(_, _, value) AugmentationDB.Names = value ZF:UpdateAuxiliaryRaidGroup("augmentation") end)
 	GeneralContainer:AddChild(NamesEditBox)
 end
 

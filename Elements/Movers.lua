@@ -5,7 +5,7 @@ local function ResolveMoverUnitFrame(frameMover)
     return frameMover.unit == "boss" and ZF.BOSS1
         or frameMover.unit == "party" and ZF.PARTY_CONTAINER
         or frameMover.unit == "raid" and ZF.RAID_CONTAINER
-        or frameMover.unit == "augmentation" and ZF.AUGMENTATION_RAID_CONTAINER
+        or ZF.AUXILIARY_RAID_GROUPS[frameMover.unit] and ZF.AUXILIARY_RAID_CONTAINERS[frameMover.unit]
         or ZF[frameMover.unit:upper()]
 end
 
@@ -16,8 +16,8 @@ local function RelayoutUnit(frameMover)
             else ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
         end
         ZF:LayoutBossFrames()
-    elseif frameMover.unit == "augmentation" then
-        ZF:LayoutAugmentationRaidFrames()
+    elseif ZF.AUXILIARY_RAID_GROUPS[frameMover.unit] then
+        ZF:LayoutAuxiliaryRaidGroup(frameMover.unit)
     elseif frameMover.unit == "party" or frameMover.unit == "raid" then
         ZF:LayoutGroupFrames(frameMover.unit)
         if frameMover.unit == "raid" then ZF:RaidLayoutPreviewFrame() end
@@ -32,7 +32,7 @@ local function RefreshMover(frameMover)
 	local unitFrame = ResolveMoverUnitFrame(frameMover)
 	if not unitFrame then return end
 	frameMover:ClearAllPoints()
-	if frameMover.unit == "party" or frameMover.unit == "raid" or frameMover.unit == "augmentation" then
+	if frameMover.unit == "party" or frameMover.unit == "raid" or ZF.AUXILIARY_RAID_GROUPS[frameMover.unit] then
 		frameMover:SetPoint("TOPLEFT", unitFrame, "TOPLEFT")
 		frameMover:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT")
 	elseif frameMover.unit == "boss" then
@@ -85,6 +85,8 @@ local UNIT_PREVIEW_FUNCS = {
 	party = {enter = "EnterPartyPreview", exit = "ExitPartyPreview"},
 	raid = {enter = "EnterRaidPreview", exit = "ExitRaidPreview"},
 	boss = {enter = "EnterBossPreview", exit = "ExitBossPreview"},
+	maintank = {enter = "EnterMainTankPreview", exit = "ExitMainTankPreview"},
+	mainassist = {enter = "EnterMainAssistPreview", exit = "ExitMainAssistPreview"},
 }
 
 function ZF:ApplyMoverPreviewMode()
@@ -266,11 +268,11 @@ end
 local ROW_SPACING = 4
 
 local function IsGridUnit(unit)
-	return unit == "boss" or unit == "party" or unit == "raid" or unit == "augmentation"
+	return unit == "boss" or unit == "party" or unit == "raid" or ZF.AUXILIARY_RAID_GROUPS[unit] ~= nil
 end
 
 local function IsGroupUnit(unit)
-	return unit == "party" or unit == "raid" or unit == "augmentation"
+	return unit == "party" or unit == "raid" or ZF.AUXILIARY_RAID_GROUPS[unit] ~= nil
 end
 
 local function IsPartyUnit(unit)
@@ -281,11 +283,11 @@ local function IsRaidUnit(unit)
 	return unit == "raid"
 end
 
-local function IsAugmentationUnit(unit)
-	return unit == "augmentation"
+local function IsAuxiliaryRaidUnit(unit)
+	return ZF.AUXILIARY_RAID_GROUPS[unit] ~= nil
 end
 
-local function IsAnyUnit()
+local function IsAnyUnit(_)
 	return true
 end
 
@@ -495,7 +497,7 @@ local BossGrowthDirectionList = {
 }
 
 local function GrowthDirectionListFor(unit)
-	if unit == "raid" or unit == "augmentation" then return RaidGrowthDirectionList[1], RaidGrowthDirectionList[2] end
+	if unit == "raid" or ZF.AUXILIARY_RAID_GROUPS[unit] then return RaidGrowthDirectionList[1], RaidGrowthDirectionList[2] end
 	if unit == "party" then return PartyGrowthDirectionList[1], PartyGrowthDirectionList[2] end
 	return BossGrowthDirectionList[1], BossGrowthDirectionList[2]
 end
@@ -531,7 +533,7 @@ local function CreateGridUnitRows()
 		if not SpacingBox:HasFocus() then SpacingBox:SetText(string.format("%.1f", FrameDB.Layout[5])) end
 	end
 
-	local UnitsPerColumnSliderRow = AddControlPanelRow("Order", 20, IsAugmentationUnit)
+	local UnitsPerColumnSliderRow = AddControlPanelRow("Order", 20, IsAuxiliaryRaidUnit)
 	local UnitsPerColumnSlider = CreateMiniSlider(UnitsPerColumnSliderRow, 180, 1, ZF.MAX_RAID_FRAMES, 1, function(value) CommitFrameField("UnitsPerColumn", value) end)
 	UnitsPerColumnSlider:SetPoint("LEFT", UnitsPerColumnSliderRow, "LEFT", 4, 0)
 	UnitsPerColumnSliderRow.mcpRefresh = function(FrameDB)
@@ -540,7 +542,7 @@ local function CreateGridUnitRows()
 		UnitsPerColumnSlider.mcpSuppress = false
 	end
 
-	local UnitsPerColumnRow = AddControlPanelRow("Order", FIELD_ROW_HEIGHT, IsAugmentationUnit)
+	local UnitsPerColumnRow = AddControlPanelRow("Order", FIELD_ROW_HEIGHT, IsAuxiliaryRaidUnit)
 	local UnitsPerColumnLabel = CreateLabel(UnitsPerColumnRow, "Per Row")
 	UnitsPerColumnLabel:SetPoint("LEFT", UnitsPerColumnRow, "LEFT", 4, 0)
 	local UnitsPerColumnBox = CreateMiniEditBox(UnitsPerColumnRow, 50, 16, function(value) CommitFrameField("UnitsPerColumn", value) end)
@@ -558,6 +560,10 @@ local AugmentationSortByList = {
 	{["NAMELIST"] = "Player List", ["NAME"] = "Name"},
 	{"NAMELIST", "NAME"},
 }
+local RoleAssignmentSortByList = {
+	{["INDEX"] = "Index", ["NAME"] = "Name"},
+	{"INDEX", "NAME"},
+}
 local PartySortByList = {
 	{["ROLE"] = "Role", ["INDEX"] = "Index", ["NAME"] = "Name"},
 	{"ROLE", "INDEX", "NAME"},
@@ -570,6 +576,7 @@ local RoleOrderList = {
 local function SortByListFor(unit)
 	if unit == "raid" then return RaidSortByList[1], RaidSortByList[2] end
 	if unit == "augmentation" then return AugmentationSortByList[1], AugmentationSortByList[2] end
+	if ZF.AUXILIARY_RAID_GROUPS[unit] then return RoleAssignmentSortByList[1], RoleAssignmentSortByList[2] end
 	return PartySortByList[1], PartySortByList[2]
 end
 
@@ -588,6 +595,18 @@ local function CommitGroupToggle(index, value)
     FrameDB.Groups[index] = value
     RelayoutUnit(ZF.ACTIVE_MOVER)
     RefreshMover(ZF.ACTIVE_MOVER)
+    MoverControlPanel()
+end
+
+local function CommitAuxiliaryEnabled(groupKey, value)
+    ZF.db.profile.Units[groupKey].Enabled = value
+    if value then ZF:SpawnAuxiliaryRaidGroup(groupKey) else ZF:UpdateAuxiliaryRaidGroup(groupKey) end
+    MoverControlPanel()
+end
+
+local function CommitAuxiliaryIncludeInRaidGroups(groupKey, value)
+    ZF.db.profile.Units[groupKey].IncludeInRaidGroups = value
+    ZF:LayoutGroupFrames("raid")
     MoverControlPanel()
 end
 
@@ -657,6 +676,38 @@ local function CreateRaidGroupRows()
                 if FrameDB.AutoAdjustGroups then entry.checkbox:Disable() else entry.checkbox:Enable() end
             end
         end
+    end
+
+    local MainTankEnableRow = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+    local MainTankEnableCheckbox = CreateMiniCheckbox(MainTankEnableRow, "Enable Main Tank", function(value) CommitAuxiliaryEnabled("maintank", value) end)
+    MainTankEnableCheckbox:SetPoint("LEFT", MainTankEnableRow, "LEFT", 4, 0)
+    MainTankEnableRow.mcpRefresh = function()
+        MainTankEnableCheckbox:SetChecked(ZF.db.profile.Units.maintank.Enabled)
+    end
+
+    local MainTankIncludeRow = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+    local MainTankIncludeCheckbox = CreateMiniCheckbox(MainTankIncludeRow, "Include Main Tank in Groups", function(value) CommitAuxiliaryIncludeInRaidGroups("maintank", value) end)
+    MainTankIncludeCheckbox:SetPoint("LEFT", MainTankIncludeRow, "LEFT", 4, 0)
+    MainTankIncludeRow.mcpRefresh = function()
+        local MainTankDB = ZF.db.profile.Units.maintank
+        MainTankIncludeCheckbox:SetChecked(MainTankDB.IncludeInRaidGroups)
+        if MainTankDB.Enabled then MainTankIncludeCheckbox:Enable() else MainTankIncludeCheckbox:Disable() end
+    end
+
+    local MainAssistEnableRow = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+    local MainAssistEnableCheckbox = CreateMiniCheckbox(MainAssistEnableRow, "Enable Main Assist", function(value) CommitAuxiliaryEnabled("mainassist", value) end)
+    MainAssistEnableCheckbox:SetPoint("LEFT", MainAssistEnableRow, "LEFT", 4, 0)
+    MainAssistEnableRow.mcpRefresh = function()
+        MainAssistEnableCheckbox:SetChecked(ZF.db.profile.Units.mainassist.Enabled)
+    end
+
+    local MainAssistIncludeRow = AddControlPanelRow("Groups", FIELD_ROW_HEIGHT)
+    local MainAssistIncludeCheckbox = CreateMiniCheckbox(MainAssistIncludeRow, "Include Main Assist in Groups", function(value) CommitAuxiliaryIncludeInRaidGroups("mainassist", value) end)
+    MainAssistIncludeCheckbox:SetPoint("LEFT", MainAssistIncludeRow, "LEFT", 4, 0)
+    MainAssistIncludeRow.mcpRefresh = function()
+        local MainAssistDB = ZF.db.profile.Units.mainassist
+        MainAssistIncludeCheckbox:SetChecked(MainAssistDB.IncludeInRaidGroups)
+        if MainAssistDB.Enabled then MainAssistIncludeCheckbox:Enable() else MainAssistIncludeCheckbox:Disable() end
     end
 end
 
@@ -890,7 +941,7 @@ function ZF:CreateMover(unit)
 	frameMover.Text = frameMover:CreateFontString(nil, "OVERLAY")
 	frameMover.Text:SetPoint("CENTER")
 	frameMover.Text:SetFont(ZF.Media.Font, 12, "OUTLINE, SLUG")
-	frameMover.Text:SetText(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or unit == "augmentation" and "Augmentation" or unit:gsub("^%l", string.upper))
+	frameMover.Text:SetText(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or (ZF.AUXILIARY_RAID_GROUPS[unit] and ZF.AUXILIARY_RAID_GROUPS[unit].label) or unit:gsub("^%l", string.upper))
 	frameMover.Text:SetTextColor(255/255, 255/255, 255/255, 1)
 
 	frameMover:SetScript("OnHide", function(self) if ZF.ACTIVE_MOVER == self then ZF:SetMoverSelection(nil) end end)
@@ -1013,7 +1064,7 @@ function ZF:SetMoverOverlayShown(shown)
 end
 
 function ZF:ToggleMovers(skipReopenGUI)
-	if InCombatLockdown() then ZF:PrettyPrint("Movers cannot be toggled while in combat.") return ZF.MOVERS_UNLOCKED end
+	if InCombatLockdown() then ZF:StylizedPrint("Movers cannot be toggled while in combat.") return ZF.MOVERS_UNLOCKED end
 	ZF.MOVERS_UNLOCKED = not ZF.MOVERS_UNLOCKED
 	ShowMoverButtons(ZF.MOVERS_UNLOCKED)
 	if ZF.MOVERS_UNLOCKED then

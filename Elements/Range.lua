@@ -3,7 +3,7 @@ local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 ZF.RangeEvtFrames = {}
 
-local rangeTicker = false
+local rangeTicker
 
 --[[
     Range spell data derived from LibRangeCheck-3.0
@@ -299,9 +299,10 @@ local function FriendlyIsInRange(unit, frame)
 end
 
 local function UpdateRangeFrames()
+	local RangeDB = ZF.db.profile.General.Range
 	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			if frame:IsVisible() then ZF:UpdateRangeAlpha(frame, unit) end
+			if frame:IsVisible() then ZF:UpdateRangeAlpha(frame, unit, RangeDB) end
 		end
 	end
 end
@@ -312,7 +313,7 @@ local function UpdateRangeTicker()
 		rangeTicker = C_Timer.NewTicker(0.2, UpdateRangeFrames)
 	elseif not shouldRun and rangeTicker then
 		rangeTicker:Cancel()
-		rangeTicker = false
+		rangeTicker = nil
 	end
 end
 
@@ -339,7 +340,7 @@ function ZF:RegisterRangeFrame(frameName, unit)
 	frame.ZFRangeUnit = unit
 
 	UpdateRangeTicker()
-	ZF:UpdateRangeAlpha(frame, unit)
+	ZF:UpdateRangeAlpha(frame, unit, ZF.db.profile.General.Range)
 end
 
 function ZF:UnregisterRangeFrame(frame)
@@ -355,16 +356,16 @@ function ZF:UnregisterRangeFrame(frame)
 end
 
 function ZF:UpdateAllRangeFrames()
+	local RangeDB = ZF.db.profile.General.Range
 	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			ZF:UpdateRangeAlpha(frame, unit)
+			ZF:UpdateRangeAlpha(frame, unit, RangeDB)
 		end
 	end
 	UpdateRangeTicker()
 end
 
-function ZF:UpdateRangeAlpha(frame, unit)
-	local RangeDB = ZF.db.profile.General.Range
+function ZF:UpdateRangeAlpha(frame, unit, RangeDB)
 	if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
 	frame.RangeIsInRange = nil
 	frame.RangeWasChecked = nil
@@ -410,7 +411,8 @@ RangeEventFrame:RegisterEvent("UNIT_PHASE")
 local function UpdateRangeUnit(rangeUnit)
 	local unitFrames = ZF.RangeEvtFrames[rangeUnit]
 	if not unitFrames then return end
-	for frame in pairs(unitFrames) do ZF:UpdateRangeAlpha(frame, rangeUnit) end
+	local RangeDB = ZF.db.profile.General.Range
+	for frame in pairs(unitFrames) do ZF:UpdateRangeAlpha(frame, rangeUnit, RangeDB) end
 end
 
 RangeEventFrame:SetScript("OnEvent", function(_, event, unit)

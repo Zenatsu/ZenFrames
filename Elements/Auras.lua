@@ -119,11 +119,15 @@ end
 local function BuildAuraGroupSignature(AuraDB, filterStrings, sortMethod, sortDirection, width)
 	local signature = AuraDB.Size .. "|" .. AuraDB.Num .. "|" .. width .. "|" .. AuraDB.Layout[1] .. "|" .. AuraDB.GrowthDirection .. "|" .. AuraDB.WrapDirection .. "|" .. tostring(sortMethod) .. "|" .. tostring(sortDirection) .. "|" .. (AuraDB.ShowType and "1" or "0") .. "|" .. table.concat(filterStrings, ",")
 	if AuraDB.Blacklist then signature = signature .. "|BL:" .. tostring(ZF.auraBlacklistGeneration or 0) end
+	local Count = AuraDB.Count
+	if Count then
+		signature = signature .. "|C:" .. tostring(Count.HideStacks) .. "," .. Count.FontSize .. "," .. table.concat(Count.Layout, ",") .. "," .. table.concat(Count.Color, ",")
+	end
 	return signature
 end
 
-local function StyleAuraButton(unitFrame, unit, auraDB, element, button)
-	local AuraDB = ZF:GetUnitDB(unitFrame, unit).Auras[auraDB]
+local function StyleAuraButton(unitFrame, storageKey, button)
+	local AuraDB = unitFrame[storageKey .. "DB"]
 	if not AuraDB then return end
 
 	local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
@@ -135,7 +139,7 @@ local function StyleAuraButton(unitFrame, unit, auraDB, element, button)
 	if button.Cooldown then
 		button.Cooldown:SetDrawEdge(false)
 		button.Cooldown:SetReverse(true)
-		ZF:ApplyCooldownText(button.Cooldown, nil, unit, unitFrame)
+		ZF:ApplyDurationText(button.Cooldown, nil, unitFrame[storageKey .. "DurationDB"])
 	end
 	if button.Count then
 		if AuraDB.Count.HideStacks then
@@ -157,6 +161,9 @@ local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, bas
 		unitFrame[storageKey .. "Signature"] = nil
 		return nil
 	end
+
+	unitFrame[storageKey .. "DB"] = AuraDB
+	unitFrame[storageKey .. "DurationDB"] = ZF:GetUnitDB(unitFrame, unit).Auras.AuraDuration
 
 	local width = ComputeAuraContainerSize(AuraDB, defaultPerRow)
 	local sortMethod, sortDirection = BuildAuraSortOptions(AuraDB.Sorting)
@@ -180,7 +187,7 @@ local function RebuildAuraGroup(unitFrame, unit, storageKey, auraDB, AuraDB, bas
 		auras.showBuffBorder = baseFilter == "HELPFUL" and AuraDB.ShowType or nil
 		auras.showDebuffBorder = baseFilter == "HARMFUL" and AuraDB.ShowType or nil
 		auras.tooltipAnchor = "ANCHOR_CURSOR"
-		auras.PostCreateButton = function(_, button) StyleAuraButton(unitFrame, unit, auraDB, auras, button) end
+		auras.PostCreateButton = function(_, button) StyleAuraButton(unitFrame, storageKey, button) end
 
 		for _, filterString in ipairs(filterStrings) do
 			auras:AddGroup(filterString, {
@@ -208,7 +215,7 @@ end
 function ZF:UpdateUnitAuras(unitFrame, unit)
     if not unit or not unitFrame then return end
     local AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, CustomAuraFilter, CustomAnchorParent = ResolveAuraContext(unitFrame, unit)
-    if not AurasDB then return end
+    if not AurasDB or not BuffsDB or not DebuffsDB then return end
 
     if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
@@ -263,7 +270,7 @@ end
 
 function ZF:CreateUnitAuras(unitFrame, unit)
 	local AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, _, CustomAnchorParent = ResolveAuraContext(unitFrame, unit)
-	if not AurasDB then return end
+	if not AurasDB or not BuffsDB or not DebuffsDB then return end
 
 	if not unitFrame.BuffContainer then
 		unitFrame.BuffContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
@@ -315,13 +322,13 @@ function ZF:UpdateUnitAurasStrata(unit)
         if ZF.PARTYPLAYER and unitDB.Auras.PrivateAuras and ZF.PARTYPLAYER.PrivateAuraContainer then ZF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
         return
 	end
-	if unit == "augmentation" then
-		ZF:ForEachAugmentationRaidFrame(function(raidFrame, frameUnit)
-			local augmentationDB = ZF:GetUnitDB(raidFrame, frameUnit)
-			if raidFrame.BuffContainer then raidFrame.BuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
-			if raidFrame.DebuffContainer then raidFrame.DebuffContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
-			if raidFrame.CustomAuraContainer then raidFrame.CustomAuraContainer:SetFrameStrata(augmentationDB.Auras.FrameStrata) end
-			if raidFrame.PrivateAuraContainer and augmentationDB.Auras.PrivateAuras then raidFrame.PrivateAuraContainer:SetFrameStrata(augmentationDB.Auras.PrivateAuras.FrameStrata) end
+	if ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:ForEachAuxiliaryRaidFrame(unit, function(raidFrame, frameUnit)
+			local auxiliaryDB = ZF:GetUnitDB(raidFrame, frameUnit)
+			if raidFrame.BuffContainer then raidFrame.BuffContainer:SetFrameStrata(auxiliaryDB.Auras.FrameStrata) end
+			if raidFrame.DebuffContainer then raidFrame.DebuffContainer:SetFrameStrata(auxiliaryDB.Auras.FrameStrata) end
+			if raidFrame.CustomAuraContainer then raidFrame.CustomAuraContainer:SetFrameStrata(auxiliaryDB.Auras.FrameStrata) end
+			if raidFrame.PrivateAuraContainer and auxiliaryDB.Auras.PrivateAuras then raidFrame.PrivateAuraContainer:SetFrameStrata(auxiliaryDB.Auras.PrivateAuras.FrameStrata) end
 		end, false)
 		return
 	end
@@ -370,7 +377,7 @@ local function CreateFakeAuraButton(container, auraDB, General, unit, unitFrame,
 	button.Count:SetText(index)
 	if auraDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
 	button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-	ZF:ApplyCooldownText(button, button.Duration, unit, unitFrame)
+	ZF:ApplyDurationText(button, button.Duration, ZF:GetUnitDB(unitFrame, unit).Auras.AuraDuration)
 	button.Duration:SetText("10m")
 	button:Show()
 end

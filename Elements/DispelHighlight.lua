@@ -47,7 +47,7 @@ end
 function ZF:CreateUnitDispelHighlight(unitFrame, unit)
 	if not unitFrame.DispelHighlight then
 		local auras = unitFrame:CreateAuras()
-		auras:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
+		auras:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 6)
 		auras:AddGroup("HARMFUL|RAID", {
 			maxFrameCount = 1,
 			CreateButton = function(_, _, button)

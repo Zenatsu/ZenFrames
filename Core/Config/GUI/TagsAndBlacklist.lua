@@ -1,11 +1,11 @@
 local _, ZF = ...
 local AG = ZF.AG
 local GUIWidgets = ZF.GUIWidgets
+local GUIBuilders = ZF.GUIBuilders
 local STYLE = ZF.DesignerStyle
 local GUIInternal = ZF.GUIInternal
 local GetUnitDB = GUIInternal.GetUnitDB
 local GetSavedSubTab = GUIInternal.GetSavedSubTab
-local AnchorPoints = GUIInternal.AnchorPoints
 local UpdateUnitSettings = GUIInternal.UpdateUnitSettings
 local CreateDesignerPreviewToggle = GUIInternal.CreateDesignerPreviewToggle
 local designerLastTab = GUIInternal.designerLastTab
@@ -72,47 +72,7 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     ColorPicker:SetRelativeWidth(STYLE.Widths.Pct50)
     TagContainer:AddChild(ColorPicker)
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(TagDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[1] = value UpdateTag() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(TagDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[2] = value UpdateTag() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(TagDB.Layout[3])
-    XPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    XPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value UpdateTag() end)
-    LayoutContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(TagDB.Layout[4])
-    YPosSlider:SetSliderValues(unpack(STYLE.Sliders.Position))
-    YPosSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value UpdateTag() end)
-    LayoutContainer:AddChild(YPosSlider)
-
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(TagDB.FontSize)
-    FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
-    FontSizeSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UpdateTag() end)
-    LayoutContainer:AddChild(FontSizeSlider)
+    GUIBuilders.CreateLayoutPositionBlock(containerParent, TagDB, UpdateTag, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", xyWidth = STYLE.Widths.Pct33})
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
     GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFFFFD100Prefix|r indicates that this should be added to the start of the tag string.")
@@ -232,9 +192,16 @@ StaticPopupDialogs["ZF_RESTORE_DEFAULT_BLACKLIST"] = {
 }
 
 local AuraBlacklistWindow
+local selectedSpellIds = {}
+
+local function UpdateDeleteSelectedButtonState()
+    if not AuraBlacklistWindow or not AuraBlacklistWindow.DeleteSelectedButton then return end
+    AuraBlacklistWindow.DeleteSelectedButton:SetDisabled(not next(selectedSpellIds))
+end
 
 local function CreateAuraBlacklistWindow(RowScroll)
     RowScroll:ReleaseChildren()
+    wipe(selectedSpellIds)
     local ids = {}
     for spellId in pairs (ZF.db.global.AuraBlacklist) do ids[#ids + 1] = spellId end
     table.sort(ids)
@@ -245,14 +212,35 @@ local function CreateAuraBlacklistWindow(RowScroll)
         Row:SetLayout("Flow")
         Row:SetFullWidth(true)
 
+        local RowHighlight = Row.frame.RowHighlight
+        if not RowHighlight then
+            RowHighlight = Row.frame:CreateTexture(nil, "BACKGROUND")
+            RowHighlight:SetAllPoints()
+            RowHighlight:SetColorTexture(STYLE.Palette.Selected[1], STYLE.Palette.Selected[2], STYLE.Palette.Selected[3], 0.15)
+            Row.frame.RowHighlight = RowHighlight
+        end
+        RowHighlight:SetShown(selectedSpellIds[spellId] or false)
+
+        local SelectCheckbox = AG:Create("CheckBox")
+        SelectCheckbox:SetLabel("")
+        SelectCheckbox:SetValue(selectedSpellIds[spellId] or false)
+        SelectCheckbox:SetWidth(30)
+        SelectCheckbox:SetCallback("OnValueChanged", function(_,_, value)
+            selectedSpellIds[spellId] = value or nil
+            UpdateDeleteSelectedButtonState()
+            RowHighlight:SetShown(value)
+            end)
+        Row:AddChild(SelectCheckbox)
+
         local NameLabel = AG:Create("Label")
-        NameLabel:SetText(("|T%s:18:18|t %s |cFF999999(%d)|r"):format(info and info.iconID or 134400, info and info.name or "Unknown Spell", spellId))
-        NameLabel:SetRelativeWidth(STYLE.Widths.Pct75)
+        NameLabel:SetText(("|T%s:26:26|t %s |cFF999999(%d)|r"):format(info and info.iconID or 134400, info and info.name or "Unknown Spell", spellId))
+        NameLabel:SetFont(ZF.Media.Font, 14, ZF.db.profile.General.Fonts.FontFlag)
+        NameLabel:SetRelativeWidth(STYLE.Widths.Pct60)
         Row:AddChild(NameLabel)
 
         local DeleteButton = AG:Create("Button")
         DeleteButton:SetText("Delete")
-        DeleteButton:SetRelativeWidth(STYLE.Widths.Pct25)
+        DeleteButton:SetRelativeWidth(STYLE.Widths.Pct20)
         DeleteButton:SetCallback("OnClick", function()
             ZF.db.global.AuraBlacklist[spellId] = nil
             ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) +1
@@ -262,6 +250,7 @@ local function CreateAuraBlacklistWindow(RowScroll)
         Row:AddChild(DeleteButton)
         RowScroll:AddChild(Row)
     end
+    UpdateDeleteSelectedButtonState()
 end
 
 function ZF:ShowAuraBlacklistWindow()
@@ -276,6 +265,15 @@ function ZF:ShowAuraBlacklistWindow()
         AuraBlacklistWindow:EnableResize(false)
         AuraBlacklistWindow:SetCallback("OnClose", function(widget) widget:Hide() end)
 
+        AuraBlacklistWindow.frame:SetBackdrop({
+            bgFile = "Interface\\FrameGeneral\\UI-Background-Marble",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = false, tileSize = 32, edgeSize = 32,
+            insets = { left = 8, right = 8, top = 8, bottom = 8 }
+        })
+        AuraBlacklistWindow.frame:SetBackdropColor(1,1,1,1)
+        AuraBlacklistWindow.statustext:GetParent():Hide()
+
         local AddRow = AG:Create("SimpleGroup")
         AddRow:SetLayout("Flow")
         AddRow:SetFullWidth(true)
@@ -287,8 +285,7 @@ function ZF:ShowAuraBlacklistWindow()
 
         local function TryAddSpell()
             local spellId = tonumber(IDEditBox:GetText())
-            local info = spellId and C_Spell.GetSpellInfo(spellId)
-            if not info then
+            if not spellId or not C_Spell.GetSpellInfo(spellId) then
                 local popup = StaticPopup_Show("ZF_INVALID_SPELL_ID")
                 if popup then popup:SetFrameStrata("TOOLTIP") end
                 return
@@ -315,14 +312,35 @@ function ZF:ShowAuraBlacklistWindow()
         RowScroll:SetHeight(STYLE.Layout.AuraBlacklistRowScrollHeight)
         AuraBlacklistWindow.RowScroll = RowScroll
 
+        local BottomRow = AG:Create("SimpleGroup")
+        BottomRow:SetLayout("Flow")
+        BottomRow:SetFullWidth(true)
+
         local RestoreButton = AG:Create("Button")
         RestoreButton:SetText("Restore to Default")
-        RestoreButton:SetFullWidth(true)
+        RestoreButton:SetRelativeWidth(STYLE.Widths.Pct50)
         RestoreButton:SetCallback("OnClick", function()
             local popup = StaticPopup_Show("ZF_RESTORE_DEFAULT_BLACKLIST")
             if popup then popup:SetFrameStrata("TOOLTIP") end
         end)
-        AuraBlacklistWindow:AddChild(RestoreButton)
+        BottomRow:AddChild(RestoreButton)
+
+        local DeleteSelectedButton = AG:Create("Button")
+        DeleteSelectedButton:SetText("Delete Selected")
+        DeleteSelectedButton:SetRelativeWidth(STYLE.Widths.Pct50)
+        DeleteSelectedButton:SetDisabled(true)
+        DeleteSelectedButton:SetCallback("OnClick", function()
+            for spellId in pairs(selectedSpellIds) do
+                ZF.db.global.AuraBlacklist[spellId] = nil
+            end
+            wipe(selectedSpellIds)
+            ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
+            ZF:RefreshAuraBlacklistWindow()
+            ZF:UpdateAllUnitFrames()
+        end)
+        AuraBlacklistWindow.DeleteSelectedButton = DeleteSelectedButton
+        BottomRow:AddChild(DeleteSelectedButton)
+        AuraBlacklistWindow:AddChild(BottomRow)
     end
 
     CreateAuraBlacklistWindow(AuraBlacklistWindow.RowScroll)

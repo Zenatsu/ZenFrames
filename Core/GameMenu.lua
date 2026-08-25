@@ -29,13 +29,7 @@ local function RepositionGameMenu()
 
     local anchorButton
     for button in GameMenuFrame.buttonPool:EnumerateActive() do
-        local text = button:GetText()
-        if LOGOUT_BUTTON_TEXTS[text] then
-            ShiftButtonPoint(button, -25)
-        else
-            if text == MACROS then anchorButton = button end
-            ShiftButtonPoint(button, 10)
-        end
+        if button:GetText() == MACROS then anchorButton = button break end
     end
 
     if not anchorButton then
@@ -43,6 +37,14 @@ local function RepositionGameMenu()
         GameMenuFrame.ZFAdjustedHeight = nil
         GameMenuFrame.ZF:Hide()
         return
+    end
+
+    for button in GameMenuFrame.buttonPool:EnumerateActive() do
+        if LOGOUT_BUTTON_TEXTS[button:GetText()] then
+            ShiftButtonPoint(button, -25)
+        else
+            ShiftButtonPoint(button, 10)
+        end
     end
 
     GameMenuFrame.ZF:ClearAllPoints()

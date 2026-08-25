@@ -11,13 +11,13 @@
     <Script file="Config/DesignerStyle.lua"/>
     <Script file="Config/GUIWidgets.lua"/>
     <Script file="Config/GUIBuilders.lua"/>
-    <Script file="Config/GUI/Shared.lua"/>
+    <Script file="Config/GUI/GUIInternal.lua"/>
     <Script file="Config/GUI/StyleBuilders.lua"/>
     <Script file="Config/GUI/ElementPanels.lua"/>
     <Script file="Config/GUI/IndicatorPanels.lua"/>
     <Script file="Config/GUI/TagsAndBlacklist.lua"/>
     <Script file="Config/GUI/AuraPanels.lua"/>
-    <Script file="Config/GUI/MiscPanels.lua"/>
+    <Script file="Config/GUI/MainPanels.lua"/>
     <Script file="Config/GUI/MainWindow.lua"/>
     <Script file="Config/Profiler.lua"/>
     <Script file="Config/TagsDatabase/Events.lua"/>

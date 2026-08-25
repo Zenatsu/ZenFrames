@@ -61,6 +61,7 @@ local function LayoutUnitPowerBar(unitFrame, unit, width)
 
     if powerBar.PowerBarBorder then
         powerBar.PowerBarBorder:ClearAllPoints()
+        powerBar.PowerBarBorder:SetHeight(math.min(math.max(PowerBarDB.BorderThickness, 0), PowerBarDB.Height))
         if isTopAnchored then
             powerBar.PowerBarBorder:SetPoint("BOTTOMLEFT", powerBar, "BOTTOMLEFT", 0, -1)
             powerBar.PowerBarBorder:SetPoint("BOTTOMRIGHT", powerBar, "BOTTOMRIGHT", 0, -1)
@@ -87,6 +88,10 @@ local function ApplyPowerBarSettings(powerBar, PowerBarDB)
     if powerBar.Background then
         powerBar.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
         powerBar.Background:SetTexture(ZF.Media.Background)
+    end
+
+    if powerBar.PowerBarBorder then
+        powerBar.PowerBarBorder:SetVertexColor(PowerBarDB.BorderColor[1], PowerBarDB.BorderColor[2], PowerBarDB.BorderColor[3], PowerBarDB.BorderThickness > 0 and PowerBarDB.BorderOpacity or 0)
     end
 end
 
@@ -249,14 +254,12 @@ function ZF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         local tick = secondaryPower.OverlayFrame:CreateTexture(nil, "OVERLAY")
         tick:SetTexture(ZF.Media.Solid)
         tick:SetDrawLayer("OVERLAY", 7)
-        tick:SetVertexColor(0, 0, 0, 1)
         secondaryPower.Ticks[index] = tick
     end
 
     secondaryPower.PowerBarBorder = secondaryPower.OverlayFrame:CreateTexture(nil, "OVERLAY")
     secondaryPower.PowerBarBorder:SetTexture(ZF.Media.Solid)
     secondaryPower.PowerBarBorder:SetDrawLayer("OVERLAY", 6)
-    secondaryPower.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
     secondaryPower.PowerBarBorder:SetHeight(1)
 
     secondaryPower.PostUpdateColor = function(element)
@@ -339,6 +342,8 @@ function ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     secondaryPower.OverlayFrame:Show()
 
     secondaryPower.PowerBarBorder:ClearAllPoints()
+    secondaryPower.PowerBarBorder:SetHeight(math.min(math.max(secondaryPowerDB.BorderThickness, 0), secondaryPowerDB.Height))
+    secondaryPower.PowerBarBorder:SetVertexColor(secondaryPowerDB.BorderColor[1], secondaryPowerDB.BorderColor[2], secondaryPowerDB.BorderColor[3], secondaryPowerDB.BorderThickness > 0 and secondaryPowerDB.BorderOpacity or 0)
     if isTopAnchored then
         secondaryPower.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, anchorY - secondaryPowerDB.Height)
         secondaryPower.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, anchorY - secondaryPowerDB.Height)
@@ -363,7 +368,8 @@ function ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         local tick = secondaryPower.Ticks[index]
         tick:ClearAllPoints()
         tick:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + (index * segmentWidth) - 0.5, anchorY)
-        tick:SetSize(1, secondaryPowerDB.Height)
+        tick:SetSize(math.min(math.max(secondaryPowerDB.BorderThickness, 0), segmentWidth), secondaryPowerDB.Height)
+        tick:SetVertexColor(secondaryPowerDB.BorderColor[1], secondaryPowerDB.BorderColor[2], secondaryPowerDB.BorderColor[3], secondaryPowerDB.BorderThickness > 0 and secondaryPowerDB.BorderOpacity or 0)
         tick:Show()
     end
 
@@ -402,11 +408,11 @@ local function LayoutAlternativePowerBar(AlternativePowerBar, unitContainer, Alt
     AlternativePowerBar:ClearAllPoints()
     AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
+    local effectiveBorderSize = ZF:ApplyBorderStyle(AlternativePowerBar, AlternativePowerBarDB, AlternativePowerBarDB.Height, AlternativePowerBarDB.Background)
 
     AlternativePowerBar.Status:ClearAllPoints()
-    AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
-    AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
+    AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", effectiveBorderSize, -effectiveBorderSize)
+    AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -effectiveBorderSize, effectiveBorderSize)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     if AlternativePowerBarDB.ColorByType then
         local powerColor = ZFDB.General.Colors.Power[0]
@@ -443,8 +449,6 @@ function ZF:CreateUnitAlternativePowerBar(unitFrame, unit)
     local unitContainer = unitFrame.Container
 
     local AlternativePowerBar = CreateFrame("Frame", ZF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
-    AlternativePowerBar:SetBackdrop(ZF.BACKDROP)
-    AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
     AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
 
     AlternativePowerBar.Status = CreateFrame("StatusBar", ZF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)

@@ -19,24 +19,28 @@ local function SetCastBarColor(castBar, unit, CastBarDB)
 	castBar:SetStatusBarColor(r, g, b, a)
 end
 
-local function ApplyCastBarIconPosition(castBar, icon, container, iconPosition, height)
+local function ApplyCastBarBorderStyle(container, CastBarDB)
+    return ZF:ApplyBorderStyle(container, CastBarDB, CastBarDB.Height, {0, 0, 0, 0})
+end
+
+local function ApplyCastBarIconPosition(castBar, icon, container, iconPosition, height, borderSize)
 	icon:ClearAllPoints()
 	castBar:ClearAllPoints()
 	if iconPosition == "LEFT" then
-		icon:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
-		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", height - 1, -1)
-		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -1, 1)
+		icon:SetPoint("TOPLEFT", container, "TOPLEFT", borderSize, -borderSize)
+		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", height - borderSize, -borderSize)
+		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -borderSize, borderSize)
 	elseif iconPosition == "RIGHT" then
-		icon:SetPoint("TOPRIGHT", container, "TOPRIGHT", -1, -1)
-		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
-		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -(height - 1), 1)
+		icon:SetPoint("TOPRIGHT", container, "TOPRIGHT", -borderSize, -borderSize)
+		castBar:SetPoint("TOPLEFT", container, "TOPLEFT", borderSize, -borderSize)
+		castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -(height - borderSize), borderSize)
 	end
 end
 
-local function ApplyCastBarNoIconPosition(castBar, container)
+local function ApplyCastBarNoIconPosition(castBar, container, borderSize)
 	castBar:ClearAllPoints()
-	castBar:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1)
-	castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -1, 1)
+	castBar:SetPoint("TOPLEFT", container, "TOPLEFT", borderSize, -borderSize)
+	castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -borderSize, borderSize)
 end
 
 function ZF:CreateUnitCastBar(unitFrame, unit)
@@ -47,9 +51,7 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
     local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
 
     local CastBarContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
-    CastBarContainer:SetBackdrop(ZF.BACKDROP)
-    CastBarContainer:SetBackdropColor(0, 0, 0, 0)
-    CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
+    local borderSize = ApplyCastBarBorderStyle(CastBarContainer, CastBarDB)
     CastBarContainer:ClearAllPoints()
     CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
@@ -60,8 +62,6 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
     local CastBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
     CastBar:SetStatusBarTexture(ZF.Media.Foreground)
     CastBar:ClearAllPoints()
-    CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-    CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
     CastBar.timeToHold = CastBarDB.HoldTime
     SetCastBarColor(CastBar, unit, CastBarDB)
@@ -79,13 +79,13 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
     CastBar.NotInterruptibleOverlay:SetAlpha(0)
 
     CastBar.Icon = CastBar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
-    CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
+    CastBar.Icon:SetSize(CastBarDB.Height - 2*borderSize, CastBarDB.Height - 2*borderSize)
     CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     if CastBarDB.Icon.Enabled then
-        ApplyCastBarIconPosition(CastBar, CastBar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height)
+        ApplyCastBarIconPosition(CastBar, CastBar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height, borderSize)
     else
         CastBar.Icon:Hide()
-        ApplyCastBarNoIconPosition(CastBar, CastBarContainer)
+        ApplyCastBarNoIconPosition(CastBar, CastBarContainer, borderSize)
     end
 
     local SpellNameText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
@@ -111,7 +111,6 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar.Text = SpellNameText
         unitFrame.Castbar.Time = DurationText
         if CastBarDB.Icon.Enabled then unitFrame.Castbar.Icon = CastBar.Icon else unitFrame.Castbar.Icon = nil end
-        unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
         unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
@@ -133,8 +132,14 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
                 end
 				local isCasting = UnitCastingInfo(unit) ~= nil
 				local isChanneling = not isCasting and UnitChannelInfo(unit) ~= nil
-				local targetName = currentCastBarDB.ShowTarget and not UnitSpellTargetName and UnitName(unit .. "target")
-				if currentCastBarDB.ShowTarget and UnitSpellTargetName and (isCasting or isChanneling and UnitShouldDisplaySpellTargetName(unit)) then targetName = UnitSpellTargetName(unit) end
+				local targetName
+				if currentCastBarDB.ShowTarget then
+					if not UnitSpellTargetName then
+						targetName = UnitName(unit .. "target")
+					elseif isCasting or (isChanneling and UnitShouldDisplaySpellTargetName(unit)) then
+						targetName = UnitSpellTargetName(unit)
+					end
+				end
                 if ZF:IsSecretValue(targetName) or targetName then frameCastBar.Text:SetFormattedText("%s » %s", spellName, targetName) else frameCastBar.Text:SetText(spellName) end
             else
                 frameCastBar.Text:SetText("")
@@ -189,8 +194,6 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
             if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
             unitFrame.Castbar:ClearAllPoints()
-            unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-            unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
             if CastBarDB.MatchParentWidth then
                 if CastBarContainer then
                     CastBarContainer:SetWidth(FrameDB.Width)
@@ -201,6 +204,8 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
                 end
             end
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
+            local borderSize = 1
+            if CastBarContainer then borderSize = ApplyCastBarBorderStyle(CastBarContainer, CastBarDB) end
             unitFrame.Castbar:SetStatusBarTexture(ZF.Media.Foreground)
             unitFrame.Castbar.timeToHold = CastBarDB.HoldTime
             unitFrame.Castbar.Background:SetTexture(ZF.Media.Background)
@@ -220,14 +225,14 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
 
             if CastBarDB.Icon.Enabled then
                 unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
-                unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
+                unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2*borderSize, CastBarDB.Height - 2*borderSize)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                ApplyCastBarIconPosition(unitFrame.Castbar, unitFrame.Castbar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height)
+                ApplyCastBarIconPosition(unitFrame.Castbar, unitFrame.Castbar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height, borderSize)
                 unitFrame.Castbar.Icon:Show()
             else
                 if unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
                 unitFrame.Castbar.Icon = nil
-                ApplyCastBarNoIconPosition(unitFrame.Castbar, CastBarContainer)
+                ApplyCastBarNoIconPosition(unitFrame.Castbar, CastBarContainer, borderSize)
             end
 
             if unitFrame.Castbar.Text then
@@ -305,12 +310,11 @@ local InterruptCooldownFrame = CreateFrame("Frame")
 InterruptCooldownFrame:RegisterEvent("SPELLS_CHANGED")
 InterruptCooldownFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 InterruptCooldownFrame:SetScript("OnEvent", function()
-	if not ZF.db or not ZF.GetNormalizedUnit then return end
 	for i = 1, 9 do
 		local unitFrame = i == 1 and ZF.PLAYER or i == 2 and ZF.TARGET or i == 3 and ZF.FOCUS or i == 4 and ZF.PET or ZF["BOSS" .. (i - 4)]
 		local castBar = unitFrame and unitFrame.Castbar
 		local unit = unitFrame and unitFrame.__unit
-		local UnitDB = unit and ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)]
-		if castBar and castBar:IsShown() and castBar.zfActive and UnitDB and UnitDB.CastBar then SetCastBarColor(castBar, unit, UnitDB.CastBar) end
+		local CastBarDB = unitFrame and unitFrame.CastBarHookDB
+		if castBar and castBar:IsShown() and castBar.zfActive and CastBarDB then SetCastBarColor(castBar, unit, CastBarDB) end
 	end
 end)

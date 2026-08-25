@@ -73,9 +73,13 @@ end
 local function HideBlizzardFrame(frameName)
 	local frame = _G[frameName]
 	if not frame then return end
+	if InCombatLockdown() and frame:IsProtected() then
+		GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	frame:UnregisterAllEvents()
 	frame:Hide()
-	if not InCombatLockdown() or not frame:IsProtected() then frame:SetParent(BlizzardRaidHiddenParent) end
+	frame:SetParent(BlizzardRaidHiddenParent)
 end
 
 function ZF:HideBlizzardRaidFrames()
@@ -88,7 +92,7 @@ end
 function ZF:RegisterRaidFrame(unitFrame)
 	if not unitFrame or unitFrame.isZFUnitFrame then return end
 	unitFrame.isZFUnitFrame = true
-	local raidFrames = unitFrame.isAugmentationRaidFrame and ZF.AUGMENTATION_RAID_FRAMES or ZF.RAID_FRAMES
+	local raidFrames = unitFrame.auxiliaryRaidGroup and ZF.AUXILIARY_RAID_FRAMES[unitFrame.auxiliaryRaidGroup] or ZF.RAID_FRAMES
 	raidFrames[#raidFrames + 1] = unitFrame
 end
 
@@ -102,8 +106,8 @@ function ZF:ForEachRaidFrame(callback, includeInactive, ...)
 	end
 end
 
-function ZF:ForEachAugmentationRaidFrame(callback, includeInactive, ...)
-	for _, raidFrame in ipairs(ZF.AUGMENTATION_RAID_FRAMES) do
+function ZF:ForEachAuxiliaryRaidFrame(groupKey, callback, includeInactive, ...)
+	for _, raidFrame in ipairs(ZF.AUXILIARY_RAID_FRAMES[groupKey]) do
 		if raidFrame then
 			local assignedUnit = raidFrame:GetAttribute("unit")
 			local unit = assignedUnit or includeInactive and raidFrame.ZFConfiguredUnit
@@ -112,15 +116,17 @@ function ZF:ForEachAugmentationRaidFrame(callback, includeInactive, ...)
 	end
 end
 
-function ZF:LayoutAugmentationRaidFrames()
+function ZF:LayoutAuxiliaryRaidGroup(groupKey)
 	if InCombatLockdown() then return end
-	if not ZF.AUGMENTATION_RAID_CONTAINER or not ZF.AUGMENTATION_RAID_HEADER then return end
-	local FrameDB = ZF.db.profile.Units.augmentation.Frame
+	local container, header = ZF.AUXILIARY_RAID_CONTAINERS[groupKey], ZF.AUXILIARY_RAID_HEADERS[groupKey]
+	if not container or not header then return end
+	local entry = ZF.AUXILIARY_RAID_GROUPS[groupKey]
+	local FrameDB = ZF.db.profile.Units[groupKey].Frame
 	local unitGrowth, groupGrowth = (FrameDB.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
 	unitGrowth = unitGrowth or "RIGHT"
 	groupGrowth = groupGrowth or "DOWN"
 	local spacing = FrameDB.Layout[5] or 0
-	local frameCount = math.max(ZF.AUGMENTATION_RAID_FRAME_COUNT, 1)
+	local frameCount = math.max(entry.membership == "ROSTER_NAMES" and (ZF.AUXILIARY_RAID_FRAME_COUNTS[groupKey] or 0) or entry.maxUnits, 1)
 	local unitsPerColumn = FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP
 	local columns = math.ceil(frameCount / unitsPerColumn)
 	local rows = math.min(frameCount, unitsPerColumn)
@@ -129,13 +135,12 @@ function ZF:LayoutAugmentationRaidFrames()
 	local columnWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and FrameDB.Width or (FrameDB.Width + spacing) * rows - spacing
 	local columnHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (FrameDB.Height + spacing) * rows - spacing or FrameDB.Height
 
-	ZF.AUGMENTATION_RAID_CONTAINER:ClearAllPoints()
-	ZF.AUGMENTATION_RAID_CONTAINER:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-	ZF.AUGMENTATION_RAID_CONTAINER:SetFrameStrata(FrameDB.FrameStrata)
-	ZF.AUGMENTATION_RAID_CONTAINER:SetSize((groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (columnWidth + spacing) * columns - spacing or columnWidth, (groupGrowth == "UP" or groupGrowth == "DOWN") and (columnHeight + spacing) * columns - spacing or columnHeight)
+	container:ClearAllPoints()
+	container:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+	container:SetFrameStrata(FrameDB.FrameStrata)
+	container:SetSize((groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (columnWidth + spacing) * columns - spacing or columnWidth, (groupGrowth == "UP" or groupGrowth == "DOWN") and (columnHeight + spacing) * columns - spacing or columnHeight)
 
-	local header = ZF.AUGMENTATION_RAID_HEADER
-	for childIndex = 1, ZF.MAX_RAID_FRAMES do
+	for childIndex = 1, entry.maxUnits do
 		local child = header:GetAttribute("child" .. childIndex)
 		if child then
 			child:ClearAllPoints()
@@ -150,14 +155,14 @@ function ZF:LayoutAugmentationRaidFrames()
 	header:SetAttribute("initial-height", FrameDB.Height)
 	header:SetAttribute("oUF-initialConfigFunction", ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height))
 	header:SetAttribute("unitsPerColumn", unitsPerColumn)
-	header:SetAttribute("maxColumns", math.ceil(ZF.MAX_RAID_FRAMES / unitsPerColumn))
+	header:SetAttribute("maxColumns", math.ceil(entry.maxUnits / unitsPerColumn))
 	header:SetAttribute("columnSpacing", spacing)
 	header:SetAttribute("columnAnchorPoint", columnAnchorPoint)
 	header:SetFrameStrata(FrameDB.FrameStrata)
-	header:SetSize(ZF.AUGMENTATION_RAID_CONTAINER:GetSize())
+	header:SetSize(container:GetSize())
 	header:ClearAllPoints()
 	local horizontalAnchor, verticalAnchor = ComputeGroupAnchorPoint(unitGrowth, groupGrowth)
-	header:SetPoint(verticalAnchor .. horizontalAnchor, ZF.AUGMENTATION_RAID_CONTAINER, verticalAnchor .. horizontalAnchor)
+	header:SetPoint(verticalAnchor .. horizontalAnchor, container, verticalAnchor .. horizontalAnchor)
 end
 
 local function BuildRaidRosterLookup()
@@ -203,77 +208,103 @@ local function ResolveConfiguredRosterNames(configuredNames, byFullName, byShort
 	return names
 end
 
-function ZF:UpdateAugmentationRaidFrames()
-	local AugmentationDB = ZF.db.profile.Units.augmentation
-	local isAugmentation = AugmentationDB.Enabled and ZF:IsAugmentationEvoker()
-	if not ZF.AUGMENTATION_RAID_HEADER then
-		if isAugmentation then ZF:SpawnUnitFrame("raid") end
+function ZF:IsAuxiliaryRaidGroupActive(groupKey)
+	local UnitDB = ZF.db.profile.Units[groupKey]
+	if not UnitDB.Enabled then return false end
+	if groupKey == "augmentation" then return ZF:IsAugmentationEvoker() end
+	return true
+end
+
+function ZF:UpdateAuxiliaryRaidGroup(groupKey)
+	local entry = ZF.AUXILIARY_RAID_GROUPS[groupKey]
+	local UnitDB = ZF.db.profile.Units[groupKey]
+	local isActive = ZF:IsAuxiliaryRaidGroupActive(groupKey)
+	local header = ZF.AUXILIARY_RAID_HEADERS[groupKey]
+	if not header then
+		if isActive then ZF:SpawnUnitFrame("raid") end
 		return
 	end
 	if InCombatLockdown() then
 		GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
+	local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
 
-	if not isAugmentation then
-		ZF.AUGMENTATION_RAID_FRAME_COUNT = 0
-		if ZF.AUGMENTATION_RAID_HEADER:GetAttribute("nameList") ~= "" then
-			ZF.AUGMENTATION_RAID_HEADER:SetAttribute("nameList", "")
-			ZF:ForEachAugmentationRaidFrame(ClearGroupFrameUnit, true)
+	if not isActive then
+		ZF.AUXILIARY_RAID_FRAME_COUNTS[groupKey] = 0
+		if entry.membership == "ROSTER_NAMES" then
+			if header:GetAttribute("nameList") ~= "" then
+				header:SetAttribute("nameList", "")
+				ZF:ForEachAuxiliaryRaidFrame(groupKey, ClearGroupFrameUnit, true)
+			end
+		else
+			ZF:ForEachAuxiliaryRaidFrame(groupKey, ClearGroupFrameUnit, true)
 		end
-		if ZF.AUGMENTATION_RAID_CONTAINER:IsShown() then ZF.AUGMENTATION_RAID_CONTAINER:Hide() end
-		if ZF.MOVERS and ZF.MOVERS.augmentation and ZF.MOVERS.augmentation:IsShown() then ZF.MOVERS.augmentation:Hide() end
+		if container:IsShown() then container:Hide() end
+		if ZF.MOVERS and ZF.MOVERS[groupKey] and ZF.MOVERS[groupKey]:IsShown() then ZF.MOVERS[groupKey]:Hide() end
 		return
 	end
 
-	local rosterByFullName, rosterByShortName = BuildRaidRosterLookup()
-	local names = ResolveConfiguredRosterNames(AugmentationDB.Names, rosterByFullName, rosterByShortName)
-	local active = #names > 0
-	ZF.AUGMENTATION_RAID_FRAME_COUNT = #names
-	local nameList = table.concat(names, ",")
-	local activeNameList = active and nameList or ""
-	local sortMethod = AugmentationDB.Frame.SortBy == "NAME" and "NAME" or "NAMELIST"
-	if ZF.AUGMENTATION_RAID_HEADER:GetAttribute("sortMethod") ~= sortMethod then ZF.AUGMENTATION_RAID_HEADER:SetAttribute("sortMethod", sortMethod) end
-	if ZF.AUGMENTATION_RAID_HEADER:GetAttribute("nameList") ~= activeNameList then ZF.AUGMENTATION_RAID_HEADER:SetAttribute("nameList", activeNameList) end
-	ZF:ForEachAugmentationRaidFrame(function(raidFrame, unit, assignedUnit)
+	local active = true
+	if entry.membership == "ROSTER_NAMES" then
+		local rosterByFullName, rosterByShortName = BuildRaidRosterLookup()
+		local names = ResolveConfiguredRosterNames(UnitDB.Names, rosterByFullName, rosterByShortName)
+		active = #names > 0
+		ZF.AUXILIARY_RAID_FRAME_COUNTS[groupKey] = #names
+		local nameList = table.concat(names, ",")
+		local activeNameList = active and nameList or ""
+		local sortMethod = UnitDB.Frame.SortBy == "NAME" and "NAME" or "NAMELIST"
+		if header:GetAttribute("sortMethod") ~= sortMethod then header:SetAttribute("sortMethod", sortMethod) end
+		if header:GetAttribute("nameList") ~= activeNameList then header:SetAttribute("nameList", activeNameList) end
+	end
+
+	ZF:ForEachAuxiliaryRaidFrame(groupKey, function(raidFrame, unit, assignedUnit)
 		if not assignedUnit then
 			ClearGroupFrameUnit(raidFrame)
 			return
 		end
-		raidFrame:SetSize(AugmentationDB.Frame.Width, AugmentationDB.Frame.Height)
-		raidFrame:SetFrameStrata(AugmentationDB.Frame.FrameStrata)
+		raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
+		raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 		ZF:UpdateUnitFrame(raidFrame, unit)
 		raidFrame.ZFGroupUnit = assignedUnit
 	end, true)
-	ZF:LayoutAugmentationRaidFrames()
-	ZF.AUGMENTATION_RAID_CONTAINER:SetShown(active)
-	if ZF.MOVERS and ZF.MOVERS.augmentation then ZF.MOVERS.augmentation:SetShown(isAugmentation and ZF.MOVERS_UNLOCKED) end
+	ZF:LayoutAuxiliaryRaidGroup(groupKey)
+	container:SetShown(active)
+	if ZF.MOVERS and ZF.MOVERS[groupKey] then ZF.MOVERS[groupKey]:SetShown(isActive and ZF.MOVERS_UNLOCKED) end
 end
 
-function ZF:SpawnAugmentationRaidFrames()
-	local AugmentationDB = ZF.db.profile.Units.augmentation
-	if not AugmentationDB or not AugmentationDB.Enabled or not ZF:IsAugmentationEvoker() then return end
-	ZF.AUGMENTATION_RAID_CONTAINER = ZF.AUGMENTATION_RAID_CONTAINER or CreateBackdropContainer("ZF_AugmentationRaidContainer")
-	if not ZF.AUGMENTATION_RAID_HEADER then
-		local FrameDB = AugmentationDB.Frame
-		ZF.AUGMENTATION_RAID_HEADER = oUF:SpawnHeader("ZF_AugmentationRaidHeader", nil,
+function ZF:SpawnAuxiliaryRaidGroup(groupKey)
+	local entry = ZF.AUXILIARY_RAID_GROUPS[groupKey]
+	if not ZF:IsAuxiliaryRaidGroupActive(groupKey) then return end
+	local prettyKey = groupKey:gsub("^%l", string.upper)
+	ZF.AUXILIARY_RAID_CONTAINERS[groupKey] = ZF.AUXILIARY_RAID_CONTAINERS[groupKey] or CreateBackdropContainer("ZF_" .. prettyKey .. "RaidContainer")
+	local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
+	if not ZF.AUXILIARY_RAID_HEADERS[groupKey] then
+		local FrameDB = ZF.db.profile.Units[groupKey].Frame
+		local unitsPerColumn = FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP
+		local membershipKey = entry.membership == "ROSTER_NAMES" and "nameList" or "groupFilter"
+		local membershipValue = entry.membership == "ROSTER_NAMES" and "" or entry.membership
+		local defaultSort = entry.membership == "ROSTER_NAMES" and "NAMELIST" or "INDEX"
+		local header = oUF:SpawnHeader("ZF_" .. prettyKey .. "RaidHeader", nil,
 			"showRaid", true,
 			"showParty", false,
 			"showPlayer", true,
 			"showSolo", false,
-			"nameList", "",
-			"sortMethod", FrameDB.SortBy == "NAME" and "NAME" or "NAMELIST",
+			membershipKey, membershipValue,
+			"sortMethod", FrameDB.SortBy == "NAME" and "NAME" or defaultSort,
 			"initial-width", FrameDB.Width,
 			"initial-height", FrameDB.Height,
 			"oUF-initialConfigFunction", ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
-			"unitsPerColumn", FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP,
-			"maxColumns", math.ceil(ZF.MAX_RAID_FRAMES / (FrameDB.UnitsPerColumn or ZF.MAX_RAID_FRAMES_PER_GROUP))
+			"unitsPerColumn", unitsPerColumn,
+			"maxColumns", math.ceil(entry.maxUnits / unitsPerColumn)
 		)
-		ZF.AUGMENTATION_RAID_HEADER:SetParent(ZF.AUGMENTATION_RAID_CONTAINER)
-		ZF.AUGMENTATION_RAID_HEADER:SetVisibility("raid")
+		header:SetParent(container)
+		header:SetVisibility("raid")
+		ZF.AUXILIARY_RAID_HEADERS[groupKey] = header
+		ZF.AuxiliaryHeaderOwner[header] = groupKey
 	end
-	ZF:CreateMover("augmentation")
-	ZF:UpdateAugmentationRaidFrames()
+	ZF:CreateMover(groupKey)
+	ZF:UpdateAuxiliaryRaidGroup(groupKey)
 end
 
 function ZF:SpawnGroupFrame(groupType)
@@ -426,6 +457,25 @@ function ZF:IsRaidGroupShown(Frame, groupIndex)
 	return Frame.Groups == nil or Frame.Groups[groupIndex] ~= false
 end
 
+local function IsRaidGroupExclusionActive()
+	return (ZF.db.profile.Units.maintank.Enabled and not ZF.db.profile.Units.maintank.IncludeInRaidGroups)
+		or (ZF.db.profile.Units.mainassist.Enabled and not ZF.db.profile.Units.mainassist.IncludeInRaidGroups)
+end
+
+local function BuildRaidGroupExclusionSet()
+	local excludeMainTank = ZF.db.profile.Units.maintank.Enabled and not ZF.db.profile.Units.maintank.IncludeInRaidGroups
+	local excludeMainAssist = ZF.db.profile.Units.mainassist.Enabled and not ZF.db.profile.Units.mainassist.IncludeInRaidGroups
+	if not excludeMainTank and not excludeMainAssist then return nil end
+	local exclude = {}
+	for raidIndex = 1, GetNumGroupMembers() do
+		local unit = "raid" .. raidIndex
+		if (excludeMainTank and GetPartyAssignment("MAINTANK", unit)) or (excludeMainAssist and GetPartyAssignment("MAINASSIST", unit)) then
+			exclude[raidIndex] = true
+		end
+	end
+	return exclude
+end
+
 function ZF:LayoutGroupFrames(groupType)
 	if InCombatLockdown() then return end
 	local Frame = ZF.db.profile.Units[groupType].Frame
@@ -479,6 +529,7 @@ function ZF:LayoutGroupFrames(groupType)
 		ZF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 		ZF.RAID_CONTAINER:SetSize(math.max((groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth, Frame.Width), math.max((groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight, Frame.Height))
 		local shownGroupIndex = 0
+		local exclude = BuildRaidGroupExclusionSet()
 		for groupIndex, header in ipairs(ZF.RAID_HEADERS) do
 			local showGroup = ZF:IsRaidGroupShown(Frame, groupIndex)
 			if showGroup then shownGroupIndex = shownGroupIndex + 1 end
@@ -494,8 +545,22 @@ function ZF:LayoutGroupFrames(groupType)
 			header:SetAttribute("oUF-initialConfigFunction", ("self:SetWidth(%s); self:SetHeight(%s)"):format(Frame.Width, Frame.Height))
 			header:SetAttribute("unitsPerColumn", ZF.MAX_RAID_FRAMES_PER_GROUP)
 			header:SetAttribute("maxColumns", 1)
-			header:SetAttribute("sortMethod", Frame.SortBy == "INDEX" and "INDEX" or nil)
-			header:SetAttribute("groupFilter", showGroup and tostring(groupIndex) or "0")
+			if exclude and showGroup then
+				local names = {}
+				for raidIndex = 1, GetNumGroupMembers() do
+					local rosterName, _, subgroup = GetRaidRosterInfo(raidIndex)
+					if rosterName and subgroup == groupIndex and not exclude[raidIndex] then
+						names[#names + 1] = rosterName
+					end
+				end
+				header:SetAttribute("groupFilter", nil)
+				header:SetAttribute("nameList", table.concat(names, ","))
+				header:SetAttribute("sortMethod", Frame.SortBy == "NAME" and "NAME" or "NAMELIST")
+			else
+				header:SetAttribute("nameList", nil)
+				header:SetAttribute("groupFilter", showGroup and tostring(groupIndex) or "0")
+				header:SetAttribute("sortMethod", Frame.SortBy == "INDEX" and "INDEX" or nil)
+			end
 			if showGroup then header:Show() else header:Hide() end
 			header:SetFrameStrata(Frame.FrameStrata)
 			header:SetSize(headerWidth, headerHeight)
@@ -529,7 +594,7 @@ function ZF:ResetRaidFrames()
 	if InCombatLockdown() then return end
 	for _, raidHeader in ipairs(ZF.RAID_HEADERS) do raidHeader:Show() end
 	ZF:UpdateGroupFrame("raid")
-	ZF:UpdateAugmentationRaidFrames()
+	for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
 	ZF:UpdateUnitTags("raid")
 end
 
@@ -540,7 +605,7 @@ GroupRosterEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 GroupRosterEventFrame:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 GroupRosterEventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
-	if not ZF.db then return end
+	if not ZF.db or not ZF.Initialized then return end
 	local RaidDB = ZF.db.profile.Units.raid
 	if event == "ADDON_LOADED" then
 		if addonName == "Blizzard_CompactRaidFrames" and RaidDB and RaidDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
@@ -551,7 +616,8 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 	if event == "GROUP_ROSTER_UPDATE" then
 		if RaidDB and RaidDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
 		ZF:UpdateGroupIndicators("party")
-		ZF:UpdateAugmentationRaidFrames()
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
+		if IsRaidGroupExclusionActive() then ZF:LayoutGroupFrames("raid") end
 		for _, partyFrame in ipairs(ZF.PARTY_FRAMES) do
 			local unitGUID = UnitGUID(partyFrame.__unit)
 			if unitGUID ~= nil and not ZF:IsSecretValue(unitGUID) and unitGUID ~= partyFrame.unitGUID then
@@ -562,10 +628,11 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		ZF:UpdateGroupIndicators("party", true)
 		ZF:UpdateGroupIndicators("raid", true)
-		ZF:UpdateAugmentationRaidFrames()
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
+		if IsRaidGroupExclusionActive() then ZF:LayoutGroupFrames("raid") end
 	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_DIFFICULTY_CHANGED" or event == "ZONE_CHANGED_NEW_AREA" then
-		if RaidDB and RaidDB.Frame.AutoAdjustGroups then ZF:LayoutGroupFrames("raid") end
-		ZF:UpdateAugmentationRaidFrames()
+		if (RaidDB and RaidDB.Frame.AutoAdjustGroups) or IsRaidGroupExclusionActive() then ZF:LayoutGroupFrames("raid") end
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
 		if event == "PLAYER_ENTERING_WORLD" then
 			ZF:UpdateGroupIndicators("party", true)
 			ZF:UpdateGroupIndicators("raid", true)
@@ -576,6 +643,6 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		ZF:UpdateGroupFrame("raid")
 		ZF:UpdateGroupIndicators("party")
 		ZF:UpdateGroupIndicators("raid")
-		ZF:UpdateAugmentationRaidFrames()
+		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
 	end
 end)

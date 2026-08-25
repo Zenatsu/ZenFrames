@@ -37,6 +37,7 @@ local Tags = {
     ["curpp:abbr:color"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 	["curpp:manapercent"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 	["curpp:manapercent:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent:healer:color"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
 	["curpp:manapercent-with-sign:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
 	["curpp:manapercent-with-sign:healer:color"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
 	["curpp:manapercent:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",

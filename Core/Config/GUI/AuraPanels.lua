@@ -362,12 +362,12 @@ local function CreatePrivateAuraBuffConfigSettings(containerParent, unit, update
     DisableCooldownToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldown = value updateCallback() end)
     GeneralContainer:AddChild(DisableCooldownToggle)
 
-    local DisableCooldownTextToggle = AG:Create("CheckBox")
-    DisableCooldownTextToggle:SetLabel("Disable Cooldown Text")
-    DisableCooldownTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
-    DisableCooldownTextToggle:SetRelativeWidth(STYLE.Widths.Pct33)
-    DisableCooldownTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value updateCallback() end)
-    GeneralContainer:AddChild(DisableCooldownTextToggle)
+    local DisableDurationTextToggle = AG:Create("CheckBox")
+    DisableDurationTextToggle:SetLabel("Disable Cooldown Text")
+    DisableDurationTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
+    DisableDurationTextToggle:SetRelativeWidth(STYLE.Widths.Pct33)
+    DisableDurationTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value updateCallback() end)
+    GeneralContainer:AddChild(DisableDurationTextToggle)
 
     local BorderScaleSlider = AG:Create("Slider")
     BorderScaleSlider:SetLabel("Border Scale")
@@ -488,6 +488,12 @@ local function CreatePrivateAuraSettings(containerParent, unit, updateCallback)
     containerParent:DoLayout()
 end
 
+local function CreateAuraCooldownTextSettings(containerParent, unit, updateCallback)
+    local AuraDurationDB = GetUnitDB(unit).Auras.AuraDuration
+    local DefaultAuraDurationDB = ZF:GetDefaultDB().profile.Units[unit].Auras.AuraDuration
+    GUIBuilders.CreateBreakpointEditor(containerParent, AuraDurationDB.CooldownBreakpoints, DefaultAuraDurationDB.CooldownBreakpoints, updateCallback)
+end
+
 function GUIInternal.CreateAuraSettings(containerParent, unit, updateCallback)
     local AurasDB = GetUnitDB(unit).Auras
 
@@ -510,13 +516,15 @@ function GUIInternal.CreateAuraSettings(containerParent, unit, updateCallback)
         ZF:SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs", updateCallback)
+            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
         elseif AuraTab == "Debuffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs", updateCallback)
+            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
         elseif AuraTab == "Custom" and AurasDB.Custom then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Custom", updateCallback)
+            CreateSpecificAuraSettings(AuraContainer, unit, "Custom")
         elseif AuraTab == "PrivateAuras" and AurasDB.PrivateAuras then
             CreatePrivateAuraSettings(AuraContainer, unit, updateCallback)
+        elseif AuraTab == "CooldownText" then
+            CreateAuraCooldownTextSettings(AuraContainer, unit, updateCallback)
         end
         containerParent:DoLayout()
     end
@@ -527,6 +535,7 @@ function GUIInternal.CreateAuraSettings(containerParent, unit, updateCallback)
     local auraTabs = { { text = "Buffs", value = "Buffs" }, { text = "Debuffs", value = "Debuffs" } }
     if AurasDB.Custom then auraTabs[#auraTabs + 1] = { text = "Custom", value = "Custom" } end
     if AurasDB.PrivateAuras then auraTabs[#auraTabs + 1] = { text = "Private Auras", value = "PrivateAuras" } end
+    auraTabs[#auraTabs + 1] = { text = "Duration Text", value = "CooldownText" }
     AuraContainerTabGroup:SetTabs(auraTabs)
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
     AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
