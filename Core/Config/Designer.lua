@@ -388,7 +388,7 @@ local function BuildDesignerRegistry(unit)
             update = function(unitFrame) ZF:UpdateUnitPortrait(unitFrame, unit) end,
         }),
         WidgetEntry(unit, {
-            key = "CastBar", label = "Cast Bar", kind = "frame", previewToggle = "CastBar", designerTab = "CastBar",
+            key = "CastBar", label = "Cast Bar", kind = "frame", previewToggle = "CastBar", designerTab = "CastBar", subTab = "Bar",
             getDB = function() return ZF:GetUnitDB(nil, unit).CastBar end,
             getRegion = function(previewFrame) return previewFrame.Castbar and previewFrame.Castbar:GetParent() end,
             update = function(unitFrame) ZF:UpdateUnitCastBar(unitFrame, unit) end,
@@ -662,7 +662,7 @@ function ZF:SetDesignerSelection(entry)
     for _, overlay in pairs(overlays) do UpdateOverlayVisual(overlay) end
     ZF:UpdateDesignerStatusText()
     if entry and entry.designerTab then
-        ZF:SaveSubTab(designerUnit, entry.designerTab, entry.key)
+        ZF:SaveSubTab(designerUnit, entry.designerTab, entry.subTab or entry.key)
         if ZF.DESIGNER_TAB_GROUP then ZF.DESIGNER_TAB_GROUP:SelectTab(entry.designerTab) end
     else
         ZF:BuildDesignerSectionOptions(ZF.DESIGNER_OPTIONS_CONTAINER, designerUnit, nil)

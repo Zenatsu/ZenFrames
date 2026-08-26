@@ -189,7 +189,7 @@ function ZF:IsInterruptOnCooldown()
 	if not spellID then return false end
 	if C_Spell.GetSpellCooldown then
 		local cooldownInfo = C_Spell.GetSpellCooldown(spellID)
-		return cooldownInfo and cooldownInfo.isEnabled and cooldownInfo.startTime > 0 and cooldownInfo.duration > 0 and not cooldownInfo.isOnGCD or false
+		return cooldownInfo and cooldownInfo.isEnabled and cooldownInfo.isActive and not cooldownInfo.isOnGCD or false
 	end
 	return false
 end

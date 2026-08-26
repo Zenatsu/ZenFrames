@@ -6,7 +6,7 @@
 - Added Border options to additional frames.
 - Added a configurable color for the Alternate power type (was stuck at the default)
 - Added Secondary Power Bar "Background Color" control
-- Fixed the interrupt-cooldown color indicator on cast bars never actually working (was checking a field that doesn't exist on the API's return data)
+- Fixed the interrupt-cooldown color indicator on cast bars throwing an error against Blizzard's newer cooldown API
 - Fixed Augmentation Evoker Designer crashing when opening the Cast Bar/Portrait tabs
 - Fixed Classification indicator settings not applying live in the Designer
 - Fixed party frames missing-health overlay using the wrong unit reference
