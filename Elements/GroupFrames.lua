@@ -477,7 +477,7 @@ local function BuildRaidGroupExclusionSet()
 end
 
 function ZF:LayoutGroupFrames(groupType)
-	if InCombatLockdown() then return end
+	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
 	local Frame = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER or #ZF.PARTY_FRAMES == 0 then return end

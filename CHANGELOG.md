@@ -19,6 +19,10 @@
 - Fixed the Game Menu button losing its position on accounts without a Macros button (e.g. Trial/Starter Edition)
 - Fixed a data-corruption risk when importing a profile into an already-existing profile
 - Fixed the Aura Blacklist "Restore Defaults" window corrupting the look of other windows for the rest of the session
+- Fixed dead raid members sometimes showing a leftover red health bar instead of an empty one
+- Fixed new mid-combat raid joiners not appearing in the roster grid when Main Tank/Main Assist frames are set to exclude themselves from it (still recovers once combat ends, but no longer needed a second event to trigger the recovery)
+- Fixed the Player Designer's Cast Bar options spilling out past the bottom of the window
+- Fixed clicking the Cast Bar widget in the Designer not selecting a sub-tab
 
 ## v1.0.9hf1
 
