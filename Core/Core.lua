@@ -46,6 +46,7 @@ function ZenFrames:OnInitialize()
             if guiWasShownBeforeCombat then ZF:SetMainGUIShown(true) end
             guiWasShownBeforeCombat = false
             ZF:SetMoverOverlayShown(true)
+            if ZF.PLAYER then ZF:UpdateUnitTotems(ZF.PLAYER, "player") end
         end
     end)
 

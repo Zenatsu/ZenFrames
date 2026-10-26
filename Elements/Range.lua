@@ -104,7 +104,6 @@ local RangeSpells = {
         },
         WARRIOR = {
             355,  -- Taunt (30 yards)
-            100,  -- Charge (8-25 yards)
             5246, -- Intimidating Shout (8 yards)
         },
     },
@@ -375,10 +374,14 @@ function ZF:UpdateRangeAlpha(frame, unit, RangeDB)
 	local outAlpha = RangeDB.OutOfRange or 0.5
 	local inRange
 
-	if UnitIsDeadOrGhost(unit) then
+	local isDeadOrGhost = UnitIsDeadOrGhost(unit)
+	local canAttack = UnitCanAttack("player", unit)
+	if ZF:IsSecretValue(isDeadOrGhost) or ZF:IsSecretValue(canAttack) then
+		inRange = nil
+	elseif isDeadOrGhost then
 		inRange = UnitInSpellsRange(unit, "resurrect")
 		if not ZF:IsSecretValue(inRange) then inRange = inRange == true end
-	elseif UnitCanAttack("player", unit) then
+	elseif canAttack then
 		inRange = UnitInSpellsRange(unit, "enemy")
 	else
 		local isPet = UnitIsUnit(unit, "pet")
