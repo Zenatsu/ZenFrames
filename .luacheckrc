@@ -113,7 +113,6 @@ read_globals = {
     "UIDropDownMenu_SetText",
     "UIDropDownMenu_SetWidth",
     "UIParent",
-    "UUFDB", -- legacy SavedVariables table this addon migrates from on first load (the original Unhalted addon's DB)
     "UnitAffectingCombat",
     "UnitCanAttack",
     "UnitCastingInfo",

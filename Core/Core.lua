@@ -2,12 +2,6 @@ local _, ZF = ...
 local ZenFrames = LibStub("AceAddon-3.0"):NewAddon("ZenFrames")
 
 function ZenFrames:OnInitialize()
-    local migratedFromUUFDB = false
-    if UUFDB and next(UUFDB) and (not ZFDB or not next(ZFDB)) then
-        ZFDB = CopyTable(UUFDB)
-        migratedFromUUFDB = true
-    end
-
     ZF:MigrateAllProfiles(_G.ZFDB)
     ZF:MigrateGlobalSettings(_G.ZFDB)
 
@@ -49,8 +43,6 @@ function ZenFrames:OnInitialize()
             if ZF.PLAYER then ZF:UpdateUnitTotems(ZF.PLAYER, "player") end
         end
     end)
-
-    if migratedFromUUFDB then StaticPopup_Show("ZF_UUFDB_MIGRATED") end
 end
 
 function ZenFrames_OnAddonCompartmentClick(addonName, buttonName)
