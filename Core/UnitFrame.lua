@@ -38,12 +38,47 @@ BossResetRetryFrame:SetScript("OnEvent", function(self)
     end
 end)
 
+local function IsMouseOverAuraContainer(frame)
+    return (frame.BuffContainer and frame.BuffContainer:IsMouseOver())
+        or (frame.DebuffContainer and frame.DebuffContainer:IsMouseOver())
+        or (frame.CustomAuraContainer and frame.CustomAuraContainer:IsMouseOver())
+end
+
+local function PollAuraTooltipSuppression(frame, elapsed)
+    frame.ZFAuraPollElapsed = (frame.ZFAuraPollElapsed or 0) + elapsed
+    if frame.ZFAuraPollElapsed < 0.05 then return end
+    frame.ZFAuraPollElapsed = 0
+
+    if IsMouseOverAuraContainer(frame) then
+        if not frame.ZFAuraTooltipSuppressed then
+            frame.ZFAuraTooltipSuppressed = true
+            UnitFrame_OnLeave(frame)
+        end
+    elseif frame.ZFAuraTooltipSuppressed then
+        frame.ZFAuraTooltipSuppressed = false
+        if frame:IsMouseOver() then UnitFrame_OnEnter(frame) end
+    end
+end
+
+local function OnUnitFrameEnter(frame)
+    frame.ZFAuraPollElapsed = 0
+    frame:SetScript("OnUpdate", PollAuraTooltipSuppression)
+    PollAuraTooltipSuppression(frame, 1)
+end
+
+local function OnUnitFrameLeave(frame)
+    frame:SetScript("OnUpdate", nil)
+    frame.ZFAuraTooltipSuppressed = false
+end
+
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
     unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
+    unitFrame:HookScript("OnEnter", OnUnitFrameEnter)
     unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+    unitFrame:HookScript("OnLeave", OnUnitFrameLeave)
     unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
         if attribute == "unit" then frame.unit = value end
     end)

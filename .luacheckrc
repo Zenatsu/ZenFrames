@@ -70,6 +70,7 @@ read_globals = {
     "GameTooltip",
     "GetBuildInfo",
     "GetInstanceInfo",
+    "GetMouseFoci",
     "GetNumGroupMembers",
     "GetNumSpecializations",
     "GetPartyAssignment",
