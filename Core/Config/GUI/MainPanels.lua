@@ -287,7 +287,7 @@ local function CreateProfileSettings(containerParent)
     SpecProfileContainer:AddChild(UseDualSpecializationToggle)
 
     for i = 1, numSpecs do
-        local _, specName = GetSpecializationInfo(i)
+        local _, specName = C_SpecializationInfo.GetSpecializationInfo(i)
         specProfilesList[i] = AG:Create("Dropdown")
         specProfilesList[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
         specProfilesList[i]:SetList(profileKeys)

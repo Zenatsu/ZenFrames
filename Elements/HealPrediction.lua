@@ -1,6 +1,6 @@
-local _, ZF = ...
+local addonName, ZF = ...
 
-local STRIPED_TEXTURE = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png"
+local STRIPED_TEXTURE = "Interface\\AddOns\\" .. addonName .. "\\Media\\Textures\\ThinStripes.png"
 
 local function ApplyHealPredictionTexture(bar, db)
     bar:SetStatusBarTexture(db.UseStripedTexture and STRIPED_TEXTURE or ZF.Media.Foreground)

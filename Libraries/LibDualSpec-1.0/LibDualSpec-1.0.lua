@@ -468,7 +468,7 @@ end
 -- ----------------------------------------------------------------------------
 
 local function eventHandler(self, event)
-	local spec = GetSpecialization() or 0
+	local spec = C_SpecializationInfo.GetSpecialization() or 0
 	-- Newly created characters start at 5 instead of 1 in 9.0.1.
 	if spec == 5 or not CanPlayerUseTalentSpecUI() then
 		spec = 0

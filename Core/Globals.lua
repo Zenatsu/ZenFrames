@@ -1,5 +1,6 @@
 local addonName, ZF = ...
 local oUF = ZF.oUF
+local addonPath = "Interface\\AddOns\\" .. addonName .. "\\"
 ZFG = ZFG or {}
 ZF.BOSS_FRAMES = {}
 ZF.MAX_BOSS_FRAMES = 5
@@ -37,26 +38,26 @@ ZF.AG = LibStub("AceGUI-3.0")
 ZF.LD = LibStub("LibDispel-1.0")
 ZF.LG = LibStub("LibCustomGlow-1.0")
 ZF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
-ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Gradient.png" }
-ZF.INFOBUTTON = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\InfoButton.png:16:16|t "
+ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = addonPath .. "Media\\Textures\\Gradient.png" }
+ZF.INFOBUTTON = "|T" .. addonPath .. "Media\\Textures\\InfoButton.png:16:16|t "
 ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
 ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
 ZF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata(addonName, "Author")
-ZF.ADDON_LOGO = "|TInterface\\AddOns\\ZenFrames\\Media\\Textures\\ZFLogo:11:12|t"
+ZF.ADDON_LOGO = "|T" .. addonPath .. "Media\\Textures\\ZFLogo:11:12|t"
 ZF.STYLIZED_ADDON_NAME = ZF.ADDON_LOGO .. " " .. ZF.ADDON_NAME
 
-ZF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\BetterBlizzard.blp")
-ZF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Dragonflight.tga")
-ZF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Skyline.tga")
-ZF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Stripes.png")
-ZF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ThinStripes.png")
+ZF.LSM:Register("statusbar", "Better Blizzard", addonPath .. "Media\\Textures\\BetterBlizzard.blp")
+ZF.LSM:Register("statusbar", "Dragonflight", addonPath .. "Media\\Textures\\Dragonflight.tga")
+ZF.LSM:Register("statusbar", "Skyline", addonPath .. "Media\\Textures\\Skyline.tga")
+ZF.LSM:Register("statusbar", "Stripes", addonPath .. "Media\\Textures\\Stripes.tga")
+ZF.LSM:Register("statusbar", "Thin Stripes", addonPath .. "Media\\Textures\\ThinStripes.png")
 
-ZF.LSM:Register("font", "Expressway", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\Expressway.ttf")
-ZF.LSM:Register("font", "Avante", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\Avante.ttf")
-ZF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
-ZF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
-ZF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
-ZF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\ZenFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
+ZF.LSM:Register("font", "Expressway", addonPath .. "Media\\Fonts\\Expressway.ttf")
+ZF.LSM:Register("font", "Avante", addonPath .. "Media\\Fonts\\Avante.ttf")
+ZF.LSM:Register("font", "Avantgarde (Book)", addonPath .. "Media\\Fonts\\AvantGarde\\Book.ttf")
+ZF.LSM:Register("font", "Avantgarde (Book Oblique)", addonPath .. "Media\\Fonts\\AvantGarde\\BookOblique.ttf")
+ZF.LSM:Register("font", "Avantgarde (Demi)", addonPath .. "Media\\Fonts\\AvantGarde\\Demi.ttf")
+ZF.LSM:Register("font", "Avantgarde (Regular)", addonPath .. "Media\\Fonts\\AvantGarde\\Regular.ttf")
 
 ZF.StatusTextures = {
     Combat = {
@@ -460,9 +461,9 @@ local SpecsNeedingAltPower = {
 
 function ZF:RequiresAlternativePowerBar()
     local class = select(2, UnitClass("player"))
-    local specIndex = GetSpecialization()
+    local specIndex = C_SpecializationInfo.GetSpecialization()
     if not specIndex then return false end
-    local specID = GetSpecializationInfo(specIndex)
+    local specID = C_SpecializationInfo.GetSpecializationInfo(specIndex)
     local classSpecs = SpecsNeedingAltPower[class]
     if not classSpecs then return false end
     for _, requiredSpec in ipairs(classSpecs) do if specID == requiredSpec then return true end end
