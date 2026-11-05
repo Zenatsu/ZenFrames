@@ -1,4 +1,5 @@
 ## Title: |cFF990007Zen|rFrames
+## Title: |cFF990007Zen|rFrames [Forever] [ExcludeLoadGameType classic, standard]
 ## Interface: 120100, 16001
 ## Version: @project-version@
 ## Author: Zenatsu
