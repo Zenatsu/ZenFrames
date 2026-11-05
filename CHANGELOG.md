@@ -2,7 +2,7 @@
 
 ## v1.1.0
 
-- Added WoW Forever support. A single download now loads on both Retail and Forever
+- Added WoW Forever support.
 - Fixed the unit frame's tooltip showing at the same time as a buff/debuff tooltip when the aura icons overlap the frame
 - Fixed dead totems leaving a black box on the Totems indicator
 - Fixed the target frame fading as if out of range while in melee range as a Warrior
