@@ -224,7 +224,7 @@ do
 	frame:RegisterEvent('CHARACTER_POINTS_CHANGED')
 	frame:RegisterEvent('SPELLS_CHANGED')
 
-	if Retail or TBC or Wrath or MistsPTR then
+	if Retail or TBC or Wrath or MistsPTR or WOW_PROJECT_ID == WOW_PROJECT_CAMELOT then
 		frame:RegisterEvent('LEARNED_SPELL_IN_SKILL_LINE')
 	else
 		frame:RegisterEvent('LEARNED_SPELL_IN_TAB')
