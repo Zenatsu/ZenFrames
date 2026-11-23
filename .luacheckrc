@@ -42,6 +42,7 @@ read_globals = {
     "LibStub", -- Ace3's library registry - an addon-ecosystem convention, not part of Blizzard's API
     "ACCEPT",
     "AbbreviateLargeNumbers",
+    "geterrorhandler",
     "AbbreviateNumbers",
     "Ambiguate",
     "AnchorUtil",
