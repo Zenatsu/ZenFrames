@@ -79,8 +79,8 @@ local function IsPlayerOrTarget(ctx) return ctx.isPlayer or ctx.isTarget end
 local function IsGroup(ctx) return ctx.isParty or ctx.isRaid end
 
 local UNIT_ELEMENTS = {
-    { "CastBar", when = function(ctx) return ctx.UnitDB.CastBar and NotTargetOfTarget(ctx) and not ctx.usesXPBar end },
-    { "XPBar", when = function(ctx) return ctx.usesXPBar end },
+    { "CastBar", when = function(ctx) return ctx.UnitDB.CastBar and NotTargetOfTarget(ctx) and not ctx.usesPetXPBar end },
+    { "PetXPBar", when = function(ctx) return ctx.usesPetXPBar end },
     { "Container", createFirst = true },
     { "HealthBar" },
     { "DispelHighlight", createWhen = function(ctx) return ctx.UnitDB.HealthBar.DispelHighlight and (ctx.isPlayer or ctx.isTarget or ctx.isFocus or ctx.isParty or ctx.isRaid) end },
@@ -129,7 +129,7 @@ local function BuildElementContext(unitFrame, unit)
         isFocusTarget = unit == "focustarget",
         isParty = normalizedUnit == "party",
         isRaid = normalizedUnit == "raid",
-        usesXPBar = isPet and ZF:PetUsesXPBar(),
+        usesPetXPBar = isPet and ZF:UsesPetXPBar(),
     }
 end
 

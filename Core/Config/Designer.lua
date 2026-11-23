@@ -59,7 +59,7 @@ function ZF:LiftDesignerPreviewStrata() -- Try to ensure the strata of the previ
     previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
     if ZF.DESIGNER_CANVAS_FRAME then previewFrame:SetFrameLevel(ZF.DESIGNER_CANVAS_FRAME:GetFrameLevel()+10) end
 
-    for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer", "XPBarContainer"}) do
+    for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer", "PetXPBarContainer"}) do
         if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
     end
 
@@ -400,14 +400,14 @@ local function BuildDesignerRegistry(unit)
         }),
     }
 
-    if unit == "pet" and ZF:PetUsesXPBar() then
+    if unit == "pet" and ZF:UsesPetXPBar() then
         for index, entry in ipairs(registry) do
             if entry.key == "CastBar" then
                 registry[index] = WidgetEntry(unit, {
-                    key = "XPBar", label = "XP Bar", kind = "frame", designerTab = "XPBar",
-                    getDB = function() return ZF:GetUnitDB(nil, unit).XPBar end,
-                    getRegion = function(previewFrame) return previewFrame.XPBarContainer end,
-                    update = function(unitFrame) ZF:UpdateUnitXPBar(unitFrame, unit) end,
+                    key = "PetXPBar", label = "XP Bar", kind = "frame", designerTab = "PetXPBar",
+                    getDB = function() return ZF:GetUnitDB(nil, unit).PetXPBar end,
+                    getRegion = function(previewFrame) return previewFrame.PetXPBarContainer end,
+                    update = function(unitFrame) ZF:UpdateUnitPetXPBar(unitFrame, unit) end,
                 })
                 break
             end

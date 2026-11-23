@@ -1313,7 +1313,7 @@ ZF.DefaultsUnits.pet = {
                     UseClassPortrait = false,
                     Style = "2D",
                 },
-                XPBar = {
+                PetXPBar = {
                     Enabled = true,
                     Width = 244,
                     Height = 8,

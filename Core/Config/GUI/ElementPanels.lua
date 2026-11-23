@@ -271,60 +271,60 @@ local function CreateCastBarSettings(containerParent, unit)
     containerParent:AddChild(CastBarTabGroup)
 end
 
-local function CreateXPBarSettings(containerParent, unit)
-    local XPBarDB = GetUnitDB(unit).XPBar
-    local function UpdateXPBar() UpdateUnitSettings(unit, function() ZF:UpdateUnitXPBar(ZF[unit:upper()], unit) end, "XPBar") end
-    local RefreshXPBarSettings
+local function CreatePetXPBarSettings(containerParent, unit)
+    local PetXPBarDB = GetUnitDB(unit).PetXPBar
+    local function UpdatePetXPBar() UpdateUnitSettings(unit, function() ZF:UpdateUnitPetXPBar(ZF[unit:upper()], unit) end, "PetXPBar") end
+    local RefreshPetXPBarSettings
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "XP Bar Settings")
-    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "XP Bar|r", XPBarDB, UpdateXPBar, {width = STYLE.Widths.Pct33})
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "XP Bar|r", PetXPBarDB, UpdatePetXPBar, {width = STYLE.Widths.Pct33})
 
     local MatchParentWidthToggle = AG:Create("CheckBox")
     MatchParentWidthToggle:SetLabel("Match Frame Width")
-    MatchParentWidthToggle:SetValue(XPBarDB.MatchParentWidth)
-    MatchParentWidthToggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.MatchParentWidth = value UpdateXPBar() RefreshXPBarSettings() end)
+    MatchParentWidthToggle:SetValue(PetXPBarDB.MatchParentWidth)
+    MatchParentWidthToggle:SetCallback("OnValueChanged", function(_, _, value) PetXPBarDB.MatchParentWidth = value UpdatePetXPBar() RefreshPetXPBarSettings() end)
     MatchParentWidthToggle:SetRelativeWidth(STYLE.Widths.Pct33)
     LayoutContainer:AddChild(MatchParentWidthToggle)
     panelsToDisable[#panelsToDisable + 1] = MatchParentWidthToggle
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
-    InverseGrowthDirectionToggle:SetValue(XPBarDB.Inverse)
-    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Inverse = value UpdateXPBar() end)
+    InverseGrowthDirectionToggle:SetValue(PetXPBarDB.Inverse)
+    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) PetXPBarDB.Inverse = value UpdatePetXPBar() end)
     InverseGrowthDirectionToggle:SetRelativeWidth(STYLE.Widths.Pct33)
     LayoutContainer:AddChild(InverseGrowthDirectionToggle)
     panelsToDisable[#panelsToDisable + 1] = InverseGrowthDirectionToggle
 
-    local WidthSlider = GUIBuilders.CreateSlider(LayoutContainer, "Width", XPBarDB, "Width", UpdateXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
+    local WidthSlider = GUIBuilders.CreateSlider(LayoutContainer, "Width", PetXPBarDB, "Width", UpdatePetXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
 
-    local HeightSlider = GUIBuilders.CreateSlider(LayoutContainer, "Height", XPBarDB, "Height", UpdateXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
+    local HeightSlider = GUIBuilders.CreateSlider(LayoutContainer, "Height", PetXPBarDB, "Height", UpdatePetXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = HeightSlider
 
-    local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, XPBarDB, UpdateXPBar, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
+    local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, PetXPBarDB, UpdatePetXPBar, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
     panelsToDisable[#panelsToDisable + 1] = AnchorFromDropdown
     panelsToDisable[#panelsToDisable + 1] = AnchorToDropdown
     panelsToDisable[#panelsToDisable + 1] = XPosSlider
     panelsToDisable[#panelsToDisable + 1] = YPosSlider
 
-    local FrameStrataDropdown = GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", XPBarDB, "FrameStrata", UpdateXPBar, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct33})
+    local FrameStrataDropdown = GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", PetXPBarDB, "FrameStrata", UpdatePetXPBar, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct33})
     panelsToDisable[#panelsToDisable + 1] = FrameStrataDropdown
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
-    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground", XPBarDB, "Foreground", UpdateXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground", PetXPBarDB, "Foreground", UpdatePetXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = ForegroundColorPicker
-    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background", XPBarDB, "Background", UpdateXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background", PetXPBarDB, "Background", UpdatePetXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = BackgroundColorPicker
 
-    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(ColorContainer, XPBarDB, UpdateXPBar, function() RefreshXPBarSettings() end, panelsToDisable)
+    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(ColorContainer, PetXPBarDB, UpdatePetXPBar, function() RefreshPetXPBarSettings() end, panelsToDisable)
 
-    RefreshXPBarSettings = function()
+    RefreshPetXPBarSettings = function()
         BuilderRefresh()
-        WidthSlider:SetDisabled(not XPBarDB.Enabled or XPBarDB.MatchParentWidth)
-        BorderOpacitySlider:SetDisabled(not XPBarDB.Enabled or XPBarDB.BorderThickness == 0)
+        WidthSlider:SetDisabled(not PetXPBarDB.Enabled or PetXPBarDB.MatchParentWidth)
+        BorderOpacitySlider:SetDisabled(not PetXPBarDB.Enabled or PetXPBarDB.BorderThickness == 0)
     end
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Enabled = value UpdateXPBar() RefreshXPBarSettings() end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) PetXPBarDB.Enabled = value UpdatePetXPBar() RefreshPetXPBarSettings() end)
 
-    RefreshXPBarSettings()
+    RefreshPetXPBarSettings()
 end
 
 local function CreatePowerBarSettings(containerParent, unit, updateCallback)
@@ -622,7 +622,7 @@ end
 
 GUIInternal.CreateHealPredictionSettings = CreateHealPredictionSettings
 GUIInternal.CreateCastBarSettings = CreateCastBarSettings
-GUIInternal.CreateXPBarSettings = CreateXPBarSettings
+GUIInternal.CreatePetXPBarSettings = CreatePetXPBarSettings
 GUIInternal.CreatePowerBarSettings = CreatePowerBarSettings
 GUIInternal.CreateSecondaryPowerBarSettings = CreateSecondaryPowerBarSettings
 GUIInternal.CreateAlternativePowerBarSettings = CreateAlternativePowerBarSettings

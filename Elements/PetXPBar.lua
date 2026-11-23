@@ -4,7 +4,7 @@ local XP_EVENTS = { "UNIT_PET_EXPERIENCE", "UNIT_PET", "UNIT_LEVEL" }
 local POLL_INTERVAL = 1
 local PREVIEW_VALUE = 60
 
-function ZF:PetUsesXPBar()
+function ZF:UsesPetXPBar()
 	return ZF.IS_FOREVER and UnitClassBase("player") == "HUNTER"
 end
 
@@ -18,10 +18,10 @@ end
 
 ZF.GetPetExperienceValues = ReadExperience
 
-local function RefreshXPBar(unitFrame)
-	local bar = unitFrame.XPBar
+local function RefreshPetXPBar(unitFrame)
+	local bar = unitFrame.PetXPBar
 	if not bar then return end
-	local container = unitFrame.XPBarContainer
+	local container = unitFrame.PetXPBarContainer
 
 	if unitFrame.isDesignerPreview or (unitFrame.isUnitPreview and not UnitExists("pet")) then
 		bar:SetMinMaxValues(0, 100)
@@ -43,18 +43,18 @@ end
 local function CreateDriver(unitFrame)
 	local driver = CreateFrame("Frame", nil, unitFrame)
 	driver.elapsed = 0
-	driver:SetScript("OnEvent", function() RefreshXPBar(unitFrame) end)
+	driver:SetScript("OnEvent", function() RefreshPetXPBar(unitFrame) end)
 	driver:SetScript("OnUpdate", function(frame, elapsed)
 		frame.elapsed = frame.elapsed + elapsed
 		if frame.elapsed < POLL_INTERVAL then return end
 		frame.elapsed = 0
-		RefreshXPBar(unitFrame)
+		RefreshPetXPBar(unitFrame)
 	end)
 	return driver
 end
 
 local function SetDriverActive(unitFrame, active)
-	local driver = unitFrame.XPBarDriver
+	local driver = unitFrame.PetXPBarDriver
 	if not active then
 		if driver then
 			driver:UnregisterAllEvents()
@@ -63,67 +63,67 @@ local function SetDriverActive(unitFrame, active)
 		return
 	end
 	driver = driver or CreateDriver(unitFrame)
-	unitFrame.XPBarDriver = driver
+	unitFrame.PetXPBarDriver = driver
 	driver:Show()
 	for _, event in ipairs(XP_EVENTS) do
 		if C_EventUtils.IsEventValid(event) then driver:RegisterEvent(event) end
 	end
 end
 
-local function SyncXPBar(unitFrame, unit)
+local function SyncPetXPBar(unitFrame, unit)
 	local UnitDB = ZF:GetUnitDB(unitFrame, unit)
-	local XPBarDB = UnitDB.XPBar
-	local container = unitFrame.XPBarContainer
-	local bar = unitFrame.XPBar
-	unitFrame.XPBarDB = XPBarDB
+	local PetXPBarDB = UnitDB.PetXPBar
+	local container = unitFrame.PetXPBarContainer
+	local bar = unitFrame.PetXPBar
+	unitFrame.PetXPBarDB = PetXPBarDB
 
-	local borderSize = ZF:ApplyBorderStyle(container, XPBarDB, XPBarDB.Height, { 0, 0, 0, 0 })
+	local borderSize = ZF:ApplyBorderStyle(container, PetXPBarDB, PetXPBarDB.Height, { 0, 0, 0, 0 })
 	container:ClearAllPoints()
-	container:SetPoint(XPBarDB.Layout[1], unitFrame, XPBarDB.Layout[2], XPBarDB.Layout[3], XPBarDB.Layout[4])
-	container:SetWidth(XPBarDB.MatchParentWidth and UnitDB.Frame.Width or XPBarDB.Width)
-	container:SetHeight(XPBarDB.Height)
-	if not unitFrame.isDesignerPreview then container:SetFrameStrata(XPBarDB.FrameStrata) end
+	container:SetPoint(PetXPBarDB.Layout[1], unitFrame, PetXPBarDB.Layout[2], PetXPBarDB.Layout[3], PetXPBarDB.Layout[4])
+	container:SetWidth(PetXPBarDB.MatchParentWidth and UnitDB.Frame.Width or PetXPBarDB.Width)
+	container:SetHeight(PetXPBarDB.Height)
+	if not unitFrame.isDesignerPreview then container:SetFrameStrata(PetXPBarDB.FrameStrata) end
 
 	bar:ClearAllPoints()
 	bar:SetPoint("TOPLEFT", container, "TOPLEFT", borderSize, -borderSize)
 	bar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -borderSize, borderSize)
 	bar:SetStatusBarTexture(ZF.Media.Foreground)
-	bar:SetStatusBarColor(unpack(XPBarDB.Foreground))
-	bar:SetReverseFill(XPBarDB.Inverse and true or false)
+	bar:SetStatusBarColor(unpack(PetXPBarDB.Foreground))
+	bar:SetReverseFill(PetXPBarDB.Inverse and true or false)
 	bar.Background:SetTexture(ZF.Media.Background)
-	bar.Background:SetVertexColor(unpack(XPBarDB.Background))
+	bar.Background:SetVertexColor(unpack(PetXPBarDB.Background))
 end
 
-function ZF:CreateUnitXPBar(unitFrame, unit)
-	if not ZF:PetUsesXPBar() or unitFrame.XPBar then return unitFrame.XPBar end
+function ZF:CreateUnitPetXPBar(unitFrame, unit)
+	if not ZF:UsesPetXPBar() or unitFrame.PetXPBar then return unitFrame.PetXPBar end
 
-	local container = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_XPBarContainer", unitFrame, "BackdropTemplate")
+	local container = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_PetXPBarContainer", unitFrame, "BackdropTemplate")
 	container:Hide()
 
-	local bar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_XPBar", container)
+	local bar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_PetXPBar", container)
 	bar:SetFrameLevel(container:GetFrameLevel() + 1)
 	bar:SetStatusBarTexture(ZF.Media.Foreground)
 	bar.Background = bar:CreateTexture(nil, "BACKGROUND")
 	bar.Background:SetAllPoints(bar)
 
-	unitFrame.XPBarContainer = container
-	unitFrame.XPBar = bar
-	SyncXPBar(unitFrame, unit)
+	unitFrame.PetXPBarContainer = container
+	unitFrame.PetXPBar = bar
+	SyncPetXPBar(unitFrame, unit)
 	return bar
 end
 
-function ZF:UpdateUnitXPBar(unitFrame, unit)
-	if not ZF:PetUsesXPBar() or not unitFrame then return end
-	local XPBarDB = ZF:GetUnitDB(unitFrame, unit).XPBar
-	if not XPBarDB then return end
+function ZF:UpdateUnitPetXPBar(unitFrame, unit)
+	if not ZF:UsesPetXPBar() or not unitFrame then return end
+	local PetXPBarDB = ZF:GetUnitDB(unitFrame, unit).PetXPBar
+	if not PetXPBarDB then return end
 
-	if XPBarDB.Enabled then
-		ZF:CreateUnitXPBar(unitFrame, unit)
-		SyncXPBar(unitFrame, unit)
+	if PetXPBarDB.Enabled then
+		ZF:CreateUnitPetXPBar(unitFrame, unit)
+		SyncPetXPBar(unitFrame, unit)
 		SetDriverActive(unitFrame, not unitFrame.isDesignerPreview)
-		RefreshXPBar(unitFrame)
-	elseif unitFrame.XPBar then
+		RefreshPetXPBar(unitFrame)
+	elseif unitFrame.PetXPBar then
 		SetDriverActive(unitFrame, false)
-		unitFrame.XPBarContainer:Hide()
+		unitFrame.PetXPBarContainer:Hide()
 	end
 end
