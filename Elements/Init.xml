@@ -3,7 +3,7 @@
 	<Script file="Auras.lua"/>
 	<Script file="Container.lua"/>
 	<Script file="CastBar.lua"/>
-	<Script file="XPBar.lua"/>
+	<Script file="PetXPBar.lua"/>
 	<Script file="HealPrediction.lua"/>
 	<Script file="HealthBar.lua"/>
 	<Script file="Movers.lua"/>
