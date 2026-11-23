@@ -198,13 +198,7 @@ local function CreateAuraLayoutSettings(containerParent, unit, auraDB)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
-	local AnchorParentDropdown = AG:Create("Dropdown")
-	AnchorParentDropdown:SetList(AuraAnchorParents[1], AuraAnchorParents[2])
-	AnchorParentDropdown:SetLabel("Anchor Parent")
-	AnchorParentDropdown:SetValue(AuraDB.AnchorRegion)
-	AnchorParentDropdown:SetRelativeWidth(STYLE.Widths.Pct25)
-	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.AnchorRegion = value UpdateAuras() end)
-	LayoutContainer:AddChild(AnchorParentDropdown)
+	GUIBuilders.CreateDropdown(LayoutContainer, "Anchor Parent", AuraDB, "AnchorRegion", UpdateAuras, {list = AuraAnchorParents[1], order = AuraAnchorParents[2], width = STYLE.Widths.Pct25})
 
     AddAnchorFromToDropdowns(LayoutContainer, AuraDB.Layout, UpdateAuras, STYLE.Widths.Pct25)
 
@@ -224,13 +218,7 @@ local function CreateAuraLayoutSettings(containerParent, unit, auraDB)
 
     AddXYPositionSliders(LayoutContainer, AuraDB.Layout, UpdateAuras, STYLE.Widths.Pct25)
 
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(AuraDB.Size)
-    SizeSlider:SetSliderValues(unpack(STYLE.Sliders.IconSize))
-    SizeSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Size = value UpdateAuras() end)
-    LayoutContainer:AddChild(SizeSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Size", AuraDB, "Size", UpdateAuras, {sliderValues = STYLE.Sliders.IconSize, width = STYLE.Widths.Pct25})
 
     local SpacingSlider = AG:Create("Slider")
     SpacingSlider:SetLabel("Spacing")
@@ -302,13 +290,7 @@ local function CreateAuraCountSettings(containerParent, unit, auraDB)
     AddAnchorFromToDropdowns(CountContainer, AuraDB.Count.Layout, UpdateAuras, STYLE.Widths.Pct50)
     AddXYPositionSliders(CountContainer, AuraDB.Count.Layout, UpdateAuras, STYLE.Widths.Pct33)
 
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(AuraDB.Count.FontSize)
-    FontSizeSlider:SetSliderValues(unpack(STYLE.Sliders.FontSize))
-    FontSizeSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value UpdateAuras() end)
-    CountContainer:AddChild(FontSizeSlider)
+    GUIBuilders.CreateSlider(CountContainer, "Font Size", AuraDB.Count, "FontSize", UpdateAuras, {sliderValues = STYLE.Sliders.FontSize, width = STYLE.Widths.Pct33})
 
     HideStacksToggle:SetDisabled(not AuraDB.Enabled)
     GUIWidgets.DeepDisable(CountContainer, not AuraDB.Enabled or AuraDB.Count.HideStacks, HideStacksToggle)
@@ -354,19 +336,9 @@ local function CreatePrivateAuraBuffConfigSettings(containerParent, unit, update
     local _, Refresh, panelsToDisable = GUIBuilders.CreateEnableToggle(GeneralContainer, "Enable " .. STYLE.Palette.SelectedText .. "Private Auras|r", PrivateAurasDB, updateCallback, {width = STYLE.Widths.Pct33})
     panelsToDisable[1] = GeneralContainer
 
-    local DisableCooldownToggle = AG:Create("CheckBox")
-    DisableCooldownToggle:SetLabel("Disable Cooldown Spiral")
-    DisableCooldownToggle:SetValue(PrivateAurasDB.DisableCooldown)
-    DisableCooldownToggle:SetRelativeWidth(STYLE.Widths.Pct33)
-    DisableCooldownToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldown = value updateCallback() end)
-    GeneralContainer:AddChild(DisableCooldownToggle)
+    GUIBuilders.CreateCheckbox(GeneralContainer, "Disable Cooldown Spiral", PrivateAurasDB, "DisableCooldown", updateCallback, {width = STYLE.Widths.Pct33})
 
-    local DisableDurationTextToggle = AG:Create("CheckBox")
-    DisableDurationTextToggle:SetLabel("Disable Cooldown Text")
-    DisableDurationTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
-    DisableDurationTextToggle:SetRelativeWidth(STYLE.Widths.Pct33)
-    DisableDurationTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value updateCallback() end)
-    GeneralContainer:AddChild(DisableDurationTextToggle)
+    GUIBuilders.CreateCheckbox(GeneralContainer, "Disable Cooldown Text", PrivateAurasDB, "DisableCooldownText", updateCallback, {width = STYLE.Widths.Pct33})
 
     local BorderScaleSlider = AG:Create("Slider")
     BorderScaleSlider:SetLabel("Border Scale")
@@ -376,13 +348,7 @@ local function CreatePrivateAuraBuffConfigSettings(containerParent, unit, update
     BorderScaleSlider:SetCallback("OnValueChanged", function(widget, _, value) if value < 0 then value = -1 widget:SetValue(value) end PrivateAurasDB.BorderScale = value updateCallback() end)
     GeneralContainer:AddChild(BorderScaleSlider)
 
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(PrivateAurasDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(STYLE.Widths.Pct50)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.FrameStrata = value updateCallback() end)
-    GeneralContainer:AddChild(FrameStrataDropdown)
+    GUIBuilders.CreateDropdown(GeneralContainer, "Frame Strata", PrivateAurasDB, "FrameStrata", updateCallback, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct50})
 
     Refresh()
 
@@ -395,24 +361,12 @@ local function CreatePrivateAuraLayoutSettings(containerParent, unit, updateCall
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
     local SizeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Size & Spacing")
 
-	local AnchorParentDropdown = AG:Create("Dropdown")
-	AnchorParentDropdown:SetList(AuraAnchorParents[1], AuraAnchorParents[2])
-	AnchorParentDropdown:SetLabel("Anchor Parent")
-	AnchorParentDropdown:SetValue(PrivateAurasDB.AnchorRegion)
-	AnchorParentDropdown:SetRelativeWidth(STYLE.Widths.Pct33)
-	AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.AnchorRegion = value updateCallback() end)
-	LayoutContainer:AddChild(AnchorParentDropdown)
+	GUIBuilders.CreateDropdown(LayoutContainer, "Anchor Parent", PrivateAurasDB, "AnchorRegion", updateCallback, {list = AuraAnchorParents[1], order = AuraAnchorParents[2], width = STYLE.Widths.Pct33})
 
     AddAnchorFromToDropdowns(LayoutContainer, PrivateAurasDB.Layout, updateCallback, STYLE.Widths.Pct33)
     AddXYPositionSliders(LayoutContainer, PrivateAurasDB.Layout, updateCallback, STYLE.Widths.Pct50)
 
-    local InitialAnchorDropdown = AG:Create("Dropdown")
-    InitialAnchorDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    InitialAnchorDropdown:SetLabel("Initial Aura Anchor")
-    InitialAnchorDropdown:SetValue(PrivateAurasDB.InitialAnchor)
-    InitialAnchorDropdown:SetRelativeWidth(STYLE.Widths.Pct33)
-    InitialAnchorDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.InitialAnchor = value updateCallback() end)
-    LayoutContainer:AddChild(InitialAnchorDropdown)
+    GUIBuilders.CreateDropdown(LayoutContainer, "Initial Aura Anchor", PrivateAurasDB, "InitialAnchor", updateCallback, {list = AnchorPoints[1], order = AnchorPoints[2], width = STYLE.Widths.Pct33})
 
     local GrowthXDropdown = AG:Create("Dropdown")
     GrowthXDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"LEFT", "RIGHT"})
@@ -430,29 +384,11 @@ local function CreatePrivateAuraLayoutSettings(containerParent, unit, updateCall
     GrowthYDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthY = value updateCallback() end)
     LayoutContainer:AddChild(GrowthYDropdown)
 
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Size")
-    SizeSlider:SetValue(PrivateAurasDB.Size)
-    SizeSlider:SetSliderValues(unpack(STYLE.Sliders.PrivateAuraSize))
-    SizeSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Size = value updateCallback() end)
-    SizeContainer:AddChild(SizeSlider)
+    GUIBuilders.CreateSlider(SizeContainer, "Size", PrivateAurasDB, "Size", updateCallback, {sliderValues = STYLE.Sliders.PrivateAuraSize, width = STYLE.Widths.Pct33})
 
-    local SpacingSlider = AG:Create("Slider")
-    SpacingSlider:SetLabel("Spacing")
-    SpacingSlider:SetValue(PrivateAurasDB.Spacing)
-    SpacingSlider:SetSliderValues(unpack(STYLE.Sliders.PrivateAuraSpacing))
-    SpacingSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Spacing = value updateCallback() end)
-    SizeContainer:AddChild(SpacingSlider)
+    GUIBuilders.CreateSlider(SizeContainer, "Spacing", PrivateAurasDB, "Spacing", updateCallback, {sliderValues = STYLE.Sliders.PrivateAuraSpacing, width = STYLE.Widths.Pct33})
 
-    local NumSlider = AG:Create("Slider")
-    NumSlider:SetLabel("Private Auras To Display")
-    NumSlider:SetValue(PrivateAurasDB.Num)
-    NumSlider:SetSliderValues(unpack(STYLE.Sliders.PrivateAuraCount))
-    NumSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value updateCallback() end)
-    SizeContainer:AddChild(NumSlider)
+    GUIBuilders.CreateSlider(SizeContainer, "Private Auras To Display", PrivateAurasDB, "Num", updateCallback, {sliderValues = STYLE.Sliders.PrivateAuraCount, width = STYLE.Widths.Pct33})
 
     local disabled = not PrivateAurasDB.Enabled
     GUIWidgets.DeepDisable(LayoutContainer, disabled)
@@ -503,13 +439,7 @@ function GUIInternal.CreateAuraSettings(containerParent, unit, updateCallback)
     Spacer:SetRelativeWidth(STYLE.Widths.Pct29)
     containerParent:AddChild(Spacer)
 
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(STYLE.Widths.Pct30)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value updateCallback() end)
-    containerParent:AddChild(FrameStrataDropdown)
+    GUIBuilders.CreateDropdown(containerParent, "Frame Strata", AurasDB, "FrameStrata", updateCallback, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct30})
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         ZF:SaveSubTab(unit, "Auras", AuraTab)

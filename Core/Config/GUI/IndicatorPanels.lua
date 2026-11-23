@@ -353,13 +353,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[5] = value updateCallback() end)
     LayoutContainer:AddChild(SpacingSlider)
 
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Icon Size")
-    SizeSlider:SetValue(TotemsIndicatorDB.Size)
-    SizeSlider:SetSliderValues(unpack(STYLE.Sliders.IconSize))
-    SizeSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Icon Size", TotemsIndicatorDB, "Size", updateCallback, {sliderValues = STYLE.Sliders.IconSize, width = STYLE.Widths.Pct25})
 
     local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Text Breakpoints")
     panelsToDisable[3] = BreakpointContainer

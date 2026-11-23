@@ -49,13 +49,7 @@ local function CreatePredictionBarPanel(containerParent, label, subDB, FrameDB, 
 
     GUIBuilders.CreateColorBlock(Panel, options.colorLabel, subDB, "Color", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct33})
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(subDB.Height)
-    HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) subDB.Height = value updateCallback() end)
-    Panel:AddChild(HeightSlider)
+    local HeightSlider = GUIBuilders.CreateSlider(Panel, "Height", subDB, "Height", updateCallback, {sliderValues = {1, FrameDB.Height - 2, 0.1}, width = STYLE.Widths.Pct33})
 
     local PositionDropdown = AG:Create("Dropdown")
     PositionDropdown:SetList(HealPredictionPositionList, HealPredictionPositionOrder)
@@ -132,30 +126,12 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     InverseGrowthDirectionToggle:SetRelativeWidth(STYLE.Widths.Pct33)
     LayoutContainer:AddChild(InverseGrowthDirectionToggle)
 
-    local WidthSlider = AG:Create("Slider")
-    WidthSlider:SetLabel("Width")
-    WidthSlider:SetValue(CastBarDB.Width)
-    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
-    WidthSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Width = value updateCallback() end)
-    LayoutContainer:AddChild(WidthSlider)
+    local WidthSlider = GUIBuilders.CreateSlider(LayoutContainer, "Width", CastBarDB, "Width", updateCallback, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(CastBarDB.Height)
-    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Height = value updateCallback() end)
-    LayoutContainer:AddChild(HeightSlider)
+    local HeightSlider = GUIBuilders.CreateSlider(LayoutContainer, "Height", CastBarDB, "Height", updateCallback, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = HeightSlider
 
-    local HoldTimeSlider = AG:Create("Slider")
-    HoldTimeSlider:SetLabel("Interrupted/Failed Hold Time")
-    HoldTimeSlider:SetValue(CastBarDB.HoldTime)
-    HoldTimeSlider:SetSliderValues(unpack(STYLE.Sliders.HoldTime))
-    HoldTimeSlider:SetRelativeWidth(STYLE.Widths.Pct100)
-    HoldTimeSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.HoldTime = value updateCallback() end)
-    LayoutContainer:AddChild(HoldTimeSlider)
+    local HoldTimeSlider = GUIBuilders.CreateSlider(LayoutContainer, "Interrupted/Failed Hold Time", CastBarDB, "HoldTime", updateCallback, {sliderValues = STYLE.Sliders.HoldTime, width = STYLE.Widths.Pct100})
     panelsToDisable[#panelsToDisable + 1] = HoldTimeSlider
 
     local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, CastBarDB, updateCallback, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
@@ -164,13 +140,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     panelsToDisable[#panelsToDisable + 1] = XPosSlider
     panelsToDisable[#panelsToDisable + 1] = YPosSlider
 
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(CastBarDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(STYLE.Widths.Pct33)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.FrameStrata = value updateCallback() end)
-    LayoutContainer:AddChild(FrameStrataDropdown)
+    GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", CastBarDB, "FrameStrata", updateCallback, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct33})
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
 
@@ -250,13 +220,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
 
     local SpellNameLayoutContainer = GUIBuilders.CreateLayoutPositionBlock(SpellNameContainer, SpellNameTextDB, updateCallback, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", groupLabel = "Layout", xyWidth = STYLE.Widths.Pct25, sizeWidth = STYLE.Widths.Pct25})
 
-    local MaxCharsSlider = AG:Create("Slider")
-    MaxCharsSlider:SetLabel("Max Characters")
-    MaxCharsSlider:SetValue(SpellNameTextDB.MaxChars)
-    MaxCharsSlider:SetSliderValues(unpack(STYLE.Sliders.MaxChars))
-    MaxCharsSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    MaxCharsSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.MaxChars = value updateCallback() end)
-    SpellNameLayoutContainer:AddChild(MaxCharsSlider)
+    GUIBuilders.CreateSlider(SpellNameLayoutContainer, "Max Characters", SpellNameTextDB, "MaxChars", updateCallback, {sliderValues = STYLE.Sliders.MaxChars, width = STYLE.Widths.Pct25})
 
     Refresh()
 end
@@ -331,21 +295,9 @@ local function CreateXPBarSettings(containerParent, unit)
     LayoutContainer:AddChild(InverseGrowthDirectionToggle)
     panelsToDisable[#panelsToDisable + 1] = InverseGrowthDirectionToggle
 
-    local WidthSlider = AG:Create("Slider")
-    WidthSlider:SetLabel("Width")
-    WidthSlider:SetValue(XPBarDB.Width)
-    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
-    WidthSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Width = value UpdateXPBar() end)
-    LayoutContainer:AddChild(WidthSlider)
+    local WidthSlider = GUIBuilders.CreateSlider(LayoutContainer, "Width", XPBarDB, "Width", UpdateXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(XPBarDB.Height)
-    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Height = value UpdateXPBar() end)
-    LayoutContainer:AddChild(HeightSlider)
+    local HeightSlider = GUIBuilders.CreateSlider(LayoutContainer, "Height", XPBarDB, "Height", UpdateXPBar, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = HeightSlider
 
     local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, XPBarDB, UpdateXPBar, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
@@ -354,13 +306,7 @@ local function CreateXPBarSettings(containerParent, unit)
     panelsToDisable[#panelsToDisable + 1] = XPosSlider
     panelsToDisable[#panelsToDisable + 1] = YPosSlider
 
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(XPBarDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(STYLE.Widths.Pct33)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.FrameStrata = value UpdateXPBar() end)
-    LayoutContainer:AddChild(FrameStrataDropdown)
+    local FrameStrataDropdown = GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", XPBarDB, "FrameStrata", UpdateXPBar, {list = FrameStrataList[1], order = FrameStrataList[2], width = STYLE.Widths.Pct33})
     panelsToDisable[#panelsToDisable + 1] = FrameStrataDropdown
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
@@ -414,13 +360,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Position = value UpdatePowerBarSettings() end)
     LayoutContainer:AddChild(PositionDropdown)
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(PowerBarDB.Height)
-    HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value UpdatePowerBarSettings() end)
-    LayoutContainer:AddChild(HeightSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Height", PowerBarDB, "Height", UpdatePowerBarSettings, {sliderValues = {1, FrameDB.Height - 2, 0.1}, width = STYLE.Widths.Pct25})
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
     panelsToDisable[2] = ColorContainer
@@ -483,14 +423,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", PowerBarDB, "Foreground", UpdatePowerBarSettings, {hasAlpha = true, width = STYLE.Widths.Pct33})
     local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", PowerBarDB, "Background", UpdatePowerBarSettings, {hasAlpha = true, width = STYLE.Widths.Pct33})
 
-    local BackgroundMultiplierSlider = AG:Create("Slider")
-    BackgroundMultiplierSlider:SetLabel("Background Multiplier")
-    BackgroundMultiplierSlider:SetValue(PowerBarDB.BackgroundMultiplier)
-    BackgroundMultiplierSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BackgroundMultiplierSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BackgroundMultiplier = value UpdatePowerBarSettings() end)
-    BackgroundMultiplierSlider:SetIsPercent(true)
-    ColorContainer:AddChild(BackgroundMultiplierSlider)
+    local BackgroundMultiplierSlider = GUIBuilders.CreateSlider(ColorContainer, "Background Multiplier", PowerBarDB, "BackgroundMultiplier", UpdatePowerBarSettings, {sliderValues = STYLE.Sliders.Opacity, width = STYLE.Widths.Pct33, isPercent = true})
 
     GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", PowerBarDB, "BorderColor", UpdatePowerBarSettings, {width = STYLE.Widths.Pct25})
 
@@ -540,13 +473,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Position = value updateCallback() end)
     LayoutContainer:AddChild(PositionDropdown)
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(SecondaryPowerBarDB.Height)
-    HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Height = value updateCallback() end)
-    LayoutContainer:AddChild(HeightSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Height", SecondaryPowerBarDB, "Height", updateCallback, {sliderValues = {1, FrameDB.Height - 2, 0.1}, width = STYLE.Widths.Pct33})
 
     local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
     panelsToDisable[2] = ColorContainer
@@ -575,14 +502,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     BorderToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.BorderThickness = value and 1 or 0 updateCallback() RefreshSecondaryPowerBarGUI() end)
     ColorContainer:AddChild(BorderToggle)
 
-    local BorderOpacitySlider = AG:Create("Slider")
-    BorderOpacitySlider:SetLabel("Border Opacity")
-    BorderOpacitySlider:SetValue(SecondaryPowerBarDB.BorderOpacity)
-    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.BorderOpacity = value updateCallback() end)
-    BorderOpacitySlider:SetIsPercent(true)
-    ColorContainer:AddChild(BorderOpacitySlider)
+    local BorderOpacitySlider = GUIBuilders.CreateSlider(ColorContainer, "Border Opacity", SecondaryPowerBarDB, "BorderOpacity", updateCallback, {sliderValues = STYLE.Sliders.Opacity, width = STYLE.Widths.Pct25, isPercent = true})
 
     RefreshSecondaryPowerBarGUI = function()
         BuilderRefresh()
@@ -615,21 +535,9 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
     panelsToDisable[2] = LayoutContainer
 
-    local WidthSlider = AG:Create("Slider")
-    WidthSlider:SetLabel("Width")
-    WidthSlider:SetValue(AlternativePowerBarDB.Width)
-    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
-    WidthSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Width = value updateCallback() end)
-    LayoutContainer:AddChild(WidthSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Width", AlternativePowerBarDB, "Width", updateCallback, {sliderValues = STYLE.Sliders.Dimension, width = STYLE.Widths.Pct50})
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(AlternativePowerBarDB.Height)
-    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.BarHeight))
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Height = value updateCallback() end)
-    LayoutContainer:AddChild(HeightSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Height", AlternativePowerBarDB, "Height", updateCallback, {sliderValues = STYLE.Sliders.BarHeight, width = STYLE.Widths.Pct50})
 
     GUIBuilders.CreateLayoutPositionBlock(nil, AlternativePowerBarDB, updateCallback, {container = LayoutContainer})
 
@@ -690,30 +598,11 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
 
     GUIBuilders.CreateLayoutPositionBlock(nil, PortraitDB, updateCallback, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
 
-    local ZoomSlider = AG:Create("Slider")
-    ZoomSlider:SetLabel("Zoom")
-    ZoomSlider:SetValue(PortraitDB.Zoom)
-    ZoomSlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    ZoomSlider:SetRelativeWidth(STYLE.Widths.Pct33)
-    ZoomSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Zoom = value updateCallback() end)
-    ZoomSlider:SetIsPercent(true)
-    LayoutContainer:AddChild(ZoomSlider)
+    local ZoomSlider = GUIBuilders.CreateSlider(LayoutContainer, "Zoom", PortraitDB, "Zoom", updateCallback, {sliderValues = STYLE.Sliders.Opacity, width = STYLE.Widths.Pct33, isPercent = true})
 
-    local WidthSlider = AG:Create("Slider")
-    WidthSlider:SetLabel("Width")
-    WidthSlider:SetValue(PortraitDB.Width)
-    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.PortraitSize))
-    WidthSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Width = value updateCallback() end)
-    LayoutContainer:AddChild(WidthSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Width", PortraitDB, "Width", updateCallback, {sliderValues = STYLE.Sliders.PortraitSize, width = STYLE.Widths.Pct50})
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(PortraitDB.Height)
-    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.PortraitSize))
-    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct50)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
-    LayoutContainer:AddChild(HeightSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Height", PortraitDB, "Height", updateCallback, {sliderValues = STYLE.Sliders.PortraitSize, width = STYLE.Widths.Pct50})
 
     local BorderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Border")
     panelsToDisable[3] = BorderContainer
