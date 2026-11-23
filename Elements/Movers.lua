@@ -47,6 +47,7 @@ local function RefreshMover(frameMover)
 		frameMover:SetPoint("TOPLEFT", unitFrame, "TOPLEFT")
 		frameMover:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT")
 	end
+	ZF:RefreshMouseConflicts()
 end
 
 local function NudgeMover(frameMover, dx, dy)
@@ -935,8 +936,8 @@ function ZF:CreateMover(unit)
 	end)
 	frameMover:SetScript("OnDragStop", function() if InCombatLockdown() then frameMover:StopMovingOrSizing() RefreshMover(frameMover) else StopMoving(frameMover) end end)
 	frameMover:SetScript("OnShow", RefreshMover)
-	frameMover:SetScript("OnEnter", function(self) self.hovered = true UpdateMoverVisual(self) end)
-	frameMover:SetScript("OnLeave", function(self) self.hovered = false UpdateMoverVisual(self) end)
+	frameMover:SetScript("OnEnter", function(self) self.hovered = true UpdateMoverVisual(self) ZF:ShowMouseConflictTooltip(self) end)
+	frameMover:SetScript("OnLeave", function(self) self.hovered = false UpdateMoverVisual(self) ZF:HideMouseConflictTooltip(self) end)
 
 	frameMover.Text = frameMover:CreateFontString(nil, "OVERLAY")
 	frameMover.Text:SetPoint("CENTER")
@@ -1061,6 +1062,7 @@ function ZF:SetMoverOverlayShown(shown)
 		GetMoverClickCatcher():Hide()
 		GetMoverControlPanel():Hide()
 	end
+	ZF:RefreshMouseConflicts()
 end
 
 function ZF:ToggleMovers(skipReopenGUI)
@@ -1078,6 +1080,7 @@ function ZF:ToggleMovers(skipReopenGUI)
 	if not ZF.MOVERS_UNLOCKED then
         ZF:SetMoverSelection(nil)
     end
+	ZF:RefreshMouseConflicts()
 
 	return ZF.MOVERS_UNLOCKED
 end

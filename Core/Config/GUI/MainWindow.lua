@@ -189,7 +189,11 @@ function ZF:CreateGUI()
             end
 
             if hasCastBarPortrait then
-                designerTab[#designerTab + 1] = { text = "Cast Bar", value = "CastBar" }
+                if unit == "pet" and ZF:PetUsesXPBar() then
+                    designerTab[#designerTab + 1] = { text = "XP Bar", value = "XPBar" }
+                else
+                    designerTab[#designerTab + 1] = { text = "Cast Bar", value = "CastBar" }
+                end
                 designerTab[#designerTab + 1] = { text = "Portrait", value = "Portrait" }
             end
             designerTab[#designerTab + 1] = { text = "Indicators", value = "Indicators" }
@@ -227,6 +231,8 @@ function ZF:CreateGUI()
             if startTab == "SecondaryPowerBar" and not playerHasSecondaryPower then startTab = "Frame" end
             if startTab == "AlternativePowerBar" and not requiresAlternativePowerBar then startTab = "Frame" end
             if (startTab == "CastBar" or startTab == "Portrait") and not hasCastBarPortrait then startTab = "Frame" end
+            local petUsesXPBar = unit == "pet" and ZF:PetUsesXPBar()
+            if (startTab == "CastBar" and petUsesXPBar) or (startTab == "XPBar" and not petUsesXPBar) then startTab = "Frame" end
             DesignerTabGroup:SelectTab(startTab)
         end
         if DesignerUnitTabs[MainTab] then

@@ -327,6 +327,100 @@ local function CreateCastBarSettings(containerParent, unit)
     containerParent:AddChild(CastBarTabGroup)
 end
 
+local function CreateXPBarSettings(containerParent, unit)
+    local XPBarDB = GetUnitDB(unit).XPBar
+    local function UpdateXPBar() UpdateUnitSettings(unit, function() ZF:UpdateUnitXPBar(ZF[unit:upper()], unit) end, "XPBar") end
+    local RefreshXPBarSettings
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "XP Bar Settings")
+    local Toggle, BuilderRefresh, panelsToDisable = GUIBuilders.CreateEnableToggle(LayoutContainer, "Enable " .. STYLE.Palette.SelectedText .. "XP Bar|r", XPBarDB, UpdateXPBar, {width = STYLE.Widths.Pct33})
+
+    local MatchParentWidthToggle = AG:Create("CheckBox")
+    MatchParentWidthToggle:SetLabel("Match Frame Width")
+    MatchParentWidthToggle:SetValue(XPBarDB.MatchParentWidth)
+    MatchParentWidthToggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.MatchParentWidth = value UpdateXPBar() RefreshXPBarSettings() end)
+    MatchParentWidthToggle:SetRelativeWidth(STYLE.Widths.Pct33)
+    LayoutContainer:AddChild(MatchParentWidthToggle)
+    panelsToDisable[#panelsToDisable + 1] = MatchParentWidthToggle
+
+    local InverseGrowthDirectionToggle = AG:Create("CheckBox")
+    InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
+    InverseGrowthDirectionToggle:SetValue(XPBarDB.Inverse)
+    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Inverse = value UpdateXPBar() end)
+    InverseGrowthDirectionToggle:SetRelativeWidth(STYLE.Widths.Pct33)
+    LayoutContainer:AddChild(InverseGrowthDirectionToggle)
+    panelsToDisable[#panelsToDisable + 1] = InverseGrowthDirectionToggle
+
+    local WidthSlider = AG:Create("Slider")
+    WidthSlider:SetLabel("Width")
+    WidthSlider:SetValue(XPBarDB.Width)
+    WidthSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
+    WidthSlider:SetRelativeWidth(STYLE.Widths.Pct50)
+    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Width = value UpdateXPBar() end)
+    LayoutContainer:AddChild(WidthSlider)
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(XPBarDB.Height)
+    HeightSlider:SetSliderValues(unpack(STYLE.Sliders.Dimension))
+    HeightSlider:SetRelativeWidth(STYLE.Widths.Pct50)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Height = value UpdateXPBar() end)
+    LayoutContainer:AddChild(HeightSlider)
+    panelsToDisable[#panelsToDisable + 1] = HeightSlider
+
+    local _, XPosSlider, YPosSlider, _, AnchorFromDropdown, AnchorToDropdown = GUIBuilders.CreateLayoutPositionBlock(nil, XPBarDB, UpdateXPBar, {container = LayoutContainer, xyWidth = STYLE.Widths.Pct33})
+    panelsToDisable[#panelsToDisable + 1] = AnchorFromDropdown
+    panelsToDisable[#panelsToDisable + 1] = AnchorToDropdown
+    panelsToDisable[#panelsToDisable + 1] = XPosSlider
+    panelsToDisable[#panelsToDisable + 1] = YPosSlider
+
+    local FrameStrataDropdown = AG:Create("Dropdown")
+    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
+    FrameStrataDropdown:SetLabel("Frame Strata")
+    FrameStrataDropdown:SetValue(XPBarDB.FrameStrata)
+    FrameStrataDropdown:SetRelativeWidth(STYLE.Widths.Pct33)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.FrameStrata = value UpdateXPBar() end)
+    LayoutContainer:AddChild(FrameStrataDropdown)
+    panelsToDisable[#panelsToDisable + 1] = FrameStrataDropdown
+
+    local ColorContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors & Toggles")
+    local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground", XPBarDB, "Foreground", UpdateXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
+    panelsToDisable[#panelsToDisable + 1] = ForegroundColorPicker
+    local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background", XPBarDB, "Background", UpdateXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
+    panelsToDisable[#panelsToDisable + 1] = BackgroundColorPicker
+
+    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", XPBarDB, "BorderColor", UpdateXPBar, {width = STYLE.Widths.Pct25})
+    panelsToDisable[#panelsToDisable + 1] = BorderColorPicker
+
+    local BorderThicknessSlider = AG:Create("Slider")
+    BorderThicknessSlider:SetLabel("Border Thickness")
+    BorderThicknessSlider:SetValue(XPBarDB.BorderThickness)
+    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
+    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.BorderThickness = value UpdateXPBar() RefreshXPBarSettings() end)
+    ColorContainer:AddChild(BorderThicknessSlider)
+    panelsToDisable[#panelsToDisable + 1] = BorderThicknessSlider
+
+    local BorderOpacitySlider = AG:Create("Slider")
+    BorderOpacitySlider:SetLabel("Border Opacity")
+    BorderOpacitySlider:SetValue(XPBarDB.BorderOpacity)
+    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.BorderOpacity = value UpdateXPBar() end)
+    BorderOpacitySlider:SetIsPercent(true)
+    ColorContainer:AddChild(BorderOpacitySlider)
+    panelsToDisable[#panelsToDisable + 1] = BorderOpacitySlider
+
+    RefreshXPBarSettings = function()
+        BuilderRefresh()
+        WidthSlider:SetDisabled(not XPBarDB.Enabled or XPBarDB.MatchParentWidth)
+        BorderOpacitySlider:SetDisabled(not XPBarDB.Enabled or XPBarDB.BorderThickness == 0)
+    end
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.Enabled = value UpdateXPBar() RefreshXPBarSettings() end)
+
+    RefreshXPBarSettings()
+end
+
 local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = GetUnitDB(unit).Frame
     local PowerBarDB = GetUnitDB(unit).PowerBar
@@ -713,6 +807,7 @@ end
 
 GUIInternal.CreateHealPredictionSettings = CreateHealPredictionSettings
 GUIInternal.CreateCastBarSettings = CreateCastBarSettings
+GUIInternal.CreateXPBarSettings = CreateXPBarSettings
 GUIInternal.CreatePowerBarSettings = CreatePowerBarSettings
 GUIInternal.CreateSecondaryPowerBarSettings = CreateSecondaryPowerBarSettings
 GUIInternal.CreateAlternativePowerBarSettings = CreateAlternativePowerBarSettings

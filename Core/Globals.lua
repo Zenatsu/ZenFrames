@@ -111,6 +111,15 @@ ZF.ClassificationTextures = {
     },
 }
 
+ZF.IS_FOREVER = WOW_PROJECT_CAMELOT ~= nil and WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
+
+ZF.PetHappinessTexturePath = "Interface\\PetPaperDollFrame\\"
+ZF.PetHappinessTextures = {
+    [1] = "UI-PetMad",
+    [2] = "UI-PetNeutral",
+    [3] = "UI-PetHappiness",
+}
+
 ZF.QuestTextures = {
     ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
     ["QUEST0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest01.png",

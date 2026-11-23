@@ -528,3 +528,74 @@ for i = 1, 3 do
         end
     end
 end
+
+local function FirstCharacter(word)
+    return word:match("^[%z\1-\127\194-\244][\128-\191]*") or ""
+end
+
+function ZF.AbbreviateFamily(family)
+    local words = {}
+    for word in family:gmatch("%S+") do words[#words + 1] = word end
+    if #words > 1 then
+        local result = ""
+        for _, word in ipairs(words) do
+            local first = FirstCharacter(word)
+            local isConnector = word == word:lower()
+            result = result .. (isConnector and first:lower() or first:upper())
+        end
+        return result
+    end
+    if #family > 4 then return family:sub(1, 4) end
+    return family
+end
+
+if ZF.IS_FOREVER then
+    oUF.Tags.Methods["pethappiness"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local level = ZF.GetPetHappinessStats()
+        return level and _G["PET_HAPPINESS" .. level] or ""
+    end
+
+    oUF.Tags.Methods["petloyaltylevel"] = function(unit)
+        if unit ~= "pet" then return "" end
+        return ZF.GetPetLoyaltyLevel() or ""
+    end
+
+    oUF.Tags.Methods["petdiet"] = function(unit)
+        if unit ~= "pet" then return "" end
+        return table.concat(ZF.GetPetFoodTypes(), ", ")
+    end
+
+    oUF.Tags.Methods["petcurxp"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local current = ZF.GetPetExperienceValues()
+        return current and tostring(current) or ""
+    end
+
+    oUF.Tags.Methods["petneedxp"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local _, needed = ZF.GetPetExperienceValues()
+        return needed and tostring(needed) or ""
+    end
+
+    oUF.Tags.Methods["petlvl"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local level = UnitLevel(unit)
+        if type(level) ~= "number" or ZF:IsSecretValue(level) then return "" end
+        return tostring(level)
+    end
+
+    oUF.Tags.Methods["petfam"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local family = UnitCreatureFamily(unit)
+        if type(family) ~= "string" or ZF:IsSecretValue(family) then return "" end
+        return family
+    end
+
+    oUF.Tags.Methods["petshortfam"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local family = UnitCreatureFamily(unit)
+        if type(family) ~= "string" or ZF:IsSecretValue(family) then return "" end
+        return ZF.AbbreviateFamily(family)
+    end
+end

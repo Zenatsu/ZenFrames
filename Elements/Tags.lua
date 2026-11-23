@@ -14,14 +14,25 @@ local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
 	end
 end
 
+local PET_TAG_POLL_INTERVAL = 0.5
+
+local function IsDesignerPreview(unitFrame)
+	return unitFrame.isDesignerPreview or ZF.DESIGNER_PREVIEW_ACTIVE
+end
+
 local function ApplyTagBinding(unitFrame, fontString, unit, TagDB)
+	fontString.ZFTagString = TagDB.Tag
+	fontString.ZFTagUnit = unit
+	if IsDesignerPreview(unitFrame) then
+		if fontString.UpdateTag then unitFrame:Untag(fontString) end
+		return
+	end
+	if ZF.IS_FOREVER and unit == "pet" then fontString.frequentUpdates = PET_TAG_POLL_INTERVAL end
 	if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
 		unitFrame:Tag(fontString, TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
 	else
 		unitFrame:Tag(fontString, TagDB.Tag)
 	end
-	fontString.ZFTagString = TagDB.Tag
-	fontString.ZFTagUnit = unit
 end
 
 local function CreateUnitTag(unitFrame, unit, tagDB)
@@ -47,7 +58,7 @@ function ZF:UpdateUnitTag(unitFrame, unit, tagDB)
 		unitFrame.Tags[tagDB].extraUnits = nil
 		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
-	unitFrame.Tags[tagDB]:UpdateTag()
+	if unitFrame.Tags[tagDB].UpdateTag then unitFrame.Tags[tagDB]:UpdateTag() end
 end
 
 function ZF:CreateUnitTags(unitFrame, unit)

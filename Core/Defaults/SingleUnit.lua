@@ -1326,11 +1326,30 @@ ZF.DefaultsUnits.pet = {
                     UseClassPortrait = false,
                     Style = "2D",
                 },
+                XPBar = {
+                    Enabled = true,
+                    Width = 244,
+                    Height = 8,
+                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderOpacity = 1,
+                    BorderThickness = 1,
+                    Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
+                    Foreground = {148/255, 0/255, 140/255, 1},
+                    Background = {34/255, 34/255, 34/255, 1},
+                    MatchParentWidth = true,
+                    Inverse = false,
+                    FrameStrata = "MEDIUM",
+                },
                 Indicators = {
                     RaidTargetMarker = {
                         Enabled = false,
                         Size = 16,
                         Layout = {"LEFT", "TOPLEFT", 3, 0},
+                    },
+                    PetHappiness = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"RIGHT", "RIGHT", -3, 0},
                     },
                     Mouseover = {
                         Enabled = true,

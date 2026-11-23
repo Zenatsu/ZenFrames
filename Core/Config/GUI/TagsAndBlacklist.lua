@@ -129,6 +129,8 @@ function ZF:BuildDesignerSectionOptions(container, unit, tabValue)
     elseif tabValue == "CastBar" then
         CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCastBar(ZF[unit:upper()], unit) end, "CastBar") end)
         CreateCastBarSettings(container, unit)
+    elseif tabValue == "XPBar" and unit == "pet" and ZF:PetUsesXPBar() then
+        GUIInternal.CreateXPBarSettings(container, unit)
     elseif tabValue == "Portrait" then
         CreatePortraitSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPortrait(ZF[unit:upper()], unit) end, "Portrait") end)
     elseif tabValue == "Indicators" then

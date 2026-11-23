@@ -122,6 +122,17 @@ ZF.TOT_SEPARATOR_TAGS = {
     }
 }
 
+if ZF.IS_FOREVER then
+    Tags["pethappiness"] = "UNIT_POWER_UPDATE UNIT_PET UNIT_HAPPINESS"
+    Tags["petdiet"] = "UNIT_POWER_UPDATE UNIT_PET UNIT_HAPPINESS"
+    Tags["petcurxp"] = "UNIT_PET UNIT_PET_EXPERIENCE UNIT_LEVEL"
+    Tags["petneedxp"] = "UNIT_PET UNIT_PET_EXPERIENCE UNIT_LEVEL"
+    Tags["petlvl"] = "UNIT_PET UNIT_PET_EXPERIENCE UNIT_LEVEL"
+    Tags["petfam"] = "UNIT_PET UNIT_PET_EXPERIENCE UNIT_LEVEL"
+    Tags["petshortfam"] = "UNIT_PET UNIT_PET_EXPERIENCE UNIT_LEVEL"
+    Tags["petloyaltylevel"] = "UNIT_POWER_UPDATE UNIT_PET UNIT_HAPPINESS"
+end
+
 for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 end

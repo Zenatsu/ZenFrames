@@ -94,6 +94,7 @@ function ZF:CreateUnitFrame(unitFrame, unit)
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
+    local isPet = unit == "pet"
     local isFocus = unit == "focus"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
@@ -101,7 +102,9 @@ function ZF:CreateUnitFrame(unitFrame, unit)
     local isRaid = ZF:GetNormalizedUnit(unit) == "raid"
 
     ZF:CreateUnitContainer(unitFrame, unit)
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then ZF:CreateUnitCastBar(unitFrame, unit) end
+    local usesXPBar = isPet and ZF:PetUsesXPBar()
+    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget and not usesXPBar then ZF:CreateUnitCastBar(unitFrame, unit) end
+    if usesXPBar then ZF:CreateUnitXPBar(unitFrame, unit) end
     ZF:CreateUnitHealthBar(unitFrame, unit)
     if UnitDB.HealthBar.DispelHighlight and (isPlayer or isTarget or isFocus or isParty or isRaid) then ZF:CreateUnitDispelHighlight(unitFrame, unit) end
     ZF:CreateUnitHealPrediction(unitFrame, unit)
@@ -119,6 +122,7 @@ function ZF:CreateUnitFrame(unitFrame, unit)
     if isPlayer or isTarget then ZF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then ZF:CreateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then ZF:CreateUnitPvPIndicator(unitFrame, unit) end
+    if isPet then ZF:CreateUnitPetHappinessIndicator(unitFrame, unit) end
     if isPlayer then ZF:CreateUnitTotems(unitFrame, unit) end
     if isTarget then ZF:CreateUnitClassificationIndicator(unitFrame, unit) end
     if isTarget then ZF:CreateUnitQuestIndicator(unitFrame, unit) end
@@ -304,12 +308,15 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
     local isPlayer = unit == "player"
     local isTarget = unit == "target"
+    local isPet = unit == "pet"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
     local isParty = ZF:GetNormalizedUnit(unit) == "party"
     local isRaid = ZF:GetNormalizedUnit(unit) == "raid"
 
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then ZF:UpdateUnitCastBar(unitFrame, unit) end
+    local usesXPBar = isPet and ZF:PetUsesXPBar()
+    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget and not usesXPBar then ZF:UpdateUnitCastBar(unitFrame, unit) end
+    if usesXPBar then ZF:UpdateUnitXPBar(unitFrame, unit) end
     ZF:UpdateUnitContainer(unitFrame, unit)
     ZF:UpdateUnitHealthBar(unitFrame, unit)
     ZF:UpdateUnitHealPrediction(unitFrame, unit)
@@ -327,6 +334,7 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     if isPlayer or isTarget then ZF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then ZF:UpdateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then ZF:UpdateUnitPvPIndicator(unitFrame, unit) end
+    if isPet then ZF:UpdateUnitPetHappinessIndicator(unitFrame, unit) end
     if isPlayer then ZF:UpdateUnitTotems(unitFrame, unit) end
     if isTarget then ZF:UpdateUnitClassificationIndicator(unitFrame, unit) end
     if isTarget then ZF:UpdateUnitQuestIndicator(unitFrame, unit) end

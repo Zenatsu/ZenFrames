@@ -3,9 +3,11 @@
 	<Script file="Auras.lua"/>
 	<Script file="Container.lua"/>
 	<Script file="CastBar.lua"/>
+	<Script file="XPBar.lua"/>
 	<Script file="HealPrediction.lua"/>
 	<Script file="HealthBar.lua"/>
 	<Script file="Movers.lua"/>
+	<Script file="MouseConflicts.lua"/>
 	<Script file="UnitPreview.lua"/>
 	<Script file="Portrait.lua"/>
 	<Script file="PowerBar.lua"/>
@@ -16,6 +18,7 @@
 
 	<Script file="Indicators/Indicators.lua"/>
 	<Script file="Indicators/Mouseover.lua"/>
+	<Script file="Indicators/PetHappiness.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
 	<Script file="Indicators/Threat.lua"/>
 	<Script file="Indicators/Totems.lua"/>
