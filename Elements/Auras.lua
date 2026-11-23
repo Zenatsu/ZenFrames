@@ -27,12 +27,9 @@ local function ResolveAuraContext(unitFrame, unit)
 	local BuffAnchorParent = BuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
 	local DebuffAnchorParent = DebuffsDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
 	local CustomAuraFilter, CustomAnchorParent
-	BuffsDB.Filter = "HELPFUL"
-	DebuffsDB.Filter = "HARMFUL"
 	if CustomDB then
 		CustomAuraFilter = CustomDB.Type == "Debuffs" and "HARMFUL" or "HELPFUL"
 		CustomAnchorParent = CustomDB.AnchorRegion == "Health" and unitFrame.Health or unitFrame
-		CustomDB.Filter = CustomAuraFilter
 	end
 
 	return AurasDB, BuffsDB, DebuffsDB, CustomDB, BuffAnchorParent, DebuffAnchorParent, CustomAuraFilter, CustomAnchorParent

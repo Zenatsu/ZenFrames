@@ -28,10 +28,6 @@ function ZF:IsMainGUIShown()
     return Container ~= nil and Container:IsShown()
 end
 
-function ZF:IsMainGUIOpen()
-    return isGUIOpen
-end
-
 function ZF:SetMainGUIShown(shown)
     if not Container then return end
     if shown then

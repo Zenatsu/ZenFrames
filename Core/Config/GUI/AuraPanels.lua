@@ -96,7 +96,6 @@ local function CreateAuraBuffConfigSettings(containerParent, unit, auraDB, rebui
         TypeDropdown:SetRelativeWidth(isCustom and STYLE.Widths.Pct50 or STYLE.Widths.Pct33)
         TypeDropdown:SetCallback("OnValueChanged", function(_, _, value)
             AuraDB.Type = value
-            AuraDB.Filter = value == "Buffs" and "HELPFUL" or "HARMFUL"
             UpdateAuras()
             rebuildSelf()
         end)
