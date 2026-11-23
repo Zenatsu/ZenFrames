@@ -326,14 +326,6 @@ function ZF:UpdateUnitFrame(unitFrame, unit)
     if not unitFrame.isDesignerPreview then unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata) end -- preview strata is designer-managed (FULLSCREEN_DIALOG)
 end
 
-local function HideFakeAuraButtons(container)
-	if not container then return end
-	for index = 1, container.maxFake or 0 do
-		local button = container["fake" .. index]
-		if button then button:Hide() end
-	end
-end
-
 function ZF:ResetBossFrames()
 	if InCombatLockdown() then
 		ZF:RunAfterCombat("BossReset", RetryBossReset)
@@ -357,9 +349,9 @@ function ZF:ResetBossFrames()
 			end
 		end
 
-		HideFakeAuraButtons(bossFrame.BuffContainer)
-		HideFakeAuraButtons(bossFrame.DebuffContainer)
-		HideFakeAuraButtons(bossFrame.CustomAuraContainer)
+		ZF:HideFakeAuraButtons(bossFrame.BuffContainer)
+		ZF:HideFakeAuraButtons(bossFrame.DebuffContainer)
+		ZF:HideFakeAuraButtons(bossFrame.CustomAuraContainer)
 
 		if (BuffsDB.Enabled or DebuffsDB.Enabled or (CustomDB and CustomDB.Enabled)) and not bossFrame:IsElementEnabled("Auras") then
 			bossFrame:EnableElement("Auras")
