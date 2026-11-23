@@ -1,6 +1,24 @@
 local _, ZF = ...
 
-local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
+local function GetTagParent(unitFrame, TagDB)
+	local container = unitFrame.HighLevelContainer
+	local strata = TagDB.FrameStrata
+	if unitFrame.isDesignerPreview or not strata or strata == container:GetFrameStrata() then return container end
+
+	unitFrame.TagStrataHolders = unitFrame.TagStrataHolders or {}
+	local holder = unitFrame.TagStrataHolders[strata]
+	if not holder then
+		holder = CreateFrame("Frame", nil, container)
+		holder:SetAllPoints(container)
+		holder:SetFrameStrata(strata)
+		unitFrame.TagStrataHolders[strata] = holder
+	end
+	return holder
+end
+
+local function ApplyTagStyle(fontString, unitFrame, TagDB, GeneralDB)
+	local parent = unitFrame.HighLevelContainer
+	fontString:SetParent(GetTagParent(unitFrame, TagDB))
 	ZF:ApplyFontStringStyle(fontString, ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
 	fontString:ClearAllPoints()
 	fontString:SetPoint(TagDB.Layout[1], parent, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
@@ -41,7 +59,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 
 	if not unitFrame.Tags[tagDB] then
 		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(ZF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
-		ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
+		ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame, TagDB, GeneralDB)
 		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
 end
@@ -53,7 +71,7 @@ function ZF:UpdateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then CreateUnitTag(unitFrame, unit, tagDB) end
 	if not unitFrame.Tags[tagDB] then return end
 
-	ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
+	ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame, TagDB, GeneralDB)
 	if unitFrame.Tags[tagDB].ZFTagString ~= TagDB.Tag or unitFrame.Tags[tagDB].ZFTagUnit ~= unit then
 		unitFrame.Tags[tagDB].extraUnits = nil
 		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)

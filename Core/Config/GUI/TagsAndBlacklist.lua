@@ -72,7 +72,8 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     ColorPicker:SetRelativeWidth(STYLE.Widths.Pct50)
     TagContainer:AddChild(ColorPicker)
 
-    GUIBuilders.CreateLayoutPositionBlock(containerParent, TagDB, UpdateTag, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", xyWidth = STYLE.Widths.Pct33})
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, TagDB, UpdateTag, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", xyWidth = STYLE.Widths.Pct33})
+    GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", TagDB, "FrameStrata", UpdateTag, {list = GUIBuilders.FrameStrataList[1], order = GUIBuilders.FrameStrataList[2], width = STYLE.Widths.Pct33})
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
     GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFFFFD100Prefix|r indicates that this should be added to the start of the tag string.")
