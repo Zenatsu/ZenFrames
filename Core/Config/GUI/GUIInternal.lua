@@ -164,24 +164,15 @@ for _, style in ipairs({"Blizzard", "Color", "White", "ElvUI", "Square"}) do
 	}, " ")
 end
 
+local function RefreshTestAuras(unitFrame, frameUnit)
+	if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
+end
+
 local function DisableAurasTestMode(unit)
-	if ZF.AUXILIARY_RAID_GROUPS[unit] then
-		ZF:ForEachAuxiliaryRaidFrame(unit, function(unitFrame, frameUnit)
-			if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
-		end, false)
-	elseif unit == "boss" then
+	if unit == "boss" then
 		ZF:ResetBossFrames()
-	elseif unit == "party" or unit == "raid" then
-		if unit == "party" then
-			for i = 1, ZF.MAX_PARTY_FRAMES do
-				if ZF["PARTY" .. i] then ZF:CreateTestAuras(ZF["PARTY" .. i], "party" .. i) end
-			end
-			if ZF.PARTYPLAYER then ZF:CreateTestAuras(ZF.PARTYPLAYER, "partyplayer") end
-		else
-			ZF:ForEachRaidFrame(function(raidFrame, frameUnit) if frameUnit then ZF:CreateTestAuras(raidFrame, frameUnit) end end, false)
-		end
 	else
-		ZF:CreateTestAuras(ZF[unit:upper()], unit)
+		ZF:ForEachFrameOfUnit(unit, RefreshTestAuras, false)
 	end
 end
 

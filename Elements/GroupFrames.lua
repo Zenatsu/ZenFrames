@@ -125,6 +125,28 @@ function ZF:ForEachAuxiliaryRaidFrame(groupKey, callback, includeInactive, ...)
 	end
 end
 
+function ZF:ForEachFrameOfUnit(unit, callback, includeInactive)
+	if unit == "boss" then
+		for i = 1, ZF.MAX_BOSS_FRAMES do
+			local frame = ZF["BOSS" .. i]
+			if frame then callback(frame, "boss" .. i) end
+		end
+	elseif unit == "party" then
+		for i = 1, ZF.MAX_PARTY_FRAMES do
+			local frame = ZF["PARTY" .. i]
+			if frame then callback(frame, "party" .. i) end
+		end
+		if ZF.PARTYPLAYER then callback(ZF.PARTYPLAYER, "partyplayer") end
+	elseif unit == "raid" then
+		ZF:ForEachRaidFrame(callback, includeInactive)
+	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:ForEachAuxiliaryRaidFrame(unit, callback, includeInactive)
+	else
+		local frame = ZF[unit:upper()]
+		if frame then callback(frame, unit) end
+	end
+end
+
 function ZF:LayoutAuxiliaryRaidGroup(groupKey)
 	if InCombatLockdown() then return end
 	local container, header = ZF.AUXILIARY_RAID_CONTAINERS[groupKey], ZF.AUXILIARY_RAID_HEADERS[groupKey]
@@ -390,6 +412,10 @@ function ZF:SpawnGroupFrame(groupType)
 	ZF:UpdateGroupFrame(groupType)
 end
 
+local function UpdatePartyFrame(partyFrame, frameUnit)
+	ZF:UpdateUnitFrame(partyFrame, frameUnit)
+end
+
 function ZF:UpdateGroupFrame(groupType)
 	local UnitDB = ZF.db.profile.Units[groupType]
 	if not UnitDB or not UnitDB.Enabled then
@@ -407,8 +433,7 @@ function ZF:UpdateGroupFrame(groupType)
 		if not ZF.PARTY_CONTAINER then ZF:SpawnGroupFrame("party") else
 			PositionGroupContainer(ZF.PARTY_CONTAINER, UnitDB.Frame, "[group:party,nogroup:raid] show; hide")
 		end
-		for i = 1, ZF.MAX_PARTY_FRAMES do if ZF["PARTY" .. i] then ZF:UpdateUnitFrame(ZF["PARTY" .. i], "party" .. i) end end
-		if ZF.PARTYPLAYER then ZF:UpdateUnitFrame(ZF.PARTYPLAYER, "partyplayer") end
+		ZF:ForEachFrameOfUnit("party", UpdatePartyFrame)
 	elseif groupType == "raid" then
 		if not ZF.RAID_CONTAINER then ZF:SpawnGroupFrame("raid") else
 			PositionGroupContainer(ZF.RAID_CONTAINER, UnitDB.Frame, "show")
@@ -436,15 +461,9 @@ function ZF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
 	local UnitDB = ZF.db.profile.Units[groupType]
 	if not UnitDB or not UnitDB.Enabled then return end
 	if groupType == "party" then
-		for i = 1, ZF.MAX_PARTY_FRAMES do
-			local partyFrame = ZF["PARTY" .. i]
-			if partyFrame then
-				RefreshGroupFrameIndicators(partyFrame, "party" .. i, nil, UnitDB, onlyUpdateRoles)
-			end
-		end
-		if ZF.PARTYPLAYER then
-			RefreshGroupFrameIndicators(ZF.PARTYPLAYER, "partyplayer", "player", UnitDB, onlyUpdateRoles)
-		end
+		ZF:ForEachFrameOfUnit("party", function(partyFrame, frameUnit)
+			RefreshGroupFrameIndicators(partyFrame, frameUnit, frameUnit == "partyplayer" and "player" or nil, UnitDB, onlyUpdateRoles)
+		end)
 	elseif groupType == "raid" then
 		ZF:ForEachRaidFrame(function(raidFrame, unit)
 			if unit and unit ~= "raid" then
@@ -590,11 +609,7 @@ end
 
 function ZF:ResetPartyFrames()
 	if InCombatLockdown() then return end
-	for i = 1, ZF.MAX_PARTY_FRAMES do
-		local partyFrame = ZF["PARTY" .. i]
-		if partyFrame then ReattachPartyFrame(partyFrame, "party" .. i) end
-	end
-	if ZF.PARTYPLAYER then ReattachPartyFrame(ZF.PARTYPLAYER, "partyplayer") end
+	ZF:ForEachFrameOfUnit("party", ReattachPartyFrame)
 	ZF:UpdateGroupFrame("party")
 	ZF:UpdateUnitTags("party")
 end

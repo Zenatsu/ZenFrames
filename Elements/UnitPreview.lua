@@ -34,176 +34,58 @@ function ZF:ApplyUnitPreviewContent(unitFrame, unit)
     end
 end
 
+local function EnterFramePreview(unitFrame, frameUnit)
+    if UnitExists(frameUnit == "partyplayer" and "player" or frameUnit) then return end
+    unitFrame:SetAttribute("unit", nil)
+    UnregisterUnitWatch(unitFrame)
+    unitFrame:Show()
+    ZF:ApplyUnitPreviewContent(unitFrame, frameUnit)
+end
+
+local function ExitFramePreview(unitFrame, frameUnit)
+    if not unitFrame.isUnitPreview then return end
+    unitFrame.isUnitPreview = nil
+    unitFrame.previewClass = nil
+    unitFrame:SetAttribute("unit", frameUnit == "partyplayer" and "player" or frameUnit)
+    RegisterUnitWatch(unitFrame)
+end
+
+local SIMPLE_PREVIEW_UNITS = {
+    target = "Target",
+    focus = "Focus",
+    focustarget = "FocusTarget",
+    pet = "Pet",
+    targettarget = "TargetTarget",
+    boss = "Boss",
+}
+
+for unit, name in pairs(SIMPLE_PREVIEW_UNITS) do
+    ZF["Enter" .. name .. "Preview"] = function()
+        if InCombatLockdown() then return end
+        ZF:ForEachFrameOfUnit(unit, EnterFramePreview)
+    end
+    ZF["Exit" .. name .. "Preview"] = function()
+        if InCombatLockdown() then return end
+        ZF:ForEachFrameOfUnit(unit, ExitFramePreview)
+    end
+end
+
 function ZF:EnterPartyPreview()
     if InCombatLockdown() then return end
     if ZF.PARTY_CONTAINER then
         UnregisterStateDriver(ZF.PARTY_CONTAINER, "visibility")
         ZF.PARTY_CONTAINER:Show()
     end
-    for i = 1, ZF.MAX_PARTY_FRAMES do
-        local partyFrame = ZF["PARTY" .. i]
-        if partyFrame and not UnitExists("party" .. i) then
-            partyFrame:SetAttribute("unit", nil)
-            UnregisterUnitWatch(partyFrame)
-            partyFrame:Show()
-            ZF:ApplyUnitPreviewContent(partyFrame, "party" .. i)
-        end
-    end
-    if ZF.PARTYPLAYER and not UnitExists("player") then
-        ZF.PARTYPLAYER:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.PARTYPLAYER)
-        ZF.PARTYPLAYER:Show()
-        ZF:ApplyUnitPreviewContent(ZF.PARTYPLAYER, "partyplayer")
-    end
+    ZF:ForEachFrameOfUnit("party", EnterFramePreview)
 end
 
 function ZF:ExitPartyPreview()
     if InCombatLockdown() then return end
-    for i = 1, ZF.MAX_PARTY_FRAMES do
-        local partyFrame = ZF["PARTY" .. i]
-        if partyFrame and partyFrame.isUnitPreview then
-            partyFrame.isUnitPreview = nil
-            partyFrame.previewClass = nil
-            partyFrame:SetAttribute("unit", "party" .. i)
-            RegisterUnitWatch(partyFrame)
-        end
-    end
-    if ZF.PARTYPLAYER and ZF.PARTYPLAYER.isUnitPreview then
-        ZF.PARTYPLAYER.isUnitPreview = nil
-        ZF.PARTYPLAYER.previewClass = nil
-        ZF.PARTYPLAYER:SetAttribute("unit", "player")
-        RegisterUnitWatch(ZF.PARTYPLAYER)
-    end
+    ZF:ForEachFrameOfUnit("party", ExitFramePreview)
     if ZF.PARTY_CONTAINER then
         RegisterStateDriver(ZF.PARTY_CONTAINER, "visibility", "[group:party,nogroup:raid] show; hide")
     end
     ZF:UpdateGroupFrame("party")
-end
-
-function ZF:EnterBossPreview()
-    if InCombatLockdown() then return end
-    for i = 1, ZF.MAX_BOSS_FRAMES do
-        local bossFrame = ZF["BOSS" .. i]
-        if bossFrame and not UnitExists("boss" .. i) then
-            bossFrame:SetAttribute("unit", nil)
-            UnregisterUnitWatch(bossFrame)
-            bossFrame:Show()
-            ZF:ApplyUnitPreviewContent(bossFrame,"boss" .. i)
-        end
-    end
-end
-
-function ZF:ExitBossPreview()
-    if InCombatLockdown() then return end
-    for i = 1, ZF.MAX_BOSS_FRAMES do
-        local bossFrame = ZF["BOSS" .. i]
-        if bossFrame and bossFrame.isUnitPreview then
-            bossFrame.isUnitPreview = nil
-            bossFrame.previewClass = nil
-            bossFrame:SetAttribute("unit", "boss" .. i)
-            RegisterUnitWatch(bossFrame)
-        end
-    end
-end
-
-function ZF:EnterTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.TARGET and not UnitExists("target") then
-        ZF.TARGET:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.TARGET)
-        ZF.TARGET:Show()
-        ZF:ApplyUnitPreviewContent(ZF.TARGET, "target")
-    end
-end
-
-function ZF:ExitTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.TARGET and ZF.TARGET.isUnitPreview then
-        ZF.TARGET.isUnitPreview = nil
-        ZF.TARGET.previewClass = nil
-        ZF.TARGET:SetAttribute("unit", "target")
-        RegisterUnitWatch(ZF.TARGET)
-    end
-end
-
-function ZF:EnterFocusPreview()
-    if InCombatLockdown() then return end
-    if ZF.FOCUS and not UnitExists("focus") then
-        ZF.FOCUS:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.FOCUS)
-        ZF.FOCUS:Show()
-        ZF:ApplyUnitPreviewContent(ZF.FOCUS, "focus")
-    end
-end
-
-function ZF:ExitFocusPreview()
-    if InCombatLockdown() then return end
-    if ZF.FOCUS and ZF.FOCUS.isUnitPreview then
-        ZF.FOCUS.isUnitPreview = nil
-        ZF.FOCUS.previewClass = nil
-        ZF.FOCUS:SetAttribute("unit", "focus")
-        RegisterUnitWatch(ZF.FOCUS)
-    end
-end
-
-function ZF:EnterFocusTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.FOCUSTARGET and not UnitExists("focustarget") then
-        ZF.FOCUSTARGET:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.FOCUSTARGET)
-        ZF.FOCUSTARGET:Show()
-        ZF:ApplyUnitPreviewContent(ZF.FOCUSTARGET, "focustarget")
-    end
-end
-
-function ZF:ExitFocusTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.FOCUSTARGET and ZF.FOCUSTARGET.isUnitPreview then
-        ZF.FOCUSTARGET.isUnitPreview = nil
-        ZF.FOCUSTARGET.previewClass = nil
-        ZF.FOCUSTARGET:SetAttribute("unit", "focustarget")
-        RegisterUnitWatch(ZF.FOCUSTARGET)
-    end
-end
-
-function ZF:EnterPetPreview()
-    if InCombatLockdown() then return end
-    if ZF.PET and not UnitExists("pet") then
-        ZF.PET:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.PET)
-        ZF.PET:Show()
-        ZF:ApplyUnitPreviewContent(ZF.PET, "pet")
-    end
-end
-
-function ZF:ExitPetPreview()
-    if InCombatLockdown() then return end
-    if ZF.PET and ZF.PET.isUnitPreview then
-        ZF.PET.isUnitPreview = nil
-        ZF.PET.previewClass = nil
-        ZF.PET:SetAttribute("unit", "pet")
-        RegisterUnitWatch(ZF.PET)
-    end
-end
-
-function ZF:EnterTargetTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.TARGETTARGET and not UnitExists("targettarget") then
-        ZF.TARGETTARGET:SetAttribute("unit", nil)
-        UnregisterUnitWatch(ZF.TARGETTARGET)
-        ZF.TARGETTARGET:Show()
-        ZF:ApplyUnitPreviewContent(ZF.TARGETTARGET, "targettarget")
-    end
-end
-
-function ZF:ExitTargetTargetPreview()
-    if InCombatLockdown() then return end
-    if ZF.TARGETTARGET and ZF.TARGETTARGET.isUnitPreview then
-        ZF.TARGETTARGET.isUnitPreview = nil
-        ZF.TARGETTARGET.previewClass = nil
-        ZF.TARGETTARGET:SetAttribute("unit", "targettarget")
-        RegisterUnitWatch(ZF.TARGETTARGET)
-    end
 end
 
 function ZF:SpawnRaidPreviewFrames()

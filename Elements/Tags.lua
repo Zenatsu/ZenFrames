@@ -84,16 +84,5 @@ function ZF:UpdateUnitTags(unit, tagName)
 		end
 	end
 
-	if unit == "boss" then
-		for i = 1, ZF.MAX_BOSS_FRAMES do UpdateFrameTags(ZF["BOSS" .. i], "boss" .. i) end
-	elseif unit == "party" then
-		for i = 1, ZF.MAX_PARTY_FRAMES do UpdateFrameTags(ZF["PARTY" .. i], "party" .. i) end
-		UpdateFrameTags(ZF.PARTYPLAYER, "partyplayer")
-	elseif unit == "raid" then
-		ZF:ForEachRaidFrame(UpdateFrameTags, true)
-	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
-		ZF:ForEachAuxiliaryRaidFrame(unit, UpdateFrameTags, true)
-	else
-		UpdateFrameTags(ZF[unit:upper()], unit)
-	end
+	ZF:ForEachFrameOfUnit(unit, UpdateFrameTags, true)
 end
