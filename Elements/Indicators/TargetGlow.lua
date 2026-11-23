@@ -1,5 +1,19 @@
 local _, ZF = ...
 ZF.TargetHighlightEvtFrames = {}
+local trackedUnits
+local function IsTrackedUnit(unit)
+	if not trackedUnits then
+		trackedUnits = {}
+		for _, frameUnit in pairs(ZF.TargetHighlightEvtFrames) do trackedUnits[frameUnit] = true end
+	end
+	return trackedUnits[unit]
+end
+
+local function SetTrackedFrame(unitFrame, unit)
+	if ZF.TargetHighlightEvtFrames[unitFrame] == unit then return end
+	ZF.TargetHighlightEvtFrames[unitFrame] = unit
+	trackedUnits = nil
+end
 
 local unitIsTargetEvtFrame = CreateFrame("Frame")
 unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -7,6 +21,7 @@ unitIsTargetEvtFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function(_, event, eventUnit)
 	local changedUnit = eventUnit and eventUnit .. "target"
+	if event == "UNIT_TARGET" and not IsTrackedUnit(changedUnit) then return end
 	for frame, unit in pairs(ZF.TargetHighlightEvtFrames) do
 		local unitChanged = event == "PLAYER_TARGET_CHANGED" or (event == "PLAYER_FOCUS_CHANGED" and (unit == "focus" or unit == "focustarget")) or unit == changedUnit
 		if unitChanged and frame.TargetIndicatorDB.Enabled then ZF:UpdateTargetGlowIndicator(frame, unit) end
@@ -67,10 +82,10 @@ function ZF:RegisterTargetGlowIndicatorFrame(frameName, unit)
 	local DB = ZF:GetUnitDB(unitFrame, unit)
 	if not unitFrame or not DB or not DB.Indicators.Target then return end
 	if DB.Indicators.Target.Enabled then
-		ZF.TargetHighlightEvtFrames[unitFrame] = unit
+		SetTrackedFrame(unitFrame, unit)
 		ZF:UpdateTargetGlowIndicator(unitFrame, unit)
 	else
-		ZF.TargetHighlightEvtFrames[unitFrame] = nil
+		SetTrackedFrame(unitFrame, nil)
 		if unitFrame.TargetIndicator == unitFrame.ContainerBorder then
 			local FrameDB = DB.Frame
 			unitFrame.ContainerBorder:SetBackdropBorderColor(ZF:GetBorderColor(FrameDB))
@@ -81,5 +96,5 @@ function ZF:RegisterTargetGlowIndicatorFrame(frameName, unit)
 end
 
 function ZF:UnregisterTargetGlowIndicatorFrame(unitFrame)
-	if unitFrame then ZF.TargetHighlightEvtFrames[unitFrame] = nil end
+	if unitFrame then SetTrackedFrame(unitFrame, nil) end
 end
