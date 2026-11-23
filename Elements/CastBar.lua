@@ -92,13 +92,13 @@ function ZF:CreateUnitCastBar(unitFrame, unit)
     SpellNameText:ClearAllPoints()
     SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
     ZF:ApplyFontStringStyle(SpellNameText, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-    SpellNameText:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
+    SpellNameText:SetJustifyH(ZF:GetJustifyH(SpellNameDB.Layout[1]))
 
     local DurationText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
     DurationText:ClearAllPoints()
     DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
     ZF:ApplyFontStringStyle(DurationText, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-    DurationText:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
+    DurationText:SetJustifyH(ZF:GetJustifyH(DurationDB.Layout[1]))
 
     if CastBarDB.Inverse then
         CastBar:SetReverseFill(true)
@@ -240,7 +240,7 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
                 ZF:ApplyFontStringStyle(unitFrame.Castbar.Text, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Text:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
+                unitFrame.Castbar.Text:SetJustifyH(ZF:GetJustifyH(SpellNameDB.Layout[1]))
                 if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
             end
 
@@ -249,7 +249,7 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
                 ZF:ApplyFontStringStyle(unitFrame.Castbar.Time, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Time:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
+                unitFrame.Castbar.Time:SetJustifyH(ZF:GetJustifyH(DurationDB.Layout[1]))
                 if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
             end
         end

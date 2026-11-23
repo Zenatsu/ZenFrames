@@ -346,6 +346,8 @@ local function ApplyPowerColorTable(colorTable)
     end
 end
 
+local DISPEL_TYPES = { "Magic", "Curse", "Disease", "Poison", "Bleed" }
+
 function ZF:LoadCustomColors()
     local General = ZF.db.profile.General
 
@@ -373,27 +375,16 @@ function ZF:LoadCustomColors()
     end
 
     if General.Colors.Dispel then
-        local dispelMap = {
-            Magic = "Magic",
-            Curse = "Curse",
-            Disease = "Disease",
-            Poison = "Poison",
-            Bleed = "Bleed",
-        }
-        for dispelType, index in pairs(dispelMap) do
+        for _, dispelType in ipairs(DISPEL_TYPES) do
             local color = General.Colors.Dispel[dispelType]
             if color then
-                oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
+                oUF.colors.dispel[dispelType] = oUF:CreateColor(color[1], color[2], color[3])
             end
         end
         ZF.dispelColorGeneration = (ZF.dispelColorGeneration or 0) + 1
     end
 
-    for _, obj in next, oUF.objects do
-        if obj.UpdateTags then
-            obj:UpdateTags()
-        end
-    end
+    ZFG:UpdateAllTags()
 end
 
 function ZF:Init()
@@ -420,7 +411,7 @@ local JUSTIFICATION_BY_ANCHOR = {
     TOPRIGHT = "RIGHT", RIGHT = "RIGHT", BOTTOMRIGHT = "RIGHT",
 }
 
-function ZF:SetJustification(anchorFrom)
+function ZF:GetJustifyH(anchorFrom)
     return JUSTIFICATION_BY_ANCHOR[anchorFrom] or "CENTER"
 end
 
@@ -705,19 +696,21 @@ local DEFAULT_AURA_ID_BLACKLIST = {
     26013, 71041, -- Deserter
 }
 
+local function FillDefaultAuraBlacklist(blacklist)
+    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
+        blacklist[spellId] = true
+    end
+end
+
 function ZF:SeedAuraBlacklist()
     if ZF.db.global.AuraBlacklistSeeded then return end
-    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
-        ZF.db.global.AuraBlacklist[spellId] = true
-    end
+    FillDefaultAuraBlacklist(ZF.db.global.AuraBlacklist)
     ZF.db.global.AuraBlacklistSeeded = true
 end
 
 function ZF:RestoreDefaultAuraBlacklist()
     wipe(ZF.db.global.AuraBlacklist)
-    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
-        ZF.db.global.AuraBlacklist[spellId] = true
-    end
+    FillDefaultAuraBlacklist(ZF.db.global.AuraBlacklist)
     ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
 end
 

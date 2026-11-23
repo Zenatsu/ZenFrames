@@ -59,7 +59,7 @@ function ZF:CreateUnitTotems(unitFrame, unit)
     end
 
     totems.PostUpdate = function(element, slot, _, _, icon)
-        if issecretvalue(icon) or icon then return end
+        if ZF:IsSecretValue(icon) or icon then return end
         local totem = element[totemPriorities[slot]]
         totem:SetAlpha(0)
         totem.Cooldown:Clear()

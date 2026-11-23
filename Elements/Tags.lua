@@ -4,7 +4,7 @@ local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
 	ZF:ApplyFontStringStyle(fontString, ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
 	fontString:ClearAllPoints()
 	fontString:SetPoint(TagDB.Layout[1], parent, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-	fontString:SetJustifyH(ZF:SetJustification(TagDB.Layout[1]))
+	fontString:SetJustifyH(ZF:GetJustifyH(TagDB.Layout[1]))
 	if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
 		fontString:SetJustifyV("TOP")
 	elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
