@@ -445,7 +445,7 @@ end
 
 function ZF:CreateUnitAlternativePowerBar(unitFrame, unit)
     local ZFDB = ZF.db.profile
-    local AlternativePowerBarDB = ZFDB.Units[ZF:GetNormalizedUnit(unit)].AlternativePowerBar
+    local AlternativePowerBarDB = ZF:GetUnitDB(nil, unit, ZFDB.Units).AlternativePowerBar
     local unitContainer = unitFrame.Container
 
     local AlternativePowerBar = CreateFrame("Frame", ZF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
@@ -465,7 +465,7 @@ end
 
 function ZF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     local ZFDB = ZF.db.profile
-    local AlternativePowerBarDB = ZFDB.Units[ZF:GetNormalizedUnit(unit)].AlternativePowerBar
+    local AlternativePowerBarDB = ZF:GetUnitDB(nil, unit, ZFDB.Units).AlternativePowerBar
     local AlternativePowerBar = unitFrame.AlternativePowerBar
     if not AlternativePowerBar then return end
 

@@ -172,7 +172,7 @@ function ZF:LayoutBossFrames()
 end
 
 function ZF:SpawnUnitFrame(unit)
-    local UnitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)]
+    local UnitDB = ZF:GetUnitDB(nil, unit)
 	local auxiliaryGroupNeeded = false
 	if unit == "raid" then
 		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do

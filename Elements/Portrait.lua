@@ -90,7 +90,7 @@ local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 end
 
 function ZF:CreateUnitPortrait(unitFrame, unit)
-	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
+	local PortraitDB = ZF:GetUnitDB(nil, unit).Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
 
 	if portraitStyle == "3D" then
@@ -129,7 +129,7 @@ function ZF:CreateUnitPortrait(unitFrame, unit)
 end
 
 function ZF:UpdateUnitPortrait(unitFrame, unit)
-	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
+	local PortraitDB = ZF:GetUnitDB(nil, unit).Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
 
 	if PortraitDB.Enabled then

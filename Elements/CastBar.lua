@@ -45,10 +45,11 @@ end
 
 function ZF:CreateUnitCastBar(unitFrame, unit)
     local GeneralDB = ZF.db.profile.General
-    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
-    local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
-    local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+    local UnitDB = ZF:GetUnitDB(nil, unit)
+    local FrameDB = UnitDB.Frame
+    local CastBarDB = UnitDB.CastBar
+    local SpellNameDB = CastBarDB.Text.SpellName
+    local DurationDB = CastBarDB.Text.Duration
 
     local CastBarContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
     local borderSize = ApplyCastBarBorderStyle(CastBarContainer, CastBarDB)
@@ -178,8 +179,9 @@ end
 
 function ZF:UpdateUnitCastBar(unitFrame, unit)
     local GeneralDB = ZF.db.profile.General
-    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
+    local UnitDB = ZF:GetUnitDB(nil, unit)
+    local FrameDB = UnitDB.Frame
+    local CastBarDB = UnitDB.CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
     if CastBarDB.Enabled then
@@ -236,7 +238,7 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if unitFrame.Castbar.Text then
-                local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
+                local SpellNameDB = CastBarDB.Text.SpellName
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
                 ZF:ApplyFontStringStyle(unitFrame.Castbar.Text, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
@@ -245,7 +247,7 @@ function ZF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if unitFrame.Castbar.Time then
-                local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+                local DurationDB = CastBarDB.Text.Duration
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
                 ZF:ApplyFontStringStyle(unitFrame.Castbar.Time, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
@@ -268,7 +270,7 @@ end
 function ZF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
+    local CastBarDB = ZF:GetUnitDB(nil, unit).CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
     if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then
         if unitFrame.Castbar and CastBarDB.Enabled then
@@ -278,7 +280,7 @@ function ZF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
             local spellName = "Ethereal Portal"
-            local maxChars = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars
+            local maxChars = CastBarDB.Text.SpellName.MaxChars
             if maxChars and maxChars > 0 then spellName = string.format("%." .. maxChars .. "s", spellName) end
             spellName = ZF:CleanTruncateUTF8String(spellName)
             if CastBarDB.ShowTarget then unitFrame.Castbar.Text:SetFormattedText("%s » %s", spellName, "Target") else unitFrame.Castbar.Text:SetText(spellName) end

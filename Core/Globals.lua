@@ -429,8 +429,13 @@ function ZF:GetUnitColor(unit)
     return 1, 1, 1
 end
 
+local normalizedUnits = {}
+
 function ZF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
+    local normalizedUnit = normalizedUnits[unit]
+    if normalizedUnit then return normalizedUnit end
+    normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
+    normalizedUnits[unit] = normalizedUnit
     return normalizedUnit
 end
 
