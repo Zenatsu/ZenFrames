@@ -389,6 +389,7 @@ end
 
 function ZF:Init()
     SetupSlashCommands()
+    ZF:InitVersionCheck()
     ZF:ResolveLSM()
     ZF:LoadCustomColors()
     ZF:SetTagUpdateInterval()
