@@ -83,7 +83,7 @@ local UNIT_ELEMENTS = {
     { "XPBar", when = function(ctx) return ctx.usesXPBar end },
     { "Container", createFirst = true },
     { "HealthBar" },
-    { "DispelHighlight", createOnly = true, when = function(ctx) return ctx.UnitDB.HealthBar.DispelHighlight and (ctx.isPlayer or ctx.isTarget or ctx.isFocus or ctx.isParty or ctx.isRaid) end },
+    { "DispelHighlight", createWhen = function(ctx) return ctx.UnitDB.HealthBar.DispelHighlight and (ctx.isPlayer or ctx.isTarget or ctx.isFocus or ctx.isParty or ctx.isRaid) end },
     { "HealPrediction" },
     { "Portrait", when = function(ctx) return ctx.UnitDB.Portrait and NotTargetOfTarget(ctx) end },
     { "PowerBar" },
@@ -147,7 +147,8 @@ function ZF:CreateUnitFrame(unitFrame, unit)
         if element.createFirst then ZF[element.create](ZF, unitFrame, unit) end
     end
     for _, element in ipairs(UNIT_ELEMENTS) do
-        if not element.createFirst and (not element.when or element.when(ctx)) then ZF[element.create](ZF, unitFrame, unit) end
+        local when = element.createWhen or element.when
+        if not element.createFirst and (not when or when(ctx)) then ZF[element.create](ZF, unitFrame, unit) end
     end
 	if isRaid then
 		unitFrame.ZFConfiguredUnit = unit
