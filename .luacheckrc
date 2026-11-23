@@ -99,6 +99,7 @@ read_globals = {
     "GetSpecialization",
     "GetSpecializationInfo",
     "GetTime",
+    "NORMAL_FONT_COLOR",
     "C_ChatInfo",
     "IsInGroup",
     "IsInGuild",

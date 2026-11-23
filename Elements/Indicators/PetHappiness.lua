@@ -61,7 +61,7 @@ local function ShowHappinessTooltip(hover)
 	local level, damagePercentage, loyaltyRate = GetHappinessStats()
 	if not level then return end
 	GameTooltip:SetOwner(hover, "ANCHOR_RIGHT")
-	GameTooltip:SetText(_G["PET_HAPPINESS" .. level])
+	GameTooltip:SetText(_G["PET_HAPPINESS" .. level], NORMAL_FONT_COLOR:GetRGB())
 	if damagePercentage and not ZF:IsSecretValue(damagePercentage) then
 		GameTooltip:AddLine(string.format(PET_DAMAGE_PERCENTAGE, damagePercentage), 1, 1, 1)
 	end
@@ -202,7 +202,7 @@ function ZF:UpdateUnitPetHappinessIndicator(unitFrame, unit)
 
 		PlaceCluster(indicator, DB, unitFrame.HighLevelContainer)
 		indicator.Cluster:Show()
-		indicator:ForceUpdate()
+		ForceUpdate(indicator)
 	elseif unitFrame.PetHappinessIndicator then
 		if unitFrame:IsElementEnabled("PetHappinessIndicator") then unitFrame:DisableElement("PetHappinessIndicator") end
 		unitFrame.PetHappinessIndicator.Cluster:Hide()
