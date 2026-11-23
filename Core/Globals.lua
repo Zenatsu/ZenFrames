@@ -61,26 +61,26 @@ ZF.LSM:Register("font", "Avantgarde (Regular)", addonPath .. "Media\\Fonts\\Avan
 
 ZF.StatusTextures = {
     Combat = {
-        ["COMBAT0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
-        ["COMBAT1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
-        ["COMBAT2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
-        ["COMBAT3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
-        ["COMBAT4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
-        ["COMBAT5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
-        ["COMBAT6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
-        ["COMBAT7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
-        ["COMBAT8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat8.png",
+        ["COMBAT0"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat0.tga",
+        ["COMBAT1"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat1.tga",
+        ["COMBAT2"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat2.tga",
+        ["COMBAT3"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat3.tga",
+        ["COMBAT4"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat4.tga",
+        ["COMBAT5"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat5.tga",
+        ["COMBAT6"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat6.tga",
+        ["COMBAT7"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat7.tga",
+        ["COMBAT8"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat8.png",
     },
     Resting = {
-        ["RESTING0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
-        ["RESTING1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
-        ["RESTING2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
-        ["RESTING3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
-        ["RESTING4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
-        ["RESTING5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
-        ["RESTING6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
-        ["RESTING7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
-        ["RESTING8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting8.png",
+        ["RESTING0"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting0.tga",
+        ["RESTING1"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting1.tga",
+        ["RESTING2"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting2.tga",
+        ["RESTING3"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting3.tga",
+        ["RESTING4"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting4.tga",
+        ["RESTING5"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting5.tga",
+        ["RESTING6"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting6.tga",
+        ["RESTING7"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting7.tga",
+        ["RESTING8"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting8.png",
     },
 }
 
@@ -98,16 +98,16 @@ ZF.ClassificationTextures = {
         ["worldboss"] = "vignettekillboss",
     },
     ["CLASSIFICATION2"] = {
-        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
+        ["elite"] = addonPath .. "Media\\Textures\\Classification\\Classic\\Elite.png",
+        ["rare"] = addonPath .. "Media\\Textures\\Classification\\Classic\\Rare.png",
+        ["rareelite"] = addonPath .. "Media\\Textures\\Classification\\Classic\\RareElite.png",
+        ["worldboss"] = addonPath .. "Media\\Textures\\Classification\\Classic\\WorldBoss.png",
     },
     ["CLASSIFICATION3"] = {
-        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
+        ["elite"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\Elite.png",
+        ["rare"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\Rare.png",
+        ["rareelite"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\RareElite.png",
+        ["worldboss"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
     },
 }
 
@@ -122,48 +122,48 @@ ZF.PetHappinessTextures = {
 
 ZF.QuestTextures = {
     ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
-    ["QUEST0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest01.png",
-    ["QUEST1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest02.png",
+    ["QUEST0"] = addonPath .. "Media\\Textures\\Quest\\Quest01.png",
+    ["QUEST1"] = addonPath .. "Media\\Textures\\Quest\\Quest02.png",
 }
 
 ZF.RoleTextures = {
     ["Blizzard"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\DPS.tga",
     },
     ["Color"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\Color\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\Color\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Color\\DPS.tga",
     },
     ["White"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Tank.png",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Healer.png",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\DPS.png",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\White\\Tank.png",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\White\\Healer.png",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\White\\DPS.png",
     },
     ["ElvUI"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\DPS.tga",
     },
 	["Square"] = {
-		["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Tank.png",
-		["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Healer.png",
-		["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\DPS.png",
+		["TANK"] = addonPath .. "Media\\Textures\\Role\\Square\\Tank.png",
+		["HEALER"] = addonPath .. "Media\\Textures\\Role\\Square\\Healer.png",
+		["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Square\\DPS.png",
 	},
 }
 
 ZF.ReadyCheckTextures = {
 	["White"] = {
-		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
+		["READY"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\Ready.png",
+		["NOTREADY"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\NotReady.png",
+		["WAITING"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\Pending.png",
 	},
     ["HiRes"] = {
-		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
+		["READY"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
+		["NOTREADY"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
+		["WAITING"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
 	},
 }
 
