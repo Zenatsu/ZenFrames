@@ -83,37 +83,42 @@ function ZF:UpdateUnitDispelHighlight(unitFrame, unit)
 	end
 end
 
-function ZF:UpdateUnitDispelState(unitFrame, unit)
+local function HideDispelAuras(unitFrame)
+	unitFrame.DispelAurasActive = nil
+	unitFrame.DispelAuras:Hide()
+end
+
+function ZF:UpdateUnitDispelState(unitFrame, unit, fromAuraEvent)
 	if not unitFrame.DispelHighlight then return end
 	local DispelHighlightDB = unitFrame.DispelHighlightDB
 	if not DispelHighlightDB.Enabled then
-		unitFrame.DispelAuras:Hide()
+		HideDispelAuras(unitFrame)
 		return
 	end
 	local unitToken = unit == "partyplayer" and "player" or unit
 
 	if not ZF.LD then
-		unitFrame.DispelAuras:Hide()
+		HideDispelAuras(unitFrame)
 		return
 	end
 
 	if not UnitIsUnit(unitToken, "player") and not UnitIsFriend("player", unitToken) then
-		unitFrame.DispelAuras:Hide()
+		HideDispelAuras(unitFrame)
 		return
 	end
 
 	DispelTypes = DispelTypes or ZF.LD:GetMyDispelTypes()
 	if DispelColorMapGeneration ~= (ZF.dispelColorGeneration or 0) then RefreshDispelColorMap() end
 	if not (DispelTypes.Magic or DispelTypes.Curse or DispelTypes.Disease or DispelTypes.Poison or DispelTypes.Bleed) then
-		unitFrame.DispelAuras:Hide()
+		HideDispelAuras(unitFrame)
 		return
 	end
 
 	if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
-	if unitFrame.DispelAuras then
-		unitFrame.DispelAuras:Show()
-		unitFrame.DispelAuras:ForceUpdate()
-	end
+	if fromAuraEvent and unitFrame.DispelAurasActive then return end
+	unitFrame.DispelAurasActive = true
+	unitFrame.DispelAuras:Show()
+	unitFrame.DispelAuras:ForceUpdate()
 end
 
 function ZF:RegisterDispelHighlightEvents(unitFrame, unit)
@@ -125,7 +130,7 @@ function ZF:RegisterDispelHighlightEvents(unitFrame, unit)
     unitFrame.DispelHighlightUnit = unit
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function() ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function() ZF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit, true) end)
     end
 
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unitToken)
