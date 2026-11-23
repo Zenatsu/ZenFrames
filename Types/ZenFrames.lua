@@ -7,6 +7,8 @@
 ---@field showClass boolean
 ---@field Backdrop Frame
 ---@field Border Frame
+---@field Cluster Frame
+---@field Hover Frame
 
 ---@class _G
 ---@field DF table?
