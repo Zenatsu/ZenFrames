@@ -297,13 +297,15 @@ local function FriendlyIsInRange(unit, frame)
 	return UnitInSpellsRange(unit, "friendly")
 end
 
+local function UpdateUnitRangeFrames(unit, unitFrames, RangeDB, visibleOnly)
+	for frame in pairs(unitFrames) do
+		if not visibleOnly or frame:IsVisible() then ZF:UpdateRangeAlpha(frame, unit, RangeDB) end
+	end
+end
+
 local function UpdateRangeFrames()
 	local RangeDB = ZF.db.profile.General.Range
-	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
-		for frame in pairs(unitFrames) do
-			if frame:IsVisible() then ZF:UpdateRangeAlpha(frame, unit, RangeDB) end
-		end
-	end
+	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do UpdateUnitRangeFrames(unit, unitFrames, RangeDB, true) end
 end
 
 local function UpdateRangeTicker()
@@ -356,11 +358,7 @@ end
 
 function ZF:UpdateAllRangeFrames()
 	local RangeDB = ZF.db.profile.General.Range
-	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do
-		for frame in pairs(unitFrames) do
-			ZF:UpdateRangeAlpha(frame, unit, RangeDB)
-		end
-	end
+	for unit, unitFrames in pairs(ZF.RangeEvtFrames) do UpdateUnitRangeFrames(unit, unitFrames, RangeDB, false) end
 	UpdateRangeTicker()
 end
 
@@ -414,8 +412,7 @@ RangeEventFrame:RegisterEvent("UNIT_PHASE")
 local function UpdateRangeUnit(rangeUnit)
 	local unitFrames = ZF.RangeEvtFrames[rangeUnit]
 	if not unitFrames then return end
-	local RangeDB = ZF.db.profile.General.Range
-	for frame in pairs(unitFrames) do ZF:UpdateRangeAlpha(frame, rangeUnit, RangeDB) end
+	UpdateUnitRangeFrames(rangeUnit, unitFrames, ZF.db.profile.General.Range, false)
 end
 
 RangeEventFrame:SetScript("OnEvent", function(_, event, unit)
