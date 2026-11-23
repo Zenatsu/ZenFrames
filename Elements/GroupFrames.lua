@@ -1,6 +1,15 @@
 local _, ZF = ...
 local oUF = ZF.oUF
 local GroupRosterEventFrame = CreateFrame("Frame")
+local OnGroupRosterEvent
+
+local function RefreshGroupsAfterCombat()
+	OnGroupRosterEvent(GroupRosterEventFrame, "PLAYER_REGEN_ENABLED")
+end
+
+local function QueueGroupRefresh()
+	ZF:RunAfterCombat("GroupRefresh", RefreshGroupsAfterCombat)
+end
 
 local BlizzardRaidHiddenParent = CreateFrame("Frame", "ZF_BlizzardRaidHiddenParent", UIParent)
 BlizzardRaidHiddenParent:Hide()
@@ -74,7 +83,7 @@ local function HideBlizzardFrame(frameName)
 	local frame = _G[frameName]
 	if not frame then return end
 	if InCombatLockdown() and frame:IsProtected() then
-		GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		QueueGroupRefresh()
 		return
 	end
 	frame:UnregisterAllEvents()
@@ -113,6 +122,28 @@ function ZF:ForEachAuxiliaryRaidFrame(groupKey, callback, includeInactive, ...)
 			local unit = assignedUnit or includeInactive and raidFrame.ZFConfiguredUnit
 			callback(raidFrame, unit, assignedUnit, ...)
 		end
+	end
+end
+
+function ZF:ForEachFrameOfUnit(unit, callback, includeInactive)
+	if unit == "boss" then
+		for i = 1, ZF.MAX_BOSS_FRAMES do
+			local frame = ZF["BOSS" .. i]
+			if frame then callback(frame, "boss" .. i) end
+		end
+	elseif unit == "party" then
+		for i = 1, ZF.MAX_PARTY_FRAMES do
+			local frame = ZF["PARTY" .. i]
+			if frame then callback(frame, "party" .. i) end
+		end
+		if ZF.PARTYPLAYER then callback(ZF.PARTYPLAYER, "partyplayer") end
+	elseif unit == "raid" then
+		ZF:ForEachRaidFrame(callback, includeInactive)
+	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
+		ZF:ForEachAuxiliaryRaidFrame(unit, callback, includeInactive)
+	else
+		local frame = ZF[unit:upper()]
+		if frame then callback(frame, unit) end
 	end
 end
 
@@ -225,7 +256,7 @@ function ZF:UpdateAuxiliaryRaidGroup(groupKey)
 		return
 	end
 	if InCombatLockdown() then
-		GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		QueueGroupRefresh()
 		return
 	end
 	local container = ZF.AUXILIARY_RAID_CONTAINERS[groupKey]
@@ -308,7 +339,7 @@ function ZF:SpawnAuxiliaryRaidGroup(groupKey)
 end
 
 function ZF:SpawnGroupFrame(groupType)
-	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
+	if InCombatLockdown() then QueueGroupRefresh() return end
 	local FrameDB = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		ZF.PARTY_CONTAINER = ZF.PARTY_CONTAINER or CreateBackdropContainer("ZF_PartyContainer")
@@ -381,6 +412,10 @@ function ZF:SpawnGroupFrame(groupType)
 	ZF:UpdateGroupFrame(groupType)
 end
 
+local function UpdatePartyFrame(partyFrame, frameUnit)
+	ZF:UpdateUnitFrame(partyFrame, frameUnit)
+end
+
 function ZF:UpdateGroupFrame(groupType)
 	local UnitDB = ZF.db.profile.Units[groupType]
 	if not UnitDB or not UnitDB.Enabled then
@@ -393,13 +428,12 @@ function ZF:UpdateGroupFrame(groupType)
 		end
 		return
 	end
-	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
+	if InCombatLockdown() then QueueGroupRefresh() return end
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER then ZF:SpawnGroupFrame("party") else
 			PositionGroupContainer(ZF.PARTY_CONTAINER, UnitDB.Frame, "[group:party,nogroup:raid] show; hide")
 		end
-		for i = 1, ZF.MAX_PARTY_FRAMES do if ZF["PARTY" .. i] then ZF:UpdateUnitFrame(ZF["PARTY" .. i], "party" .. i) end end
-		if ZF.PARTYPLAYER then ZF:UpdateUnitFrame(ZF.PARTYPLAYER, "partyplayer") end
+		ZF:ForEachFrameOfUnit("party", UpdatePartyFrame)
 	elseif groupType == "raid" then
 		if not ZF.RAID_CONTAINER then ZF:SpawnGroupFrame("raid") else
 			PositionGroupContainer(ZF.RAID_CONTAINER, UnitDB.Frame, "show")
@@ -427,15 +461,9 @@ function ZF:UpdateGroupIndicators(groupType, onlyUpdateRoles)
 	local UnitDB = ZF.db.profile.Units[groupType]
 	if not UnitDB or not UnitDB.Enabled then return end
 	if groupType == "party" then
-		for i = 1, ZF.MAX_PARTY_FRAMES do
-			local partyFrame = ZF["PARTY" .. i]
-			if partyFrame then
-				RefreshGroupFrameIndicators(partyFrame, "party" .. i, nil, UnitDB, onlyUpdateRoles)
-			end
-		end
-		if ZF.PARTYPLAYER then
-			RefreshGroupFrameIndicators(ZF.PARTYPLAYER, "partyplayer", "player", UnitDB, onlyUpdateRoles)
-		end
+		ZF:ForEachFrameOfUnit("party", function(partyFrame, frameUnit)
+			RefreshGroupFrameIndicators(partyFrame, frameUnit, frameUnit == "partyplayer" and "player" or nil, UnitDB, onlyUpdateRoles)
+		end)
 	elseif groupType == "raid" then
 		ZF:ForEachRaidFrame(function(raidFrame, unit)
 			if unit and unit ~= "raid" then
@@ -477,7 +505,7 @@ local function BuildRaidGroupExclusionSet()
 end
 
 function ZF:LayoutGroupFrames(groupType)
-	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
+	if InCombatLockdown() then QueueGroupRefresh() return end
 	local Frame = ZF.db.profile.Units[groupType].Frame
 	if groupType == "party" then
 		if not ZF.PARTY_CONTAINER or #ZF.PARTY_FRAMES == 0 then return end
@@ -581,11 +609,7 @@ end
 
 function ZF:ResetPartyFrames()
 	if InCombatLockdown() then return end
-	for i = 1, ZF.MAX_PARTY_FRAMES do
-		local partyFrame = ZF["PARTY" .. i]
-		if partyFrame then ReattachPartyFrame(partyFrame, "party" .. i) end
-	end
-	if ZF.PARTYPLAYER then ReattachPartyFrame(ZF.PARTYPLAYER, "partyplayer") end
+	ZF:ForEachFrameOfUnit("party", ReattachPartyFrame)
 	ZF:UpdateGroupFrame("party")
 	ZF:UpdateUnitTags("party")
 end
@@ -604,15 +628,17 @@ GroupRosterEventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
 GroupRosterEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 GroupRosterEventFrame:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 GroupRosterEventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
-	if not ZF.db or not ZF.Initialized then return end
+OnGroupRosterEvent = function(_, event, addonName)
+	if not ZF.db or not ZF.Initialized then
+		if event == "PLAYER_REGEN_ENABLED" then QueueGroupRefresh() end
+		return
+	end
 	local RaidDB = ZF.db.profile.Units.raid
 	if event == "ADDON_LOADED" then
 		if addonName == "Blizzard_CompactRaidFrames" and RaidDB and RaidDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
 		return
 	end
-	if InCombatLockdown() then GroupRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
-	if event == "PLAYER_REGEN_ENABLED" then GroupRosterEventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED") end
+	if InCombatLockdown() then QueueGroupRefresh() return end
 	if event == "GROUP_ROSTER_UPDATE" then
 		if RaidDB and RaidDB.ForceHideBlizzard then ZF:HideBlizzardRaidFrames() end
 		ZF:UpdateGroupIndicators("party")
@@ -645,4 +671,6 @@ GroupRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		ZF:UpdateGroupIndicators("raid")
 		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do ZF:UpdateAuxiliaryRaidGroup(groupKey) end
 	end
-end)
+end
+
+GroupRosterEventFrame:SetScript("OnEvent", OnGroupRosterEvent)

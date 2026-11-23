@@ -140,6 +140,25 @@ local MiscTags = {
     }
 }
 
+if ZF.IS_FOREVER then
+    MiscTags[1]["pethappiness"] = "Pet Happiness Level"
+    MiscTags[1]["petloyaltylevel"] = "Pet Loyalty Level"
+    MiscTags[1]["petcurxp"] = "Pet Current XP"
+    MiscTags[1]["petneedxp"] = "Pet XP to Level"
+    MiscTags[1]["petlvl"] = "Pet Level"
+    MiscTags[1]["petfam"] = "Pet Family"
+    MiscTags[1]["petshortfam"] = "Pet Abbreviated Family"
+    MiscTags[1]["petdiet"] = "Pet Diet"
+    table.insert(MiscTags[2], "pethappiness")
+    table.insert(MiscTags[2], "petloyaltylevel")
+    table.insert(MiscTags[2], "petcurxp")
+    table.insert(MiscTags[2], "petneedxp")
+    table.insert(MiscTags[2], "petlvl")
+    table.insert(MiscTags[2], "petfam")
+    table.insert(MiscTags[2], "petshortfam")
+    table.insert(MiscTags[2], "petdiet")
+end
+
 function ZF:FetchTagData(queriedDB)
     if queriedDB == "Health" then
         return HealthTags

@@ -72,7 +72,8 @@ local function CreateTagSetting(containerParent, unit, tagDB, updateCallback)
     ColorPicker:SetRelativeWidth(STYLE.Widths.Pct50)
     TagContainer:AddChild(ColorPicker)
 
-    GUIBuilders.CreateLayoutPositionBlock(containerParent, TagDB, UpdateTag, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", xyWidth = STYLE.Widths.Pct33})
+    local LayoutContainer = GUIBuilders.CreateLayoutPositionBlock(containerParent, TagDB, UpdateTag, {includeSize = true, sizeKey = "FontSize", sizeLabel = "Font Size", xyWidth = STYLE.Widths.Pct33})
+    GUIBuilders.CreateDropdown(LayoutContainer, "Frame Strata", TagDB, "FrameStrata", UpdateTag, {list = GUIBuilders.FrameStrataList[1], order = GUIBuilders.FrameStrataList[2], width = STYLE.Widths.Pct33})
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
     GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFFFFD100Prefix|r indicates that this should be added to the start of the tag string.")
@@ -129,6 +130,8 @@ function ZF:BuildDesignerSectionOptions(container, unit, tabValue)
     elseif tabValue == "CastBar" then
         CreateDesignerPreviewToggle(container, "CastBar", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCastBar(ZF[unit:upper()], unit) end, "CastBar") end)
         CreateCastBarSettings(container, unit)
+    elseif tabValue == "PetXPBar" and unit == "pet" and ZF:UsesPetXPBar() then
+        GUIInternal.CreatePetXPBarSettings(container, unit)
     elseif tabValue == "Portrait" then
         CreatePortraitSettings(container, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPortrait(ZF[unit:upper()], unit) end, "Portrait") end)
     elseif tabValue == "Indicators" then

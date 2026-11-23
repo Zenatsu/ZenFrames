@@ -1,10 +1,28 @@
 local _, ZF = ...
 
-local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
+local function GetTagParent(unitFrame, TagDB)
+	local container = unitFrame.HighLevelContainer
+	local strata = TagDB.FrameStrata
+	if unitFrame.isDesignerPreview or not strata or strata == container:GetFrameStrata() then return container end
+
+	unitFrame.TagStrataHolders = unitFrame.TagStrataHolders or {}
+	local holder = unitFrame.TagStrataHolders[strata]
+	if not holder then
+		holder = CreateFrame("Frame", nil, container)
+		holder:SetAllPoints(container)
+		holder:SetFrameStrata(strata)
+		unitFrame.TagStrataHolders[strata] = holder
+	end
+	return holder
+end
+
+local function ApplyTagStyle(fontString, unitFrame, TagDB, GeneralDB)
+	local parent = unitFrame.HighLevelContainer
+	fontString:SetParent(GetTagParent(unitFrame, TagDB))
 	ZF:ApplyFontStringStyle(fontString, ZF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag, TagDB.Color, GeneralDB.Fonts.Shadow)
 	fontString:ClearAllPoints()
 	fontString:SetPoint(TagDB.Layout[1], parent, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-	fontString:SetJustifyH(ZF:SetJustification(TagDB.Layout[1]))
+	fontString:SetJustifyH(ZF:GetJustifyH(TagDB.Layout[1]))
 	if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
 		fontString:SetJustifyV("TOP")
 	elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
@@ -14,14 +32,25 @@ local function ApplyTagStyle(fontString, parent, TagDB, GeneralDB)
 	end
 end
 
+local PET_TAG_POLL_INTERVAL = 0.5
+
+local function IsDesignerPreview(unitFrame)
+	return unitFrame.isDesignerPreview or ZF.DESIGNER_PREVIEW_ACTIVE
+end
+
 local function ApplyTagBinding(unitFrame, fontString, unit, TagDB)
+	fontString.ZFTagString = TagDB.Tag
+	fontString.ZFTagUnit = unit
+	if IsDesignerPreview(unitFrame) then
+		if fontString.UpdateTag then unitFrame:Untag(fontString) end
+		return
+	end
+	if ZF.IS_FOREVER and unit == "pet" then fontString.frequentUpdates = PET_TAG_POLL_INTERVAL end
 	if TagDB.Tag and string.find(TagDB.Tag, ":target", 1, true) then
 		unitFrame:Tag(fontString, TagDB.Tag, (unit == "partyplayer" and "player" or unit) .. "target")
 	else
 		unitFrame:Tag(fontString, TagDB.Tag)
 	end
-	fontString.ZFTagString = TagDB.Tag
-	fontString.ZFTagUnit = unit
 end
 
 local function CreateUnitTag(unitFrame, unit, tagDB)
@@ -30,7 +59,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
 
 	if not unitFrame.Tags[tagDB] then
 		unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(ZF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK", "GameFontNormal")
-		ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
+		ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame, TagDB, GeneralDB)
 		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
 end
@@ -42,12 +71,12 @@ function ZF:UpdateUnitTag(unitFrame, unit, tagDB)
 	if not unitFrame.Tags[tagDB] then CreateUnitTag(unitFrame, unit, tagDB) end
 	if not unitFrame.Tags[tagDB] then return end
 
-	ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame.HighLevelContainer, TagDB, GeneralDB)
+	ApplyTagStyle(unitFrame.Tags[tagDB], unitFrame, TagDB, GeneralDB)
 	if unitFrame.Tags[tagDB].ZFTagString ~= TagDB.Tag or unitFrame.Tags[tagDB].ZFTagUnit ~= unit then
 		unitFrame.Tags[tagDB].extraUnits = nil
 		ApplyTagBinding(unitFrame, unitFrame.Tags[tagDB], unit, TagDB)
 	end
-	unitFrame.Tags[tagDB]:UpdateTag()
+	if unitFrame.Tags[tagDB].UpdateTag then unitFrame.Tags[tagDB]:UpdateTag() end
 end
 
 function ZF:CreateUnitTags(unitFrame, unit)
@@ -73,16 +102,5 @@ function ZF:UpdateUnitTags(unit, tagName)
 		end
 	end
 
-	if unit == "boss" then
-		for i = 1, ZF.MAX_BOSS_FRAMES do UpdateFrameTags(ZF["BOSS" .. i], "boss" .. i) end
-	elseif unit == "party" then
-		for i = 1, ZF.MAX_PARTY_FRAMES do UpdateFrameTags(ZF["PARTY" .. i], "party" .. i) end
-		UpdateFrameTags(ZF.PARTYPLAYER, "partyplayer")
-	elseif unit == "raid" then
-		ZF:ForEachRaidFrame(UpdateFrameTags, true)
-	elseif ZF.AUXILIARY_RAID_GROUPS[unit] then
-		ZF:ForEachAuxiliaryRaidFrame(unit, UpdateFrameTags, true)
-	else
-		UpdateFrameTags(ZF[unit:upper()], unit)
-	end
+	ZF:ForEachFrameOfUnit(unit, UpdateFrameTags, true)
 end

@@ -89,93 +89,89 @@ local function CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
 	return portraitBackdrop, border
 end
 
-function ZF:CreateUnitPortrait(unitFrame, unit)
-	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
-	local portraitStyle = PortraitDB.Style or "2D"
+local function BuildPortrait(unitFrame, unit, PortraitDB, portraitStyle)
+	local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
+	local unitPortrait
 
 	if portraitStyle == "3D" then
-		local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
-
-		local unitPortrait = CreateFrame("PlayerModel", ZF:FetchFrameName(unit) .. "_Portrait3D", portraitBackdrop)
+		unitPortrait = CreateFrame("PlayerModel", ZF:FetchFrameName(unit) .. "_Portrait3D", portraitBackdrop)
 		unitPortrait:SetAllPoints(portraitBackdrop)
 		unitPortrait:SetCamDistanceScale(1)
 		unitPortrait:SetPortraitZoom(1)
 		unitPortrait:SetPosition(0, 0, 0)
-		unitPortrait.Backdrop = portraitBackdrop
 		unitPortrait.Override = Update3DPortrait
 
 		unitPortrait.Fallback = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait3DFallback", "ARTWORK")
 		unitPortrait.Fallback:SetAllPoints(portraitBackdrop)
 		unitPortrait.Fallback:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
 		unitPortrait.Fallback:Hide()
-
-		unitPortrait.Border = border
-
-		ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
-		return unitPortrait
+	else
+		unitPortrait = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
+		unitPortrait:SetAllPoints(portraitBackdrop)
+		unitPortrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
+		unitPortrait.showClass = PortraitDB.UseClassPortrait
 	end
 
-	local portraitBackdrop, border = CreatePortraitBackdrop(unitFrame, unit, PortraitDB)
-
-	local unitPortrait = portraitBackdrop:CreateTexture(ZF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
-	unitPortrait:SetAllPoints(portraitBackdrop)
-	unitPortrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
-	unitPortrait.showClass = PortraitDB.UseClassPortrait
 	unitPortrait.Backdrop = portraitBackdrop
 	unitPortrait.Border = border
+	return unitPortrait
+end
 
+local function GetPortraitVariant(unitFrame, unit, PortraitDB)
+	local portraitStyle = PortraitDB.Style == "3D" and "3D" or "2D"
+	unitFrame.PortraitVariants = unitFrame.PortraitVariants or {}
+	local unitPortrait = unitFrame.PortraitVariants[portraitStyle]
+	if not unitPortrait then
+		unitPortrait = BuildPortrait(unitFrame, unit, PortraitDB, portraitStyle)
+		unitFrame.PortraitVariants[portraitStyle] = unitPortrait
+	end
+	return unitPortrait
+end
+
+local function DetachPortrait(unitFrame)
+	local unitPortrait = unitFrame.Portrait
+	if not unitPortrait then return end
+	if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
+	unitPortrait:Hide()
+	unitPortrait.Border:Hide()
+	if unitPortrait.Fallback then unitPortrait.Fallback:Hide() end
+	unitPortrait.Backdrop:Hide()
+	unitFrame.Portrait = nil
+end
+
+function ZF:CreateUnitPortrait(unitFrame, unit)
+	local PortraitDB = ZF:GetUnitDB(nil, unit).Portrait
+	local unitPortrait = GetPortraitVariant(unitFrame, unit, PortraitDB)
 	ApplyPortraitEnabledState(unitFrame, unitPortrait, PortraitDB)
 	return unitPortrait
 end
 
 function ZF:UpdateUnitPortrait(unitFrame, unit)
-	local PortraitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Portrait
-	local portraitStyle = PortraitDB.Style or "2D"
+	local PortraitDB = ZF:GetUnitDB(nil, unit).Portrait
 
 	if PortraitDB.Enabled then
-		local isPlayerModel = unitFrame.Portrait and unitFrame.Portrait:IsObjectType("PlayerModel")
-		if unitFrame.Portrait and ((portraitStyle == "3D" and not isPlayerModel) or (portraitStyle ~= "3D" and (isPlayerModel or not unitFrame.Portrait.Backdrop))) then
-			if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
-			unitFrame.Portrait.Border:Hide()
-			unitFrame.Portrait.Border = nil
-			if unitFrame.Portrait.Backdrop then
-				unitFrame.Portrait.Backdrop:Hide()
-				unitFrame.Portrait.Backdrop = nil
-			end
-			if unitFrame.Portrait.Fallback then
-				unitFrame.Portrait.Fallback:Hide()
-				unitFrame.Portrait.Fallback = nil
-			end
-			unitFrame.Portrait:Hide()
-			unitFrame.Portrait = nil
-		end
-
-		if not unitFrame.Portrait then unitFrame.Portrait = ZF:CreateUnitPortrait(unitFrame, unit) end
+		local unitPortrait = GetPortraitVariant(unitFrame, unit, PortraitDB)
+		if unitFrame.Portrait ~= unitPortrait then DetachPortrait(unitFrame) end
+		unitFrame.Portrait = unitPortrait
 		if not unitFrame:IsElementEnabled("Portrait") then unitFrame:EnableElement("Portrait") end
 
 		PositionPortraitBackdrop(unitFrame, PortraitDB)
-		if unitFrame.Portrait:IsObjectType("PlayerModel") then
-			unitFrame.Portrait.Fallback:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
-			unitFrame.Portrait:SetCamDistanceScale(1)
-			unitFrame.Portrait:SetPortraitZoom(1)
-			unitFrame.Portrait:SetPosition(0, 0, 0)
+		if unitPortrait:IsObjectType("PlayerModel") then
+			unitPortrait.Fallback:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
+			unitPortrait:SetCamDistanceScale(1)
+			unitPortrait:SetPortraitZoom(1)
+			unitPortrait:SetPosition(0, 0, 0)
 		else
-			unitFrame.Portrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
-			unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait
+			unitPortrait:SetTexCoord(ComputePortraitZoomTexCoord(PortraitDB.Zoom))
+			unitPortrait.showClass = PortraitDB.UseClassPortrait
 		end
-		unitFrame.Portrait.Backdrop:Show()
+		unitPortrait.Backdrop:Show()
 
-		unitFrame.Portrait:Show()
-		ApplyPortraitBorderStyle(unitFrame.Portrait.Border, PortraitDB)
-		unitFrame.Portrait.Border:Show()
-		unitFrame.Portrait:ForceUpdate()
+		unitPortrait:Show()
+		ApplyPortraitBorderStyle(unitPortrait.Border, PortraitDB)
+		unitPortrait.Border:Show()
+		unitPortrait:ForceUpdate()
 	else
-		if not unitFrame.Portrait then return end
-		if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
-		unitFrame.Portrait:Hide()
-		unitFrame.Portrait.Border:Hide()
-		if unitFrame.Portrait.Fallback then unitFrame.Portrait.Fallback:Hide() end
-		if unitFrame.Portrait.Backdrop then unitFrame.Portrait.Backdrop:Hide() end
-		unitFrame.Portrait = nil
+		DetachPortrait(unitFrame)
 	end
 end

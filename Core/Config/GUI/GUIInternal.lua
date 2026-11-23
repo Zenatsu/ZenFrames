@@ -94,9 +94,9 @@ local DurationBreakpointSettings = {
     days = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dd"},
 }
 
-local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
+local AnchorPoints = ZF.GUIBuilders.AnchorPoints
 local AuraAnchorParents = {{Frame = "Unit Frame", Health = "Health Bar"}, {"Frame", "Health"}}
-local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
+local FrameStrataList = ZF.GUIBuilders.FrameStrataList
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
 local Power = {
     [0] = "Mana",
@@ -164,24 +164,15 @@ for _, style in ipairs({"Blizzard", "Color", "White", "ElvUI", "Square"}) do
 	}, " ")
 end
 
+local function RefreshTestAuras(unitFrame, frameUnit)
+	if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
+end
+
 local function DisableAurasTestMode(unit)
-	if ZF.AUXILIARY_RAID_GROUPS[unit] then
-		ZF:ForEachAuxiliaryRaidFrame(unit, function(unitFrame, frameUnit)
-			if frameUnit then ZF:CreateTestAuras(unitFrame, frameUnit) end
-		end, false)
-	elseif unit == "boss" then
+	if unit == "boss" then
 		ZF:ResetBossFrames()
-	elseif unit == "party" or unit == "raid" then
-		if unit == "party" then
-			for i = 1, ZF.MAX_PARTY_FRAMES do
-				if ZF["PARTY" .. i] then ZF:CreateTestAuras(ZF["PARTY" .. i], "party" .. i) end
-			end
-			if ZF.PARTYPLAYER then ZF:CreateTestAuras(ZF.PARTYPLAYER, "partyplayer") end
-		else
-			ZF:ForEachRaidFrame(function(raidFrame, frameUnit) if frameUnit then ZF:CreateTestAuras(raidFrame, frameUnit) end end, false)
-		end
 	else
-		ZF:CreateTestAuras(ZF[unit:upper()], unit)
+		ZF:ForEachFrameOfUnit(unit, RefreshTestAuras, false)
 	end
 end
 

@@ -88,266 +88,192 @@ local function FetchUnitPowerColor(unit)
     return 1, 1, 1
 end
 
-oUF.Tags.Methods["perhp"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
-    if unitStatus then
-        return unitStatus
-    else
-        return string.format("%.0f", unitHealthPercent)
+local Methods = oUF.Tags.Methods
+local MANA = Enum.PowerType.Mana
+
+local function UnitStatusText(unit)
+    return UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+end
+
+local function UnitHealthPercentValue(unit)
+    return UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+end
+
+local function RawValue(value)
+    return value
+end
+
+local function TruncateWhenZero(value)
+    return C_StringUtil.TruncateWhenZero(value)
+end
+
+local function SeparatorFormats(percentFormat)
+    local builtIn = {
+        ["[]"] = "%s [" .. percentFormat .. "]",
+        ["()"] = "%s (" .. percentFormat .. ")",
+        [" "] = "%s " .. percentFormat,
+    }
+    return builtIn, "%s %s " .. percentFormat
+end
+
+local function FormatWithSeparator(builtIn, customFormat, value, percent)
+    local separator = ZF.SEPARATOR
+    local format = builtIn[separator]
+    if format then return string.format(format, value, percent) end
+    return string.format(customFormat, value, separator, percent)
+end
+
+local function ColorWrap(r, g, b, format, value)
+    return string.format("|cff%02x%02x%02x" .. format .. "|r", r * 255, g * 255, b * 255, value)
+end
+
+local function HealthPercentTag(percentFormat, checkStatus)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealthPercent = UnitHealthPercentValue(unit)
+        local unitStatus = checkStatus and UnitStatusText(unit)
+        if unitStatus then return unitStatus end
+        return string.format(percentFormat, unitHealthPercent)
     end
 end
 
-oUF.Tags.Methods["perhp-with-sign"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
-    if unitStatus then
-        return unitStatus
-    else
-        return string.format("%.0f%%", unitHealthPercent)
+local function HealthAndPercentTag(percentFormat, valueFormatter, checkStatus)
+    local builtInFormats, customFormat = SeparatorFormats(percentFormat)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealth = UnitHealth(unit)
+        local unitHealthPercent = UnitHealthPercentValue(unit)
+        local unitStatus = checkStatus and UnitStatusText(unit)
+        if unitStatus then return unitStatus end
+        return FormatWithSeparator(builtInFormats, customFormat, valueFormatter(unitHealth), unitHealthPercent)
     end
 end
 
-oUF.Tags.Methods["curhp:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitHealth = UnitHealth(unit)
-    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
-    if unitStatus then
-        return unitStatus
-    else
-        return string.format("%s", AbbreviateValue(unitHealth))
-    end
-end
-
-oUF.Tags.Methods["curhpperhp"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitHealth = UnitHealth(unit)
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
-    if unitStatus then
-        return unitStatus
-    else
-        if ZF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
-        elseif ZF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
-        elseif ZF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", unitHealth, unitHealthPercent)
+local function ManaPercentTag(percentFormat, valueFormatter)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPower = UnitPower(unit)
+        local unitPowerType = UnitPowerType(unit)
+        if unitPowerType == MANA and unitPower then
+            local powerPercent = UnitPowerPercent(unit, MANA, true, CurveConstants.ScaleTo100)
+            return string.format(percentFormat, powerPercent)
         else
-            return string.format("%s %s %.0f%%", unitHealth, ZF.SEPARATOR, unitHealthPercent)
+            return string.format("%s", valueFormatter(unitPower))
         end
     end
 end
 
-oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
+local function HealerManaTag(percentFormat)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+        local unitPower = UnitPower(unit, MANA)
+        if unitPower then
+            local powerPercent = UnitPowerPercent(unit, MANA, true, CurveConstants.ScaleTo100)
+            return string.format(percentFormat, powerPercent)
+        end
+    end
+end
+
+local function HealerManaColorTag(percentFormat)
+    return function(unit)
+        if not unit then return end
+        if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
+        local unitPower = UnitPower(unit, MANA)
+        if unitPower then
+            local powerPercent = UnitPowerPercent(unit, MANA, true, CurveConstants.ScaleTo100)
+            local manaColor = ZF.db.profile.General.Colors.Power[0]
+            if manaColor then
+                local manaColorR, manaColorG, manaColorB = unpack(manaColor)
+                return ColorWrap(manaColorR, manaColorG, manaColorB, percentFormat, powerPercent)
+            end
+        end
+    end
+end
+
+local function ValueTag(getValue, valueFormatter, getColor)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local colorR, colorG, colorB
+        if getColor then colorR, colorG, colorB = getColor(unit) end
+        local value = getValue(unit)
+        if value then
+            if getColor then return ColorWrap(colorR, colorG, colorB, "%s", valueFormatter(value)) end
+            return string.format("%s", valueFormatter(value))
+        end
+    end
+end
+
+local function UnitClassColor(unit)
+    return ZF:GetUnitColor(unit)
+end
+
+local function AbsorbTag(valueFormatter)
+    return function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
+        if absorbAmount then
+            return string.format("%s", valueFormatter(absorbAmount))
+        end
+    end
+end
+
+Methods["perhp"] = HealthPercentTag("%.0f", true)
+Methods["perhp-with-sign"] = HealthPercentTag("%.0f%%", true)
+
+Methods["curhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and DEAD or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
-    if unitStatus then
-        return unitStatus
-    else
-        if ZF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif ZF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif ZF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
-        else
-            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), ZF.SEPARATOR, unitHealthPercent)
-        end
-    end
+    local unitStatus = UnitStatusText(unit)
+    if unitStatus then return unitStatus end
+    return string.format("%s", AbbreviateValue(unitHealth))
 end
 
-oUF.Tags.Methods["absorbs"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", absorbAmount)
-    end
-end
+Methods["curhpperhp"] = HealthAndPercentTag("%.0f%%", RawValue, true)
+Methods["curhpperhp:abbr"] = HealthAndPercentTag("%.0f%%", AbbreviateValue, true)
 
-oUF.Tags.Methods["absorbs:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", AbbreviateValue(absorbAmount))
-    end
-end
+Methods["absorbs"] = AbsorbTag(RawValue)
+Methods["absorbs:abbr"] = AbsorbTag(AbbreviateValue)
+Methods["absorbs:truncate"] = AbsorbTag(TruncateWhenZero)
 
-oUF.Tags.Methods["absorbs:truncate"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", C_StringUtil.TruncateWhenZero(absorbAmount))
-    end
-end
+Methods["curpp:color"] = ValueTag(UnitPower, RawValue, FetchUnitPowerColor)
+Methods["maxpp:color"] = ValueTag(UnitPowerMax, RawValue, FetchUnitPowerColor)
+Methods["curpp:abbr"] = ValueTag(UnitPower, AbbreviateValue)
+Methods["maxpp:abbr"] = ValueTag(UnitPowerMax, AbbreviateValue)
+Methods["curpp:abbr:color"] = ValueTag(UnitPower, AbbreviateValue, FetchUnitPowerColor)
+Methods["maxpp:abbr:color"] = ValueTag(UnitPowerMax, AbbreviateValue, FetchUnitPowerColor)
+Methods["maxhp:abbr"] = ValueTag(UnitHealthMax, AbbreviateValue)
+Methods["maxhp:abbr:color"] = ValueTag(UnitHealthMax, AbbreviateValue, UnitClassColor)
 
-oUF.Tags.Methods["curpp:color"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local powerColorR, powerColorG, powerColorB = FetchUnitPowerColor(unit)
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("|cff%02x%02x%02x%s|r", powerColorR * 255, powerColorG * 255, powerColorB * 255, unitPower)
-    end
-end
+Methods["curpp:manapercent"] = ManaPercentTag("%.f", RawValue)
+Methods["curpp:manapercent-with-sign"] = ManaPercentTag("%.f%%", RawValue)
+Methods["curpp:manapercent:abbr"] = ManaPercentTag("%.f", AbbreviateValue)
+Methods["curpp:manapercent-with-sign:abbr"] = ManaPercentTag("%.f%%", AbbreviateValue)
 
-oUF.Tags.Methods["maxpp:color"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local powerColorR, powerColorG, powerColorB = FetchUnitPowerColor(unit)
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("|cff%02x%02x%02x%s|r", powerColorR * 255, powerColorG * 255, powerColorB * 255, unitPowerMax)
-    end
-end
+Methods["curpp:manapercent:healer"] = HealerManaTag("%.f")
+Methods["curpp:manapercent-with-sign:healer"] = HealerManaTag("%.f%%")
+Methods["curpp:manapercent:healer:color"] = HealerManaColorTag("%.f")
+Methods["curpp:manapercent-with-sign:healer:color"] = HealerManaColorTag("%.f%%")
 
-oUF.Tags.Methods["curpp:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("%s", AbbreviateValue(unitPower))
-    end
-end
+for precision = 1, 3 do
+    local percentFormat = "%." .. precision .. "f"
+    local suffix = ":" .. precision
 
-oUF.Tags.Methods["curpp:manapercent"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f", powerPercent)
-    else
-        return string.format("%s", unitPower)
-    end
-end
+    Methods["perhp" .. suffix] = HealthPercentTag(percentFormat, false)
+    Methods["perhp-with-sign" .. suffix] = HealthPercentTag(percentFormat, false)
+    Methods["curhpperhp" .. suffix] = HealthAndPercentTag(percentFormat .. "%%", RawValue, false)
+    Methods["curhpperhp:abbr" .. suffix] = HealthAndPercentTag(percentFormat .. "%%", AbbreviateValue, false)
 
-oUF.Tags.Methods["curpp:manapercent:healer"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
-    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f", powerPercent)
+    Methods["perpp" .. suffix] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPowerPercent = UnitPowerPercent(unit, nil, true, CurveConstants.ScaleTo100)
+        return string.format(percentFormat, unitPowerPercent)
     end
-end
 
-oUF.Tags.Methods["curpp:manapercent:healer:color"] = function(unit)
-    if not unit then return end
-    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
-    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        local manaColor = ZF.db.profile.General.Colors.Power[0]
-        if manaColor then
-            local manaColorR, manaColorG, manaColorB = unpack(manaColor)
-            return string.format("|cff%02x%02x%02x%.f|r", manaColorR * 255, manaColorG * 255, manaColorB * 255, powerPercent)
-        end
-    end
-end
-
-oUF.Tags.Methods["curpp:manapercent-with-sign:healer"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
-    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f%%", powerPercent)
-    end
-end
-
-oUF.Tags.Methods["curpp:manapercent-with-sign:healer:color"] = function(unit)
-    if not unit then return end
-    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
-    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        local manaColor = ZF.db.profile.General.Colors.Power[0]
-        if manaColor then
-            local manaColorR, manaColorG, manaColorB = unpack(manaColor)
-            return string.format("|cff%02x%02x%02x%.f%%|r", manaColorR * 255, manaColorG * 255, manaColorB * 255, powerPercent)
-        end
-    end
-end
-
-oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f%%", powerPercent)
-    else
-        return string.format("%s", unitPower)
-    end
-end
-
-oUF.Tags.Methods["curpp:manapercent:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f", powerPercent)
-    else
-        return string.format("%s", AbbreviateValue(unitPower))
-    end
-end
-
-oUF.Tags.Methods["curpp:manapercent-with-sign:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f%%", powerPercent)
-    else
-        return string.format("%s", AbbreviateValue(unitPower))
-    end
-end
-
-oUF.Tags.Methods["maxpp:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("%s", AbbreviateValue(unitPowerMax))
-    end
-end
-
-oUF.Tags.Methods["curpp:abbr:color"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local powerColorR, powerColorG, powerColorB = FetchUnitPowerColor(unit)
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("|cff%02x%02x%02x%s|r", powerColorR * 255, powerColorG * 255, powerColorB * 255, AbbreviateValue(unitPower))
-    end
-end
-
-oUF.Tags.Methods["maxpp:abbr:color"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local powerColorR, powerColorG, powerColorB = FetchUnitPowerColor(unit)
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("|cff%02x%02x%02x%s|r", powerColorR * 255, powerColorG * 255, powerColorB * 255, AbbreviateValue(unitPowerMax))
-    end
-end
-
-oUF.Tags.Methods["maxhp:abbr"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local unitMaxHealth = UnitHealthMax(unit)
-    if unitMaxHealth then
-        return string.format("%s", AbbreviateValue(unitMaxHealth))
-    end
-end
-
-oUF.Tags.Methods["maxhp:abbr:color"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local classColorR, classColorG, classColorB = ZF:GetUnitColor(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
-    if unitMaxHealth then
-        return string.format("|cff%02x%02x%02x%s|r", classColorR * 255, classColorG * 255, classColorB * 255, AbbreviateValue(unitMaxHealth))
-    end
+    Methods["curpp:manapercent" .. suffix] = ManaPercentTag(percentFormat, RawValue)
+    Methods["curpp:manapercent:abbr" .. suffix] = ManaPercentTag(percentFormat, AbbreviateValue)
+    Methods["curpp:manapercent-with-sign" .. suffix] = ManaPercentTag(percentFormat .. "%%", RawValue)
+    Methods["curpp:manapercent-with-sign:abbr" .. suffix] = ManaPercentTag(percentFormat .. "%%", AbbreviateValue)
 end
 
 oUF.Tags.Methods["name:color"] = function(unit)
@@ -429,102 +355,73 @@ for i = 1, 25 do
     end
 end
 
-for i = 1, 3 do
-    local precision = i
+local function FirstCharacter(word)
+    return word:match("^[%z\1-\127\194-\244][\128-\191]*") or ""
+end
 
-    oUF.Tags.Methods["perhp" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        return string.format("%." .. precision .. "f", unitHealthPercent)
-    end
-
-    oUF.Tags.Methods["perhp-with-sign" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        return string.format("%." .. precision .. "f", unitHealthPercent)
-    end
-
-    oUF.Tags.Methods["curhpperhp" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitHealth = UnitHealth(unit)
-        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        if ZF.SEPARATOR == "[]" then
-            return string.format("%s [%." .. precision .. "f%%]", unitHealth, unitHealthPercent)
-        elseif ZF.SEPARATOR == "()" then
-            return string.format("%s (%." .. precision .. "f%%)", unitHealth, unitHealthPercent)
-        elseif ZF.SEPARATOR == " " then
-            return string.format("%s %." .. precision .. "f%%", unitHealth, unitHealthPercent)
-        else
-            return string.format("%s %s %." .. precision .. "f%%", unitHealth, ZF.SEPARATOR, unitHealthPercent)
+function ZF.AbbreviateFamily(family)
+    local words = {}
+    for word in family:gmatch("%S+") do words[#words + 1] = word end
+    if #words > 1 then
+        local result = ""
+        for _, word in ipairs(words) do
+            local first = FirstCharacter(word)
+            local isConnector = word == word:lower()
+            result = result .. (isConnector and first:lower() or first:upper())
         end
+        return result
+    end
+    if #family > 4 then return family:sub(1, 4) end
+    return family
+end
+
+if ZF.IS_FOREVER then
+    oUF.Tags.Methods["pethappiness"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local level = ZF.GetPetHappinessStats()
+        return level and _G["PET_HAPPINESS" .. level] or ""
     end
 
-    oUF.Tags.Methods["curhpperhp:abbr" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitHealth = UnitHealth(unit)
-        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-        if ZF.SEPARATOR == "[]" then
-            return string.format("%s [%." .. precision .. "f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif ZF.SEPARATOR == "()" then
-            return string.format("%s (%." .. precision .. "f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
-        elseif ZF.SEPARATOR == " " then
-            return string.format("%s %." .. precision .. "f%%", AbbreviateValue(unitHealth), unitHealthPercent)
-        else
-            return string.format("%s %s %." .. precision .. "f%%", AbbreviateValue(unitHealth), ZF.SEPARATOR, unitHealthPercent)
-        end
+    oUF.Tags.Methods["petloyaltylevel"] = function(unit)
+        if unit ~= "pet" then return "" end
+        return ZF.GetPetLoyaltyLevel() or ""
     end
 
-    oUF.Tags.Methods["perpp" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitPowerPercent = UnitPowerPercent(unit, nil, true, CurveConstants.ScaleTo100)
-        return string.format("%." .. precision .. "f", unitPowerPercent)
+    oUF.Tags.Methods["petdiet"] = function(unit)
+        if unit ~= "pet" then return "" end
+        return table.concat(ZF.GetPetFoodTypes(), ", ")
     end
 
-    oUF.Tags.Methods["curpp:manapercent" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitPower = UnitPower(unit)
-        local unitPowerType = UnitPowerType(unit)
-        if unitPowerType == Enum.PowerType.Mana and unitPower then
-            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-            return string.format("%." .. precision .. "f", powerPercent)
-        else
-            return string.format("%s", unitPower)
-        end
+    oUF.Tags.Methods["petcurxp"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local current = ZF.GetPetExperienceValues()
+        return current and tostring(current) or ""
     end
 
-    oUF.Tags.Methods["curpp:manapercent:abbr" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitPower = UnitPower(unit)
-        local unitPowerType = UnitPowerType(unit)
-        if unitPowerType == Enum.PowerType.Mana and unitPower then
-            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-            return string.format("%." .. precision .. "f", powerPercent)
-        else
-            return string.format("%s", AbbreviateValue(unitPower))
-        end
+    oUF.Tags.Methods["petneedxp"] = function(unit)
+        if unit ~= "pet" then return "" end
+        local _, needed = ZF.GetPetExperienceValues()
+        return needed and tostring(needed) or ""
     end
 
-    oUF.Tags.Methods["curpp:manapercent-with-sign" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitPower = UnitPower(unit)
-        local unitPowerType = UnitPowerType(unit)
-        if unitPowerType == Enum.PowerType.Mana and unitPower then
-            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-            return string.format("%." .. precision .. "f%%", powerPercent)
-        else
-            return string.format("%s", unitPower)
-        end
+    oUF.Tags.Methods["petlvl"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local level = UnitLevel(unit)
+        if type(level) ~= "number" or ZF:IsSecretValue(level) then return "" end
+        return tostring(level)
     end
 
-    oUF.Tags.Methods["curpp:manapercent-with-sign:abbr" .. ":" .. precision] = function(unit)
-        if not unit or not UnitExists(unit) then return "" end
-        local unitPower = UnitPower(unit)
-        local unitPowerType = UnitPowerType(unit)
-        if unitPowerType == Enum.PowerType.Mana and unitPower then
-            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-            return string.format("%." .. precision .. "f%%", powerPercent)
-        else
-            return string.format("%s", AbbreviateValue(unitPower))
-        end
+    oUF.Tags.Methods["petfam"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local family = UnitCreatureFamily(unit)
+        if type(family) ~= "string" or ZF:IsSecretValue(family) then return "" end
+        return family
+    end
+
+    oUF.Tags.Methods["petshortfam"] = function(unit)
+        if unit ~= "pet" or not UnitExists(unit) then return "" end
+        local family = UnitCreatureFamily(unit)
+        if type(family) ~= "string" or ZF:IsSecretValue(family) then return "" end
+        return ZF.AbbreviateFamily(family)
     end
 end

@@ -1,5 +1,19 @@
 local _, ZF = ...
 ZF.TargetHighlightEvtFrames = {}
+local trackedUnits
+local function IsTrackedUnit(unit)
+	if not trackedUnits then
+		trackedUnits = {}
+		for _, frameUnit in pairs(ZF.TargetHighlightEvtFrames) do trackedUnits[frameUnit] = true end
+	end
+	return trackedUnits[unit]
+end
+
+local function SetTrackedFrame(unitFrame, unit)
+	if ZF.TargetHighlightEvtFrames[unitFrame] == unit then return end
+	ZF.TargetHighlightEvtFrames[unitFrame] = unit
+	trackedUnits = nil
+end
 
 local unitIsTargetEvtFrame = CreateFrame("Frame")
 unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -7,6 +21,7 @@ unitIsTargetEvtFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function(_, event, eventUnit)
 	local changedUnit = eventUnit and eventUnit .. "target"
+	if event == "UNIT_TARGET" and not IsTrackedUnit(changedUnit) then return end
 	for frame, unit in pairs(ZF.TargetHighlightEvtFrames) do
 		local unitChanged = event == "PLAYER_TARGET_CHANGED" or (event == "PLAYER_FOCUS_CHANGED" and (unit == "focus" or unit == "focustarget")) or unit == changedUnit
 		if unitChanged and frame.TargetIndicatorDB.Enabled then ZF:UpdateTargetGlowIndicator(frame, unit) end
@@ -14,26 +29,7 @@ unitIsTargetEvtFrame:SetScript("OnEvent", function(_, event, eventUnit)
 end)
 
 function ZF:CreateUnitTargetGlowIndicator(unitFrame, unit)
-    local UnitDB = ZF:GetUnitDB(unitFrame, unit)
-    local TargetIndicatorDB = UnitDB.Indicators.Target
-    if TargetIndicatorDB then
-        unitFrame.TargetIndicatorDB = TargetIndicatorDB
-        unitFrame.TargetGlowFrameDB = UnitDB.Frame
-        if TargetIndicatorDB.Style == "Border" then -- shown as "Outline" in UI until I can figure out a safe way to change the DB without breaking profiles
-            unitFrame.TargetIndicator = unitFrame.ContainerBorder
-        else
-            local t = TargetIndicatorDB.BorderThickness
-            unitFrame.TargetIndicatorFrame = CreateFrame("Frame", ZF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
-            unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
-            unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
-            unitFrame.TargetIndicatorFrame:SetBackdropColor(0, 0, 0, 0)
-            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
-            unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
-            unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
-            unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
-            unitFrame.TargetIndicator:SetAlpha(0)
-        end
-    end
+    ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
 end
 
 function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
@@ -53,12 +49,9 @@ function ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
             unitFrame.TargetIndicatorFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
         end
         unitFrame.TargetIndicator = unitFrame.TargetIndicatorFrame
-        local t = TargetIndicatorDB.BorderThickness
         unitFrame.TargetIndicator:ClearAllPoints()
         unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
-        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -t, t)
-        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", t, -t)
+        ZF:ApplyOutsetBorder(unitFrame.TargetIndicator, unitFrame.Container, TargetIndicatorDB.BorderThickness, ZF.Media.Solid)
         unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Color[1], TargetIndicatorDB.Color[2], TargetIndicatorDB.Color[3], TargetIndicatorDB.Color[4])
         ZF:UpdateTargetGlowIndicator(unitFrame, unit)
     end
@@ -89,13 +82,13 @@ function ZF:RegisterTargetGlowIndicatorFrame(frameName, unit)
 	local DB = ZF:GetUnitDB(unitFrame, unit)
 	if not unitFrame or not DB or not DB.Indicators.Target then return end
 	if DB.Indicators.Target.Enabled then
-		ZF.TargetHighlightEvtFrames[unitFrame] = unit
+		SetTrackedFrame(unitFrame, unit)
 		ZF:UpdateTargetGlowIndicator(unitFrame, unit)
 	else
-		ZF.TargetHighlightEvtFrames[unitFrame] = nil
+		SetTrackedFrame(unitFrame, nil)
 		if unitFrame.TargetIndicator == unitFrame.ContainerBorder then
 			local FrameDB = DB.Frame
-			unitFrame.ContainerBorder:SetBackdropBorderColor(FrameDB.BorderColor[1], FrameDB.BorderColor[2], FrameDB.BorderColor[3], FrameDB.BorderThickness > 0 and FrameDB.BorderOpacity or 0)
+			unitFrame.ContainerBorder:SetBackdropBorderColor(ZF:GetBorderColor(FrameDB))
 		elseif unitFrame.TargetIndicator then
 			unitFrame.TargetIndicator:SetAlpha(0)
 		end
@@ -103,5 +96,5 @@ function ZF:RegisterTargetGlowIndicatorFrame(frameName, unit)
 end
 
 function ZF:UnregisterTargetGlowIndicatorFrame(unitFrame)
-	if unitFrame then ZF.TargetHighlightEvtFrames[unitFrame] = nil end
+	if unitFrame then SetTrackedFrame(unitFrame, nil) end
 end

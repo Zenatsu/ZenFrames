@@ -175,6 +175,16 @@ local function CreateRangeSettings(containerParent)
     Refresh()
 end
 
+local RESET_COLOR_BUTTONS = {
+    { label = "All Colors" },
+    { label = "Power Colors", key = "Power" },
+    { label = "Secondary Power Colors", key = "SecondaryPower" },
+    { label = "Reaction Colors", key = "Reaction" },
+    { label = "Dispel Colors", key = "Dispel" },
+    { label = "Status Colors", key = "Status" },
+    { label = "Threat Colors", key = "Threat" },
+}
+
 local function CreateColorSettings(containerParent)
     local ColorsContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colors")
     ZF.db.profile.General.Colors.Status = ZF.db.profile.General.Colors.Status or {}
@@ -196,47 +206,23 @@ local function CreateColorSettings(containerParent)
 
         GUIWidgets.CreateInformationTag(ColorsContainer,"Buttons below will reset the colors to their default values as defined by " .. ZF.STYLIZED_ADDON_NAME .. ".")
 
-        local ResetAllColorsButton = AG:Create("Button")
-        ResetAllColorsButton:SetText("All Colors")
-        ResetAllColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors, ZF.db.profile.General.Colors) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
-        ResetAllColorsButton:SetRelativeWidth(STYLE.Widths.Pct100)
-        ColorsContainer:AddChild(ResetAllColorsButton)
-
-        local ResetPowerColorsButton = AG:Create("Button")
-        ResetPowerColorsButton:SetText("Power Colors")
-        ResetPowerColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Power, ZF.db.profile.General.Colors.Power) PopulateColors() end)
-        ResetPowerColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetPowerColorsButton)
-
-        local ResetSecondaryPowerColorsButton = AG:Create("Button")
-        ResetSecondaryPowerColorsButton:SetText("Secondary Power Colors")
-        ResetSecondaryPowerColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.SecondaryPower, ZF.db.profile.General.Colors.SecondaryPower) PopulateColors() end)
-        ResetSecondaryPowerColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetSecondaryPowerColorsButton)
-
-        local ResetReactionColorsButton = AG:Create("Button")
-        ResetReactionColorsButton:SetText("Reaction Colors")
-        ResetReactionColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Reaction, ZF.db.profile.General.Colors.Reaction) PopulateColors() end)
-        ResetReactionColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetReactionColorsButton)
-
-        local ResetDispelColorsButton = AG:Create("Button")
-        ResetDispelColorsButton:SetText("Dispel Colors")
-        ResetDispelColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Dispel, ZF.db.profile.General.Colors.Dispel) PopulateColors() end)
-        ResetDispelColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetDispelColorsButton)
-
-        local ResetStatusColorsButton = AG:Create("Button")
-        ResetStatusColorsButton:SetText("Status Colors")
-        ResetStatusColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Status, ZF.db.profile.General.Colors.Status) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
-        ResetStatusColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetStatusColorsButton)
-
-        local ResetThreatColorsButton = AG:Create("Button")
-        ResetThreatColorsButton:SetText("Threat Colors")
-        ResetThreatColorsButton:SetCallback("OnClick", function() ZF:CopyTable(ZF:GetDefaultDB().profile.General.Colors.Threat, ZF.db.profile.General.Colors.Threat) ZF:LoadCustomColors() ZF:UpdateAllUnitFrames() PopulateColors() end)
-        ResetThreatColorsButton:SetRelativeWidth(STYLE.Widths.Pct33)
-        ColorsContainer:AddChild(ResetThreatColorsButton)
+        for _, entry in ipairs(RESET_COLOR_BUTTONS) do
+            local ResetButton = AG:Create("Button")
+            ResetButton:SetText(entry.label)
+            ResetButton:SetCallback("OnClick", function()
+                local DefaultColors = ZF:GetDefaultDB().profile.General.Colors
+                local Colors = ZF.db.profile.General.Colors
+                if entry.key then
+                    ZF:CopyTable(DefaultColors[entry.key], Colors[entry.key])
+                else
+                    ZF:CopyTable(DefaultColors, Colors)
+                end
+                UpdateColors()
+                PopulateColors()
+            end)
+            ResetButton:SetRelativeWidth(entry.key and STYLE.Widths.Pct33 or STYLE.Widths.Pct100)
+            ColorsContainer:AddChild(ResetButton)
+        end
 
         GUIWidgets.CreateHeader(ColorsContainer, "Power")
 
@@ -464,7 +450,8 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
             whileDead = true,
             hideOnEscape = true,
         }
-        StaticPopup_Show("ZF_COPY_UNIT_SETTINGS")
+        local popup = StaticPopup_Show("ZF_COPY_UNIT_SETTINGS")
+        if popup then popup:SetFrameStrata("TOOLTIP") end
     end)
     CopyContainer:AddChild(CopyButton)
 end

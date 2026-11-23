@@ -31,6 +31,35 @@ function Builders.CreateEnableToggle(parent, label, db, updateCallback, opts)
     return Toggle, Refresh, panels
 end
 
+function Builders.CreateBorderBlock(parent, db, updateCallback, onThicknessChanged, panels)
+    local ColorPicker = Builders.CreateColorBlock(parent, "Border Color", db, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
+
+    local ThicknessSlider = AG:Create("Slider")
+    ThicknessSlider:SetLabel("Border Thickness")
+    ThicknessSlider:SetValue(db.BorderThickness)
+    ThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
+    ThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    ThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) db.BorderThickness = value updateCallback() onThicknessChanged() end)
+    parent:AddChild(ThicknessSlider)
+
+    local OpacitySlider = AG:Create("Slider")
+    OpacitySlider:SetLabel("Border Opacity")
+    OpacitySlider:SetValue(db.BorderOpacity)
+    OpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
+    OpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
+    OpacitySlider:SetCallback("OnValueChanged", function(_, _, value) db.BorderOpacity = value updateCallback() end)
+    OpacitySlider:SetIsPercent(true)
+    parent:AddChild(OpacitySlider)
+
+    if panels then
+        panels[#panels + 1] = ColorPicker
+        panels[#panels + 1] = ThicknessSlider
+        panels[#panels + 1] = OpacitySlider
+    end
+
+    return ColorPicker, ThicknessSlider, OpacitySlider
+end
+
 function Builders.CreateLayoutPositionBlock(parent, layoutDB, updateCallback, opts)
     opts = opts or {}
     local Container = opts.container or GUIWidgets.CreateInlineGroup(parent, opts.groupLabel or "Layout & Positioning")

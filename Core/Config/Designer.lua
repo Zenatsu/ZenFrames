@@ -59,7 +59,7 @@ function ZF:LiftDesignerPreviewStrata() -- Try to ensure the strata of the previ
     previewFrame:SetFrameStrata("FULLSCREEN_DIALOG")
     if ZF.DESIGNER_CANVAS_FRAME then previewFrame:SetFrameLevel(ZF.DESIGNER_CANVAS_FRAME:GetFrameLevel()+10) end
 
-    for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer"}) do
+    for _, key in ipairs({"HighLevelContainer", "BuffContainer", "DebuffContainer", "CustomAuraContainer", "PrivateAuraContainer", "PetXPBarContainer"}) do
         if previewFrame[key] then previewFrame[key]:SetFrameStrata("FULLSCREEN_DIALOG") end
     end
 
@@ -117,19 +117,6 @@ function ZF:UpdateDesignerPreviewFrame() -- Updates the preview frame
     if previewFrame:IsElementEnabled("PrivateAuras") then previewFrame:DisableElement("PrivateAuras") end
 
     previewFrame:SetSize(fDB.Width, fDB.Height)
-    if previewFrame.Health then
-        previewFrame.Health:SetMinMaxValues(0,100)
-         previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
-        if previewFrame.HealthBackground then
-            previewFrame.HealthBackground:SetMinMaxValues(0, 100)
-            previewFrame.HealthBackground:SetValue(100 - STYLE.Preview.SampleHealth)
-        end
-    end
-    if previewFrame.Power then
-        previewFrame.Power:SetMinMaxValues(0,100)
-        previewFrame.Power:SetValue(STYLE.Preview.SamplePower)
-        previewFrame.Power:Show()
-    end
 
     ZF:ApplyDesignerSampleData()
     ZF:ApplyDesignerHealPredictionPreview()
@@ -145,6 +132,8 @@ function ZF:ShowDesignerPreview(parentFrame, unit, optionsContainer)
 
     local previewFrame = ZF:CreateDesignerPreviewFrame()
     previewFrame:SetParent(parentFrame)
+    if previewFrame.profileGeneration ~= ZF.profileGeneration then ZF:UpdateDesignerPreviewFrame() end
+    previewFrame.profileGeneration = ZF.profileGeneration
     previewFrame:Show()
     ZF:UpdateDesignerPreviewFrame()
     previewFrame:ClearAllPoints()
@@ -329,6 +318,17 @@ local function BuildDesignerRegistry(unit)
             end,
         }),
         WidgetEntry(unit, {
+            key = "PetHappiness", label = "Pet Happiness Indicator", dbKey = "PetHappiness", designerTab = "Indicators", oUFElements = {"PetHappinessIndicator"},
+            getRegion = function(previewFrame) return previewFrame.PetHappinessIndicator and previewFrame.PetHappinessIndicator.Cluster end,
+            update = function(unitFrame) ZF:UpdateUnitPetHappinessIndicator(unitFrame, unit) end,
+            sample = function(previewFrame)
+                local region = previewFrame.PetHappinessIndicator if not region then return end
+                ZF:SetPetHappinessTexture(region, 3)
+                region:Show()
+                if region.Hover then region.Hover:Hide() end
+            end,
+        }),
+        WidgetEntry(unit, {
             key = "Classification", label = "Classification Indicator", dbKey = "Classification", designerTab = "Indicators", oUFElements = {"ClassificationIndicator"},
             getRegion = function(previewFrame) return previewFrame.ClassificationIndicator end,
             update = function(unitFrame) ZF:UpdateUnitClassificationIndicator(unitFrame, unit) end,
@@ -400,6 +400,20 @@ local function BuildDesignerRegistry(unit)
         }),
     }
 
+    if unit == "pet" and ZF:UsesPetXPBar() then
+        for index, entry in ipairs(registry) do
+            if entry.key == "CastBar" then
+                registry[index] = WidgetEntry(unit, {
+                    key = "PetXPBar", label = "XP Bar", kind = "frame", designerTab = "PetXPBar",
+                    getDB = function() return ZF:GetUnitDB(nil, unit).PetXPBar end,
+                    getRegion = function(previewFrame) return previewFrame.PetXPBarContainer end,
+                    update = function(unitFrame) ZF:UpdateUnitPetXPBar(unitFrame, unit) end,
+                })
+                break
+            end
+        end
+    end
+
     local entriesByKey = {}
     for _, entry in ipairs(registry) do entriesByKey[entry.key] = entry end
     for key, overlay in pairs(overlays) do
@@ -421,9 +435,28 @@ function ZF:SetDesignerUnit(unit)
     ZF.DESIGNER_WIDGETS = BuildDesignerRegistry(unit)
 end
 
+local function ApplyPreviewBarSamples(previewFrame)
+    if previewFrame.Health then
+        previewFrame.Health:SetMinMaxValues(0, 100)
+        previewFrame.Health:SetValue(STYLE.Preview.SampleHealth)
+        if previewFrame.HealthBackground then
+            previewFrame.HealthBackground:SetMinMaxValues(0, 100)
+            previewFrame.HealthBackground:SetValue(100 - STYLE.Preview.SampleHealth)
+        end
+    end
+    if previewFrame.Power then
+        previewFrame.Power:SetMinMaxValues(0, 100)
+        previewFrame.Power:SetValue(STYLE.Preview.SamplePower)
+        previewFrame.Power:Show()
+    end
+end
+
 function ZF:ApplyDesignerSampleData()
     local previewFrame = ZF.DESIGNER_PREVIEW_FRAME
     if not previewFrame then return end
+
+    previewFrame:UnregisterAllEvents()
+    ApplyPreviewBarSamples(previewFrame)
 
     for _, entry in ipairs(ZF.DESIGNER_WIDGETS) do
         local db = entry.getDB()

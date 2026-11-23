@@ -48,13 +48,18 @@ local function ApplyHealthBarSettings(unitFrame, unit, HealthBarDB)
     end
 end
 
+local function ApplyHealthBarFill(unitFrame, HealthBarDB)
+    unitFrame.Health:SetReverseFill(HealthBarDB.Inverse and true or false)
+    unitFrame.HealthBackground:SetReverseFill(not HealthBarDB.Inverse)
+end
+
 function ZF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = ZF:GetUnitDB(unitFrame, unit).Frame
     local HealthBarDB = ZF:GetUnitDB(unitFrame, unit).HealthBar
     unitFrame.HealthBarDB = HealthBarDB
     local unitContainer = unitFrame.Container
 
-    if not unitFrame.HealthBar then
+    if not unitFrame.Health then
         if not unitFrame.HealthBackground then
             unitFrame.HealthBackground = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
@@ -90,14 +95,7 @@ function ZF:CreateUnitHealthBar(unitFrame, unit)
 			SetHealthBackgroundColor(unitFrame, unit, unitFrame.HealthBarDB)
         end
 
-        if HealthBarDB.Inverse then
-            unitFrame.Health:SetReverseFill(true)
-            unitFrame.HealthBackground:SetReverseFill(false)
-        else
-            unitFrame.Health:SetReverseFill(false)
-            unitFrame.HealthBackground:SetReverseFill(true)
-        end
-
+        ApplyHealthBarFill(unitFrame, HealthBarDB)
     end
 end
 
@@ -123,17 +121,6 @@ function ZF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.HealthBackground:SetStatusBarTexture(ZF.Media.Background)
     end
 
-    if HealthBarDB.Inverse then
-        unitFrame.Health:SetReverseFill(true)
-        unitFrame.HealthBackground:SetReverseFill(false)
-    else
-        unitFrame.Health:SetReverseFill(false)
-        unitFrame.HealthBackground:SetReverseFill(true)
-    end
-
-    if unitFrame.DispelHighlight then
-        ZF:UpdateUnitDispelHighlight(unitFrame, unit)
-    end
-
+    ApplyHealthBarFill(unitFrame, HealthBarDB)
     unitFrame.Health:ForceUpdate()
 end

@@ -49,6 +49,12 @@ local SIMPLE_INDICATOR_PANELS = {
 		panelTitle = "PvP Indicator Settings",
 		toggleLabel = "Enable " .. STYLE.Palette.SelectedText .. "PvP|r Indicator",
 	},
+	PetHappiness = {
+		dbKey = "PetHappiness",
+		panelTitle = "Pet Happiness Indicator Settings",
+		toggleLabel = "Enable " .. STYLE.Palette.SelectedText .. "Pet Happiness|r Indicator",
+		needsSeed = true,
+	},
 	Resurrect = {
 		dbKey = "Resurrect",
 		panelTitle = "Resurrect Indicator Settings",
@@ -347,13 +353,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[5] = value updateCallback() end)
     LayoutContainer:AddChild(SpacingSlider)
 
-    local SizeSlider = AG:Create("Slider")
-    SizeSlider:SetLabel("Icon Size")
-    SizeSlider:SetValue(TotemsIndicatorDB.Size)
-    SizeSlider:SetSliderValues(unpack(STYLE.Sliders.IconSize))
-    SizeSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
-    LayoutContainer:AddChild(SizeSlider)
+    GUIBuilders.CreateSlider(LayoutContainer, "Icon Size", TotemsIndicatorDB, "Size", updateCallback, {sliderValues = STYLE.Sliders.IconSize, width = STYLE.Widths.Pct25})
 
     local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Text Breakpoints")
     panelsToDisable[3] = BreakpointContainer
@@ -407,6 +407,13 @@ local IndicatorTabsByCategory = {
         { text = "Mouseover", value = "Mouseover" },
         { text = "Target Indicator", value = "TargetIndicator" },
     },
+    pet = {
+        { text = "Raid Target Marker", value = "RaidTargetMarker" },
+        { text = "Pet Happiness", value = "PetHappiness" },
+        { text = "Mouseover", value = "Mouseover" },
+        { text = "Target Indicator", value = "TargetIndicator" },
+        { text = "Threat Indicator", value = "ThreatIndicator" },
+    },
 }
 
 local IndicatorCategoryByUnit = {
@@ -416,7 +423,7 @@ local IndicatorCategoryByUnit = {
     raid = "group",
     augmentation = "group",
     focus = "minor",
-    pet = "minor",
+    pet = ZF.IS_FOREVER and "pet" or "minor",
     targettarget = "passive",
     focustarget = "passive",
     boss = "passive",
@@ -446,6 +453,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UpdateUnitSettings(unit, function() ZF:UpdateUnitCombatIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "PvP" and unit == "player" then
             CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.PvP, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPvPIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
+        elseif IndicatorTab == "PetHappiness" and unit == "pet" then
+            CreateSimpleIndicatorPanel(SIMPLE_INDICATOR_PANELS.PetHappiness, IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitPetHappinessIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() ZF:UpdateUnitMouseoverIndicator(ZF[unit:upper()], unit) end, "Indicators") end)
         elseif IndicatorTab == "TargetIndicator" then

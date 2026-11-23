@@ -171,7 +171,6 @@ ZF.DefaultsUnits.party = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = false,
-                        Filter = "HELPFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -192,7 +191,6 @@ ZF.DefaultsUnits.party = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = true,
-                        Filter = "HARMFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -214,7 +212,6 @@ ZF.DefaultsUnits.party = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = false,
-                        Filter = "HELPFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -230,30 +227,35 @@ ZF.DefaultsUnits.party = {
                         Layout = {"TOPLEFT", "TOPLEFT", 16, -3},
                         Color = {1, 1, 1},
                         Tag = "[name]",
+                        FrameStrata = "MEDIUM",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
                         Color = {1, 1, 1},
                         Tag = "[perhp-with-sign]",
+                        FrameStrata = "MEDIUM",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                 }
 }
@@ -427,7 +429,6 @@ ZF.DefaultsUnits.raid = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = false,
-                        Filter = "HELPFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -448,7 +449,6 @@ ZF.DefaultsUnits.raid = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = true,
-                        Filter = "HARMFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -470,7 +470,6 @@ ZF.DefaultsUnits.raid = {
                         WrapDirection = "UP",
                         ShowType = false,
                         Blacklist = false,
-                        Filter = "HELPFUL",
                         Sorting = "BLIZZARD",
                         Count = {
                             HideStacks = false,
@@ -486,30 +485,35 @@ ZF.DefaultsUnits.raid = {
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
                         Color = {1, 1, 1},
                         Tag = "[name]",
+                        FrameStrata = "MEDIUM",
                     },
                     TagTwo = {
                         FontSize = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
                         Color = {1, 1, 1},
                         Tag = "[status]",
+                        FrameStrata = "MEDIUM",
                     },
                     TagThree = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                     TagFour = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                     TagFive = {
                         FontSize = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Color = {1, 1, 1},
                         Tag = "",
+                        FrameStrata = "MEDIUM",
                     },
                 },
 }
@@ -682,7 +686,6 @@ ZF.DefaultsUnits.augmentation = {
 						WrapDirection = "UP",
 						ShowType = false,
 						Blacklist = false,
-						Filter = "HELPFUL",
 						Sorting = "BLIZZARD",
 						Count = {
 							HideStacks = false,
@@ -703,7 +706,6 @@ ZF.DefaultsUnits.augmentation = {
 						WrapDirection = "UP",
 						ShowType = false,
 						Blacklist = true,
-						Filter = "HARMFUL",
 						Sorting = "BLIZZARD",
 						Count = {
 							HideStacks = false,
@@ -725,7 +727,6 @@ ZF.DefaultsUnits.augmentation = {
 						WrapDirection = "UP",
 						ShowType = false,
 						Blacklist = false,
-						Filter = "HELPFUL",
 						Sorting = "BLIZZARD",
 						Count = {
 							HideStacks = false,
@@ -741,30 +742,35 @@ ZF.DefaultsUnits.augmentation = {
 						Layout = {"CENTER", "CENTER", 0, 0},
 						Color = {1, 1, 1},
 						Tag = "[name]",
+						FrameStrata = "MEDIUM",
 					},
 					TagTwo = {
 						FontSize = 12,
 						Layout = {"CENTER", "CENTER", 0, 0},
 						Color = {1, 1, 1},
 						Tag = "",
+						FrameStrata = "MEDIUM",
 					},
 					TagThree = {
 						FontSize = 12,
 						Layout = {"CENTER", "CENTER", 0, 0},
 						Color = {1, 1, 1},
 						Tag = "",
+						FrameStrata = "MEDIUM",
 					},
 					TagFour = {
 						FontSize = 12,
 						Layout = {"CENTER", "CENTER", 0, 0},
 						Color = {1, 1, 1},
 						Tag = "",
+						FrameStrata = "MEDIUM",
 					},
 					TagFive = {
 						FontSize = 12,
 						Layout = {"CENTER", "CENTER", 0, 0},
 						Color = {1, 1, 1},
 						Tag = "",
+						FrameStrata = "MEDIUM",
 					},
 				}
 }

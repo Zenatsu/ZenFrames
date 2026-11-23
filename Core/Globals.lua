@@ -61,26 +61,26 @@ ZF.LSM:Register("font", "Avantgarde (Regular)", addonPath .. "Media\\Fonts\\Avan
 
 ZF.StatusTextures = {
     Combat = {
-        ["COMBAT0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
-        ["COMBAT1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
-        ["COMBAT2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
-        ["COMBAT3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
-        ["COMBAT4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
-        ["COMBAT5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
-        ["COMBAT6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
-        ["COMBAT7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
-        ["COMBAT8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Combat\\Combat8.png",
+        ["COMBAT0"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat0.tga",
+        ["COMBAT1"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat1.tga",
+        ["COMBAT2"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat2.tga",
+        ["COMBAT3"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat3.tga",
+        ["COMBAT4"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat4.tga",
+        ["COMBAT5"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat5.tga",
+        ["COMBAT6"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat6.tga",
+        ["COMBAT7"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat7.tga",
+        ["COMBAT8"] = addonPath .. "Media\\Textures\\Status\\Combat\\Combat8.png",
     },
     Resting = {
-        ["RESTING0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
-        ["RESTING1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
-        ["RESTING2"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
-        ["RESTING3"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
-        ["RESTING4"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
-        ["RESTING5"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
-        ["RESTING6"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
-        ["RESTING7"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
-        ["RESTING8"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Status\\Resting\\Resting8.png",
+        ["RESTING0"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting0.tga",
+        ["RESTING1"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting1.tga",
+        ["RESTING2"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting2.tga",
+        ["RESTING3"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting3.tga",
+        ["RESTING4"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting4.tga",
+        ["RESTING5"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting5.tga",
+        ["RESTING6"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting6.tga",
+        ["RESTING7"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting7.tga",
+        ["RESTING8"] = addonPath .. "Media\\Textures\\Status\\Resting\\Resting8.png",
     },
 }
 
@@ -98,63 +98,72 @@ ZF.ClassificationTextures = {
         ["worldboss"] = "vignettekillboss",
     },
     ["CLASSIFICATION2"] = {
-        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
+        ["elite"] = addonPath .. "Media\\Textures\\Classification\\Classic\\Elite.png",
+        ["rare"] = addonPath .. "Media\\Textures\\Classification\\Classic\\Rare.png",
+        ["rareelite"] = addonPath .. "Media\\Textures\\Classification\\Classic\\RareElite.png",
+        ["worldboss"] = addonPath .. "Media\\Textures\\Classification\\Classic\\WorldBoss.png",
     },
     ["CLASSIFICATION3"] = {
-        ["elite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png",
-        ["rare"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png",
-        ["rareelite"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png",
-        ["worldboss"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
+        ["elite"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\Elite.png",
+        ["rare"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\Rare.png",
+        ["rareelite"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\RareElite.png",
+        ["worldboss"] = addonPath .. "Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
     },
+}
+
+ZF.IS_FOREVER = WOW_PROJECT_CAMELOT ~= nil and WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
+
+ZF.PetHappinessTexturePath = "Interface\\PetPaperDollFrame\\"
+ZF.PetHappinessTextures = {
+    [1] = "UI-PetMad",
+    [2] = "UI-PetNeutral",
+    [3] = "UI-PetHappiness",
 }
 
 ZF.QuestTextures = {
     ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
-    ["QUEST0"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest01.png",
-    ["QUEST1"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Quest\\Quest02.png",
+    ["QUEST0"] = addonPath .. "Media\\Textures\\Quest\\Quest01.png",
+    ["QUEST1"] = addonPath .. "Media\\Textures\\Quest\\Quest02.png",
 }
 
 ZF.RoleTextures = {
     ["Blizzard"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Blizzard\\DPS.tga",
     },
     ["Color"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Color\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\Color\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\Color\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Color\\DPS.tga",
     },
     ["White"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Tank.png",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\Healer.png",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\White\\DPS.png",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\White\\Tank.png",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\White\\Healer.png",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\White\\DPS.png",
     },
     ["ElvUI"] = {
-        ["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
-        ["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
-        ["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
+        ["TANK"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\Tank.tga",
+        ["HEALER"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\Healer.tga",
+        ["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\ElvUI\\DPS.tga",
     },
 	["Square"] = {
-		["TANK"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Tank.png",
-		["HEALER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\Healer.png",
-		["DAMAGER"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\Role\\Square\\DPS.png",
+		["TANK"] = addonPath .. "Media\\Textures\\Role\\Square\\Tank.png",
+		["HEALER"] = addonPath .. "Media\\Textures\\Role\\Square\\Healer.png",
+		["DAMAGER"] = addonPath .. "Media\\Textures\\Role\\Square\\DPS.png",
 	},
 }
 
 ZF.ReadyCheckTextures = {
 	["White"] = {
-		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
+		["READY"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\Ready.png",
+		["NOTREADY"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\NotReady.png",
+		["WAITING"] = addonPath .. "Media\\Textures\\ReadyCheck\\White\\Pending.png",
 	},
     ["HiRes"] = {
-		["READY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
-		["NOTREADY"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
-		["WAITING"] = "Interface\\AddOns\\ZenFrames\\Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
+		["READY"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\Ready.png",
+		["NOTREADY"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\NotReady.png",
+		["WAITING"] = addonPath .. "Media\\Textures\\ReadyCheck\\HiRes\\Pending.png",
 	},
 }
 
@@ -337,6 +346,8 @@ local function ApplyPowerColorTable(colorTable)
     end
 end
 
+local DISPEL_TYPES = { "Magic", "Curse", "Disease", "Poison", "Bleed" }
+
 function ZF:LoadCustomColors()
     local General = ZF.db.profile.General
 
@@ -364,27 +375,16 @@ function ZF:LoadCustomColors()
     end
 
     if General.Colors.Dispel then
-        local dispelMap = {
-            Magic = "Magic",
-            Curse = "Curse",
-            Disease = "Disease",
-            Poison = "Poison",
-            Bleed = "Bleed",
-        }
-        for dispelType, index in pairs(dispelMap) do
+        for _, dispelType in ipairs(DISPEL_TYPES) do
             local color = General.Colors.Dispel[dispelType]
             if color then
-                oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
+                oUF.colors.dispel[dispelType] = oUF:CreateColor(color[1], color[2], color[3])
             end
         end
         ZF.dispelColorGeneration = (ZF.dispelColorGeneration or 0) + 1
     end
 
-    for _, obj in next, oUF.objects do
-        if obj.UpdateTags then
-            obj:UpdateTags()
-        end
-    end
+    ZFG:UpdateAllTags()
 end
 
 function ZF:Init()
@@ -411,7 +411,7 @@ local JUSTIFICATION_BY_ANCHOR = {
     TOPRIGHT = "RIGHT", RIGHT = "RIGHT", BOTTOMRIGHT = "RIGHT",
 }
 
-function ZF:SetJustification(anchorFrom)
+function ZF:GetJustifyH(anchorFrom)
     return JUSTIFICATION_BY_ANCHOR[anchorFrom] or "CENTER"
 end
 
@@ -429,8 +429,13 @@ function ZF:GetUnitColor(unit)
     return 1, 1, 1
 end
 
+local normalizedUnits = {}
+
 function ZF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
+    local normalizedUnit = normalizedUnits[unit]
+    if normalizedUnit then return normalizedUnit end
+    normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
+    normalizedUnits[unit] = normalizedUnit
     return normalizedUnit
 end
 
@@ -696,33 +701,52 @@ local DEFAULT_AURA_ID_BLACKLIST = {
     26013, 71041, -- Deserter
 }
 
+local function FillDefaultAuraBlacklist(blacklist)
+    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
+        blacklist[spellId] = true
+    end
+end
+
 function ZF:SeedAuraBlacklist()
     if ZF.db.global.AuraBlacklistSeeded then return end
-    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
-        ZF.db.global.AuraBlacklist[spellId] = true
-    end
+    FillDefaultAuraBlacklist(ZF.db.global.AuraBlacklist)
     ZF.db.global.AuraBlacklistSeeded = true
 end
 
 function ZF:RestoreDefaultAuraBlacklist()
     wipe(ZF.db.global.AuraBlacklist)
-    for _, spellId in ipairs(DEFAULT_AURA_ID_BLACKLIST) do
-        ZF.db.global.AuraBlacklist[spellId] = true
-    end
+    FillDefaultAuraBlacklist(ZF.db.global.AuraBlacklist)
     ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
 end
 
-local RefreshProfilesRetryFrame = CreateFrame("Frame")
-RefreshProfilesRetryFrame:SetScript("OnEvent", function(self)
+local afterCombatOrder, afterCombatJobs = {}, {}
+local AfterCombatFrame = CreateFrame("Frame")
+AfterCombatFrame:SetScript("OnEvent", function(self)
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	ZF:RefreshProfiles()
+	local order, jobs = afterCombatOrder, afterCombatJobs
+	afterCombatOrder, afterCombatJobs = {}, {}
+	local handler = geterrorhandler()
+	for _, key in ipairs(order) do
+		xpcall(jobs[key], handler)
+	end
 end)
+
+function ZF:RunAfterCombat(key, fn)
+	if not afterCombatJobs[key] then afterCombatOrder[#afterCombatOrder + 1] = key end
+	afterCombatJobs[key] = fn
+	AfterCombatFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
+local function RefreshProfilesAfterCombat()
+	ZF:RefreshProfiles()
+end
 
 function ZF:RefreshProfiles()
 	if InCombatLockdown() then
-		RefreshProfilesRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		ZF:RunAfterCombat("RefreshProfiles", RefreshProfilesAfterCombat)
 		return
 	end
+	ZF.profileGeneration = (ZF.profileGeneration or 0) + 1
 	ZF:ResolveLSM()
 	ZF:LoadCustomColors()
 	ZF:UpdateAllUnitFrames()

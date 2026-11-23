@@ -12,31 +12,19 @@ function ZF:EnsureRaidStyleRegistered()
 	raidStyleRegistered = true
 end
 
-local pendingSpawnUnits = {}
-local SpawnUnitFrameRetryFrame = CreateFrame("Frame")
-SpawnUnitFrameRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    for unit in pairs(pendingSpawnUnits) do
-        pendingSpawnUnits[unit] = nil
-        if unit == "boss" then
-            for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
-            ZF:LayoutBossFrames()
-        elseif ZF[unit:upper()] then
-            ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
-        end
-    end
-end)
-
-local pendingBossReset = false
-local BossResetRetryFrame = CreateFrame("Frame")
-BossResetRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    if pendingBossReset then
-        pendingBossReset = false
+local function RetrySpawnUnitFrame(unit)
+    if unit == "boss" then
+        for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
         ZF:LayoutBossFrames()
-        ZF:ResetBossFrames()
+    elseif ZF[unit:upper()] then
+        ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
     end
-end)
+end
+
+local function RetryBossReset()
+    ZF:LayoutBossFrames()
+    ZF:ResetBossFrames()
+end
 
 local function IsMouseOverAuraContainer(frame)
     return (frame.BuffContainer and frame.BuffContainer:IsMouseOver())
@@ -84,6 +72,67 @@ local function ApplyScripts(unitFrame)
     end)
 end
 
+local function NotTargetOfTarget(ctx) return not ctx.isTargetTarget and not ctx.isFocusTarget end
+local function IsPlayer(ctx) return ctx.isPlayer end
+local function IsTarget(ctx) return ctx.isTarget end
+local function IsPlayerOrTarget(ctx) return ctx.isPlayer or ctx.isTarget end
+local function IsGroup(ctx) return ctx.isParty or ctx.isRaid end
+
+local UNIT_ELEMENTS = {
+    { "CastBar", when = function(ctx) return ctx.UnitDB.CastBar and NotTargetOfTarget(ctx) and not ctx.usesPetXPBar end },
+    { "PetXPBar", when = function(ctx) return ctx.usesPetXPBar end },
+    { "Container", createFirst = true },
+    { "HealthBar" },
+    { "DispelHighlight", createWhen = function(ctx) return ctx.UnitDB.HealthBar.DispelHighlight and (ctx.isPlayer or ctx.isTarget or ctx.isFocus or ctx.isParty or ctx.isRaid) end },
+    { "HealPrediction" },
+    { "Portrait", when = function(ctx) return ctx.UnitDB.Portrait and NotTargetOfTarget(ctx) end },
+    { "PowerBar" },
+    { "AlternativePowerBar", when = IsPlayer },
+    { "SecondaryPowerBar", when = IsPlayer },
+    { "RaidTargetMarker" },
+    { "LeaderAssistantIndicator", when = function(ctx) return ctx.isPlayer or ctx.isTarget or ctx.isParty or ctx.isRaid end },
+    { "ReadyCheckIndicator", when = IsGroup },
+    { "ResurrectIndicator", when = IsGroup },
+    { "SummonIndicator", when = IsGroup },
+    { "RoleIndicator", when = IsGroup },
+    { "PhaseIndicator", when = IsGroup },
+    { "CombatIndicator", when = IsPlayerOrTarget },
+    { "RestingIndicator", when = IsPlayer },
+    { "PvPIndicator", when = IsPlayer },
+    { "PetHappinessIndicator", when = function(ctx) return ctx.isPet end },
+    { "Totems", when = IsPlayer },
+    { "ClassificationIndicator", when = IsTarget },
+    { "QuestIndicator", when = IsTarget },
+    { "MouseoverIndicator" },
+    { "TargetGlowIndicator" },
+    { "ThreatIndicator" },
+    { "Auras" },
+    { "Tags", createOnly = true },
+}
+
+for _, element in ipairs(UNIT_ELEMENTS) do
+    local name = element[1]
+    element.create = "CreateUnit" .. name
+    if not element.createOnly then element.update = "UpdateUnit" .. name end
+end
+
+local function BuildElementContext(unitFrame, unit)
+    local normalizedUnit = ZF:GetNormalizedUnit(unit)
+    local isPet = unit == "pet"
+    return {
+        UnitDB = ZF:GetUnitDB(unitFrame, unit),
+        isPlayer = unit == "player",
+        isTarget = unit == "target",
+        isPet = isPet,
+        isFocus = unit == "focus",
+        isTargetTarget = unit == "targettarget",
+        isFocusTarget = unit == "focustarget",
+        isParty = normalizedUnit == "party",
+        isRaid = normalizedUnit == "raid",
+        usesPetXPBar = isPet and ZF:UsesPetXPBar(),
+    }
+end
+
 function ZF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
 	local auxiliaryGroupKey = ZF.AuxiliaryHeaderOwner[unitFrame:GetParent()]
@@ -91,42 +140,16 @@ function ZF:CreateUnitFrame(unitFrame, unit)
 		unitFrame.auxiliaryRaidGroup = auxiliaryGroupKey
 		if ZF.AUXILIARY_RAID_GROUPS[auxiliaryGroupKey].ownStyle then unitFrame.isAugmentationRaidFrame = true end
 	end
-    local UnitDB = ZF:GetUnitDB(unitFrame, unit)
-    local isPlayer = unit == "player"
-    local isTarget = unit == "target"
-    local isFocus = unit == "focus"
-    local isTargetTarget = unit == "targettarget"
-    local isFocusTarget = unit == "focustarget"
-    local isParty = ZF:GetNormalizedUnit(unit) == "party"
-    local isRaid = ZF:GetNormalizedUnit(unit) == "raid"
+    local ctx = BuildElementContext(unitFrame, unit)
+    local isRaid = ctx.isRaid
 
-    ZF:CreateUnitContainer(unitFrame, unit)
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then ZF:CreateUnitCastBar(unitFrame, unit) end
-    ZF:CreateUnitHealthBar(unitFrame, unit)
-    if UnitDB.HealthBar.DispelHighlight and (isPlayer or isTarget or isFocus or isParty or isRaid) then ZF:CreateUnitDispelHighlight(unitFrame, unit) end
-    ZF:CreateUnitHealPrediction(unitFrame, unit)
-    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then ZF:CreateUnitPortrait(unitFrame, unit) end
-    ZF:CreateUnitPowerBar(unitFrame, unit)
-    if isPlayer then ZF:CreateUnitAlternativePowerBar(unitFrame, unit) end
-    if isPlayer then ZF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
-    ZF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget or isParty or isRaid then ZF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:CreateUnitReadyCheckIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:CreateUnitResurrectIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:CreateUnitSummonIndicator(unitFrame, unit) end
-    if isParty or isRaid then ZF:CreateUnitRoleIndicator(unitFrame, unit) end
-    if isParty or isRaid then ZF:CreateUnitPhaseIndicator(unitFrame, unit) end
-    if isPlayer or isTarget then ZF:CreateUnitCombatIndicator(unitFrame, unit) end
-    if isPlayer then ZF:CreateUnitRestingIndicator(unitFrame, unit) end
-    if isPlayer then ZF:CreateUnitPvPIndicator(unitFrame, unit) end
-    if isPlayer then ZF:CreateUnitTotems(unitFrame, unit) end
-    if isTarget then ZF:CreateUnitClassificationIndicator(unitFrame, unit) end
-    if isTarget then ZF:CreateUnitQuestIndicator(unitFrame, unit) end
-    ZF:CreateUnitMouseoverIndicator(unitFrame, unit)
-    ZF:CreateUnitTargetGlowIndicator(unitFrame, unit)
-    ZF:CreateUnitThreatIndicator(unitFrame, unit)
-    ZF:CreateUnitAuras(unitFrame, unit)
-    ZF:CreateUnitTags(unitFrame, unit)
+    for _, element in ipairs(UNIT_ELEMENTS) do
+        if element.createFirst then ZF[element.create](ZF, unitFrame, unit) end
+    end
+    for _, element in ipairs(UNIT_ELEMENTS) do
+        local when = element.createWhen or element.when
+        if not element.createFirst and (not when or when(ctx)) then ZF[element.create](ZF, unitFrame, unit) end
+    end
 	if isRaid then
 		unitFrame.ZFConfiguredUnit = unit
 		unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
@@ -160,8 +183,7 @@ end
 
 function ZF:LayoutBossFrames()
     if InCombatLockdown() then -- AnchorUtil.VerticalLayout calls SetPoint on the secure-templated boss frames
-        pendingBossReset = true
-        BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("BossReset", RetryBossReset)
         return
     end
     local Frame = ZF.db.profile.Units.boss.Frame
@@ -181,7 +203,7 @@ function ZF:LayoutBossFrames()
 end
 
 function ZF:SpawnUnitFrame(unit)
-    local UnitDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)]
+    local UnitDB = ZF:GetUnitDB(nil, unit)
 	local auxiliaryGroupNeeded = false
 	if unit == "raid" then
 		for _, groupKey in ipairs(ZF.AUXILIARY_RAID_GROUP_ORDER) do
@@ -240,8 +262,7 @@ function ZF:SpawnUnitFrame(unit)
         end
     end
     if InCombatLockdown() then -- reload/login mid-combat: PlaceUnitFrame/LayoutBossFrames above no-op'd, retry once combat ends
-        pendingSpawnUnits[unit] = true
-        SpawnUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("Spawn:" .. unit, function() RetrySpawnUnitFrame(unit) end)
     end
     if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then ZF:RegisterRangeFrame(ZF:FetchFrameName(unit), unit) end
 	ZF:CreateMover(unit)
@@ -285,72 +306,29 @@ function ZF:PlaceUnitFrame(unitFrame, unit)
     end
 end
 
-local pendingUpdateUnits = {}
-local UpdateUnitFrameRetryFrame = CreateFrame("Frame")
-UpdateUnitFrameRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    for unit in pairs(pendingUpdateUnits) do
-        pendingUpdateUnits[unit] = nil
-        if ZF[unit:upper()] then ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end
-    end
-end)
+local function RetryUpdateUnitFrame(unit)
+    if ZF[unit:upper()] then ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end
+end
 
 function ZF:UpdateUnitFrame(unitFrame, unit)
     if InCombatLockdown() then
-        pendingUpdateUnits[unit] = true
-        UpdateUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("Update:" .. unit, function() RetryUpdateUnitFrame(unit) end)
         return
     end
-    local UnitDB = ZF:GetUnitDB(unitFrame, unit)
-    local isPlayer = unit == "player"
-    local isTarget = unit == "target"
-    local isTargetTarget = unit == "targettarget"
-    local isFocusTarget = unit == "focustarget"
-    local isParty = ZF:GetNormalizedUnit(unit) == "party"
-    local isRaid = ZF:GetNormalizedUnit(unit) == "raid"
+    local ctx = BuildElementContext(unitFrame, unit)
+    local UnitDB = ctx.UnitDB
 
-    if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then ZF:UpdateUnitCastBar(unitFrame, unit) end
-    ZF:UpdateUnitContainer(unitFrame, unit)
-    ZF:UpdateUnitHealthBar(unitFrame, unit)
-    ZF:UpdateUnitHealPrediction(unitFrame, unit)
-    if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then ZF:UpdateUnitPortrait(unitFrame, unit) end
-    ZF:UpdateUnitPowerBar(unitFrame, unit)
-    if isPlayer then ZF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
-    if isPlayer then ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
-    ZF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget or isParty or isRaid then ZF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:UpdateUnitReadyCheckIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:UpdateUnitResurrectIndicator(unitFrame, unit) end
-	if isParty or isRaid then ZF:UpdateUnitSummonIndicator(unitFrame, unit) end
-    if isParty or isRaid then ZF:UpdateUnitRoleIndicator(unitFrame, unit) end
-    if isParty or isRaid then ZF:UpdateUnitPhaseIndicator(unitFrame, unit) end
-    if isPlayer or isTarget then ZF:UpdateUnitCombatIndicator(unitFrame, unit) end
-    if isPlayer then ZF:UpdateUnitRestingIndicator(unitFrame, unit) end
-    if isPlayer then ZF:UpdateUnitPvPIndicator(unitFrame, unit) end
-    if isPlayer then ZF:UpdateUnitTotems(unitFrame, unit) end
-    if isTarget then ZF:UpdateUnitClassificationIndicator(unitFrame, unit) end
-    if isTarget then ZF:UpdateUnitQuestIndicator(unitFrame, unit) end
-    ZF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-    ZF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
-    ZF:UpdateUnitThreatIndicator(unitFrame, unit)
-    ZF:UpdateUnitAuras(unitFrame, unit)
+    for _, element in ipairs(UNIT_ELEMENTS) do
+        if element.update and (not element.when or element.when(ctx)) then ZF[element.update](ZF, unitFrame, unit) end
+    end
 	if unit ~= "player" and not unitFrame.isDesignerPreview then ZF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
 	if not unitFrame.isDesignerPreview then ZF:RegisterTargetGlowIndicatorFrame(unitFrame, unit) end
     if not unitFrame.isDesignerPreview then unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata) end -- preview strata is designer-managed (FULLSCREEN_DIALOG)
 end
 
-local function HideFakeAuraButtons(container)
-	if not container then return end
-	for index = 1, container.maxFake or 0 do
-		local button = container["fake" .. index]
-		if button then button:Hide() end
-	end
-end
-
 function ZF:ResetBossFrames()
 	if InCombatLockdown() then
-		pendingBossReset = true
-		BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		ZF:RunAfterCombat("BossReset", RetryBossReset)
 		return
 	end
 	local BossDB = ZF.db.profile.Units.boss
@@ -371,9 +349,9 @@ function ZF:ResetBossFrames()
 			end
 		end
 
-		HideFakeAuraButtons(bossFrame.BuffContainer)
-		HideFakeAuraButtons(bossFrame.DebuffContainer)
-		HideFakeAuraButtons(bossFrame.CustomAuraContainer)
+		ZF:HideFakeAuraButtons(bossFrame.BuffContainer)
+		ZF:HideFakeAuraButtons(bossFrame.DebuffContainer)
+		ZF:HideFakeAuraButtons(bossFrame.CustomAuraContainer)
 
 		if (BuffsDB.Enabled or DebuffsDB.Enabled or (CustomDB and CustomDB.Enabled)) and not bossFrame:IsElementEnabled("Auras") then
 			bossFrame:EnableElement("Auras")

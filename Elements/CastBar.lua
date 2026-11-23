@@ -43,224 +43,163 @@ local function ApplyCastBarNoIconPosition(castBar, container, borderSize)
 	castBar:SetPoint("BOTTOMRIGHT", container, "BOTTOMRIGHT", -borderSize, borderSize)
 end
 
-function ZF:CreateUnitCastBar(unitFrame, unit)
-    local GeneralDB = ZF.db.profile.General
-    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
-    local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
-    local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+local function SyncCastBarText(fontString, castBar, TextDB, GeneralDB)
+    fontString:ClearAllPoints()
+    fontString:SetPoint(TextDB.Layout[1], castBar, TextDB.Layout[2], TextDB.Layout[3], TextDB.Layout[4])
+    ZF:ApplyFontStringStyle(fontString, ZF.Media.Font, TextDB.FontSize, GeneralDB.Fonts.FontFlag, TextDB.Color, GeneralDB.Fonts.Shadow)
+    fontString:SetJustifyH(ZF:GetJustifyH(TextDB.Layout[1]))
+    fontString:SetAlpha(TextDB.Enabled and 1 or 0)
+end
 
+local function SyncCastBar(unitFrame, unit, castBar)
+    local GeneralDB = ZF.db.profile.General
+    local UnitDB = ZF:GetUnitDB(nil, unit)
+    local CastBarDB = UnitDB.CastBar
+    local container = castBar:GetParent()
+
+    container:ClearAllPoints()
+    container:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
+    container:SetFrameStrata(CastBarDB.FrameStrata)
+    castBar:ClearAllPoints()
+    container:SetWidth(CastBarDB.MatchParentWidth and UnitDB.Frame.Width or CastBarDB.Width)
+    container:SetHeight(CastBarDB.Height)
+    local borderSize = ApplyCastBarBorderStyle(container, CastBarDB)
+
+    castBar:SetStatusBarTexture(ZF.Media.Foreground)
+    castBar.timeToHold = CastBarDB.HoldTime
+    castBar.Background:SetTexture(ZF.Media.Background)
+    SetCastBarColor(castBar, unit, CastBarDB)
+    castBar.Background:SetVertexColor(unpack(CastBarDB.Background))
+    castBar.NotInterruptibleOverlay:SetTexture(ZF.Media.Foreground)
+    castBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
+    castBar:SetReverseFill(CastBarDB.Inverse and true or false)
+
+    local icon = castBar.IconTexture
+    icon:SetSize(CastBarDB.Height - 2*borderSize, CastBarDB.Height - 2*borderSize)
+    icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    if CastBarDB.Icon.Enabled then
+        castBar.Icon = icon
+        ApplyCastBarIconPosition(castBar, icon, container, CastBarDB.Icon.Position, CastBarDB.Height, borderSize)
+        icon:Show()
+    else
+        castBar.Icon = nil
+        icon:Hide()
+        ApplyCastBarNoIconPosition(castBar, container, borderSize)
+    end
+
+    SyncCastBarText(castBar.Text, castBar, CastBarDB.Text.SpellName, GeneralDB)
+    SyncCastBarText(castBar.Time, castBar, CastBarDB.Text.Duration, GeneralDB)
+end
+
+local function BuildCastBar(unitFrame, unit)
     local CastBarContainer = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
-    local borderSize = ApplyCastBarBorderStyle(CastBarContainer, CastBarDB)
-    CastBarContainer:ClearAllPoints()
-    CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
-    if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
-    CastBarContainer:SetHeight(CastBarDB.Height)
-    CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
     CastBarContainer:Hide()
 
     local CastBar = CreateFrame("StatusBar", ZF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
-    CastBar:SetStatusBarTexture(ZF.Media.Foreground)
-    CastBar:ClearAllPoints()
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
-    CastBar.timeToHold = CastBarDB.HoldTime
-    SetCastBarColor(CastBar, unit, CastBarDB)
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
-    CastBar.Background:SetTexture(ZF.Media.Background)
-    CastBar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
     CastBar.NotInterruptibleOverlay = CastBar:CreateTexture(nil, "ARTWORK", nil, 1)
     CastBar.NotInterruptibleOverlay:SetPoint("TOPLEFT", CastBar:GetStatusBarTexture(), "TOPLEFT")
     CastBar.NotInterruptibleOverlay:SetPoint("BOTTOMRIGHT", CastBar:GetStatusBarTexture(), "BOTTOMRIGHT")
-    CastBar.NotInterruptibleOverlay:SetTexture(ZF.Media.Foreground)
-    CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
     CastBar.NotInterruptibleOverlay:SetAlpha(0)
 
-    CastBar.Icon = CastBar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
-    CastBar.Icon:SetSize(CastBarDB.Height - 2*borderSize, CastBarDB.Height - 2*borderSize)
-    CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    if CastBarDB.Icon.Enabled then
-        ApplyCastBarIconPosition(CastBar, CastBar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height, borderSize)
-    else
-        CastBar.Icon:Hide()
-        ApplyCastBarNoIconPosition(CastBar, CastBarContainer, borderSize)
+    CastBar.IconTexture = CastBar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
+    CastBar.Text = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
+    CastBar.Time = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
+
+    CastBar:HookScript("OnHide", function() CastBarContainer:Hide() end)
+
+    CastBar.PostCastStart = function(frameCastBar, _, spellID, notInterruptible, name, texture)
+        local currentCastBarDB = unitFrame.CastBarHookDB
+        local currentSpellNameDB = currentCastBarDB.Text.SpellName
+        frameCastBar.zfActive = true
+        frameCastBar.zfNotInterruptible = notInterruptible
+        SetCastBarColor(frameCastBar, unit, currentCastBarDB)
+
+        if frameCastBar.Icon and texture then frameCastBar.Icon:SetTexture(texture) end
+
+        local spellName = name
+        if spellName then
+            if not ZF:IsSecretValue(spellName) then
+                if currentSpellNameDB.MaxChars and currentSpellNameDB.MaxChars > 0 then spellName = string.format("%." .. currentSpellNameDB.MaxChars .. "s", spellName) end
+                spellName = ZF:CleanTruncateUTF8String(spellName)
+            end
+            local isCasting = UnitCastingInfo(unit) ~= nil
+            local isChanneling = not isCasting and UnitChannelInfo(unit) ~= nil
+            local targetName
+            if currentCastBarDB.ShowTarget then
+                if not UnitSpellTargetName then
+                    targetName = UnitName(unit .. "target")
+                elseif isCasting or (isChanneling and UnitShouldDisplaySpellTargetName(unit)) then
+                    targetName = UnitSpellTargetName(unit)
+                end
+            end
+            if ZF:IsSecretValue(targetName) or targetName then frameCastBar.Text:SetFormattedText("%s » %s", spellName, targetName) else frameCastBar.Text:SetText(spellName) end
+        else
+            frameCastBar.Text:SetText("")
+        end
+
+        if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0) end
+        CastBarContainer:Show()
     end
 
-    local SpellNameText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY", "GameFontNormal")
-    SpellNameText:ClearAllPoints()
-    SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-    ZF:ApplyFontStringStyle(SpellNameText, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-    SpellNameText:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
-
-    local DurationText = CastBar:CreateFontString(ZF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY", "GameFontNormal")
-    DurationText:ClearAllPoints()
-    DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-    ZF:ApplyFontStringStyle(DurationText, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-    DurationText:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
-
-    if CastBarDB.Inverse then
-        CastBar:SetReverseFill(true)
-    else
-        CastBar:SetReverseFill(false)
+    CastBar.PostCastInterruptible = function(frameCastBar, _, _, notInterruptible)
+        frameCastBar.zfNotInterruptible = notInterruptible
+        if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0) end
+        SetCastBarColor(frameCastBar, unit, unitFrame.CastBarHookDB)
     end
+    CastBar.PostCastFail = function(frameCastBar)
+        frameCastBar.zfActive = nil
+        frameCastBar:SetStatusBarColor(unpack(unitFrame.CastBarHookDB.InterruptedFailedColor))
+        if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
+    end
+    CastBar.PostCastInterrupted = CastBar.PostCastFail
+    CastBar.PostCastStop = function(frameCastBar)
+        frameCastBar.zfActive = nil
+    end
+
+    unitFrame.CastBarWidget = CastBar
+    return CastBar
+end
+
+local function DetachCastBar(unitFrame)
+    if not unitFrame.Castbar then return end
+    if unitFrame:IsElementEnabled("Castbar") then unitFrame:DisableElement("Castbar") end
+    unitFrame.Castbar:Hide()
+    unitFrame.Castbar:GetParent():Hide()
+    unitFrame.Castbar = nil
+end
+
+function ZF:CreateUnitCastBar(unitFrame, unit)
+    local CastBarDB = ZF:GetUnitDB(nil, unit).CastBar
+    local CastBar = unitFrame.CastBarWidget or BuildCastBar(unitFrame, unit)
+    unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
+    SyncCastBar(unitFrame, unit, CastBar)
+    CastBar:GetParent():Hide()
 
     if CastBarDB.Enabled then
         unitFrame.Castbar = CastBar
-        unitFrame.Castbar.Text = SpellNameText
-        unitFrame.Castbar.Time = DurationText
-        if CastBarDB.Icon.Enabled then unitFrame.Castbar.Icon = CastBar.Icon else unitFrame.Castbar.Icon = nil end
-        unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
-
-        unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
-
-        unitFrame.Castbar.PostCastStart = function(frameCastBar, _, spellID, notInterruptible, name, texture)
-			local currentCastBarDB = unitFrame.CastBarHookDB
-			local currentSpellNameDB = currentCastBarDB.Text.SpellName
-			frameCastBar.zfActive = true
-			frameCastBar.zfNotInterruptible = notInterruptible
-			SetCastBarColor(frameCastBar, unit, currentCastBarDB)
-
-			if frameCastBar.Icon and texture then frameCastBar.Icon:SetTexture(texture) end
-
-            local spellName = name
-            if spellName then
-                if not ZF:IsSecretValue(spellName) then
-					if currentSpellNameDB.MaxChars and currentSpellNameDB.MaxChars > 0 then spellName = string.format("%." .. currentSpellNameDB.MaxChars .. "s", spellName) end
-                    spellName = ZF:CleanTruncateUTF8String(spellName)
-                end
-				local isCasting = UnitCastingInfo(unit) ~= nil
-				local isChanneling = not isCasting and UnitChannelInfo(unit) ~= nil
-				local targetName
-				if currentCastBarDB.ShowTarget then
-					if not UnitSpellTargetName then
-						targetName = UnitName(unit .. "target")
-					elseif isCasting or (isChanneling and UnitShouldDisplaySpellTargetName(unit)) then
-						targetName = UnitSpellTargetName(unit)
-					end
-				end
-                if ZF:IsSecretValue(targetName) or targetName then frameCastBar.Text:SetFormattedText("%s » %s", spellName, targetName) else frameCastBar.Text:SetText(spellName) end
-            else
-                frameCastBar.Text:SetText("")
-            end
-
-            if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0) end
-            CastBarContainer:Show()
-        end
-
-        unitFrame.Castbar.PostCastInterruptible = function(frameCastBar, _, _, notInterruptible)
-			frameCastBar.zfNotInterruptible = notInterruptible
-            if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0) end
-			SetCastBarColor(frameCastBar, unit, unitFrame.CastBarHookDB)
-        end
-        unitFrame.Castbar.PostCastFail = function(frameCastBar)
-			frameCastBar.zfActive = nil
-			frameCastBar:SetStatusBarColor(unpack(unitFrame.CastBarHookDB.InterruptedFailedColor))
-            if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
-        end
-        unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
-        unitFrame.Castbar.PostCastStop = function(frameCastBar)
-			frameCastBar.zfActive = nil
-        end
-        if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
-        if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
     else
-        CastBarContainer:Hide()
-        if not unitFrame.Castbar then return end
-        if unitFrame:IsElementEnabled("Castbar") then unitFrame:DisableElement("Castbar") end
-        unitFrame.Castbar:Hide()
-        unitFrame.Castbar = nil
+        DetachCastBar(unitFrame)
     end
 
     return CastBar
 end
 
 function ZF:UpdateUnitCastBar(unitFrame, unit)
-    local GeneralDB = ZF.db.profile.General
-    local FrameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].Frame
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
-    local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
+    local CastBarDB = ZF:GetUnitDB(nil, unit).CastBar
 
     if CastBarDB.Enabled then
-        unitFrame.Castbar = unitFrame.Castbar or ZF:CreateUnitCastBar(unitFrame, unit)
+        if not unitFrame.Castbar then ZF:CreateUnitCastBar(unitFrame, unit) end
         unitFrame.CastBarHookDB = ZF:GetUnitDB(unitFrame, unit).CastBar
-        CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
-
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
-
-        if unitFrame.Castbar then
-            if CastBarContainer then CastBarContainer:ClearAllPoints() end
-            if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
-            if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
-            unitFrame.Castbar:ClearAllPoints()
-            if CastBarDB.MatchParentWidth then
-                if CastBarContainer then
-                    CastBarContainer:SetWidth(FrameDB.Width)
-                end
-            else
-                if CastBarContainer then
-                    CastBarContainer:SetWidth(CastBarDB.Width)
-                end
-            end
-            if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
-            local borderSize = 1
-            if CastBarContainer then borderSize = ApplyCastBarBorderStyle(CastBarContainer, CastBarDB) end
-            unitFrame.Castbar:SetStatusBarTexture(ZF.Media.Foreground)
-            unitFrame.Castbar.timeToHold = CastBarDB.HoldTime
-            unitFrame.Castbar.Background:SetTexture(ZF.Media.Background)
-            SetCastBarColor(unitFrame.Castbar, unit, CastBarDB)
-            unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
-
-            if unitFrame.Castbar.NotInterruptibleOverlay then
-                unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(ZF.Media.Foreground)
-                unitFrame.Castbar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColor))
-            end
-
-            if CastBarDB.Inverse then
-                unitFrame.Castbar:SetReverseFill(true)
-            else
-                unitFrame.Castbar:SetReverseFill(false)
-            end
-
-            if CastBarDB.Icon.Enabled then
-                unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(ZF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
-                unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2*borderSize, CastBarDB.Height - 2*borderSize)
-                unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                ApplyCastBarIconPosition(unitFrame.Castbar, unitFrame.Castbar.Icon, CastBarContainer, CastBarDB.Icon.Position, CastBarDB.Height, borderSize)
-                unitFrame.Castbar.Icon:Show()
-            else
-                if unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
-                unitFrame.Castbar.Icon = nil
-                ApplyCastBarNoIconPosition(unitFrame.Castbar, CastBarContainer, borderSize)
-            end
-
-            if unitFrame.Castbar.Text then
-                local SpellNameDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
-                unitFrame.Castbar.Text:ClearAllPoints()
-                unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
-                ZF:ApplyFontStringStyle(unitFrame.Castbar.Text, ZF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag, SpellNameDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Text:SetJustifyH(ZF:SetJustification(SpellNameDB.Layout[1]))
-                if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
-            end
-
-            if unitFrame.Castbar.Time then
-                local DurationDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.Duration
-                unitFrame.Castbar.Time:ClearAllPoints()
-                unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
-                ZF:ApplyFontStringStyle(unitFrame.Castbar.Time, ZF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag, DurationDB.Color, GeneralDB.Fonts.Shadow)
-                unitFrame.Castbar.Time:SetJustifyH(ZF:SetJustification(DurationDB.Layout[1]))
-                if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
-            end
-        end
+        SyncCastBar(unitFrame, unit, unitFrame.Castbar)
     else
         if not unitFrame.Castbar then return end
-        if unitFrame:IsElementEnabled("Castbar") then unitFrame:DisableElement("Castbar") end
-        unitFrame.Castbar:Hide()
-        unitFrame.Castbar = nil
-        if CastBarContainer then
-            CastBarContainer:Hide()
-        end
+        DetachCastBar(unitFrame)
     end
     if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then ZF:CreateTestCastBar(unitFrame, unit) end
 end
@@ -268,7 +207,7 @@ end
 function ZF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local CastBarDB = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar
+    local CastBarDB = ZF:GetUnitDB(nil, unit).CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
     if unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.CastBar then
         if unitFrame.Castbar and CastBarDB.Enabled then
@@ -278,7 +217,7 @@ function ZF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
             local spellName = "Ethereal Portal"
-            local maxChars = ZF.db.profile.Units[ZF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars
+            local maxChars = CastBarDB.Text.SpellName.MaxChars
             if maxChars and maxChars > 0 then spellName = string.format("%." .. maxChars .. "s", spellName) end
             spellName = ZF:CleanTruncateUTF8String(spellName)
             if CastBarDB.ShowTarget then unitFrame.Castbar.Text:SetFormattedText("%s » %s", spellName, "Target") else unitFrame.Castbar.Text:SetText(spellName) end
