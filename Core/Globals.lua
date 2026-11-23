@@ -42,7 +42,6 @@ ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = addonPath .. "Me
 ZF.INFOBUTTON = "|T" .. addonPath .. "Media\\Textures\\InfoButton.png:16:16|t "
 ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
 ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
-ZF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata(addonName, "Author")
 ZF.ADDON_LOGO = "|T" .. addonPath .. "Media\\Textures\\ZFLogo:11:12|t"
 ZF.STYLIZED_ADDON_NAME = ZF.ADDON_LOGO .. " " .. ZF.ADDON_NAME
 
@@ -307,7 +306,6 @@ end
 local function SetupSlashCommands()
     SLASH_ZF1 = "/zf"
     SLASH_ZF2 = "/ZenFrames"
-    SLASH_ZF3 = "/uf"
     SlashCmdList["ZF"] = function() ZF:CreateGUI() end
     if ZF.db.global.DisplayLoginMessage then ZF:StylizedPrint("'|cFF990007/zf|r' for in-game configuration.") end
 

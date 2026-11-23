@@ -27,7 +27,6 @@ globals = {
     -- individually-numbered globals - Blizzard looks these up by exact name.
     "SLASH_ZF1",
     "SLASH_ZF2",
-    "SLASH_ZF3",
     "SLASH_ZFRELOAD1",
 }
 

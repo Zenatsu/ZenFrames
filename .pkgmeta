@@ -7,6 +7,7 @@ ignore:
   - .gitignore
   - .gitattributes
   - IssueTracker.txt
+  - Types
   - ZenFrames-Dev.toc
 manual-changelog:
   filename: CHANGELOG.md
