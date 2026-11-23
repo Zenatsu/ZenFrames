@@ -746,6 +746,7 @@ function ZF:RefreshProfiles()
 		ZF:RunAfterCombat("RefreshProfiles", RefreshProfilesAfterCombat)
 		return
 	end
+	ZF.profileGeneration = (ZF.profileGeneration or 0) + 1
 	ZF:ResolveLSM()
 	ZF:LoadCustomColors()
 	ZF:UpdateAllUnitFrames()

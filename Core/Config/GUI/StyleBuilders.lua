@@ -464,7 +464,8 @@ local function CreateFrameSettings(containerParent, unit, updateCallback)
             whileDead = true,
             hideOnEscape = true,
         }
-        StaticPopup_Show("ZF_COPY_UNIT_SETTINGS")
+        local popup = StaticPopup_Show("ZF_COPY_UNIT_SETTINGS")
+        if popup then popup:SetFrameStrata("TOOLTIP") end
     end)
     CopyContainer:AddChild(CopyButton)
 end

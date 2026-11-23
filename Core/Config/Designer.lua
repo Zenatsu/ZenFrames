@@ -132,6 +132,8 @@ function ZF:ShowDesignerPreview(parentFrame, unit, optionsContainer)
 
     local previewFrame = ZF:CreateDesignerPreviewFrame()
     previewFrame:SetParent(parentFrame)
+    if previewFrame.profileGeneration ~= ZF.profileGeneration then ZF:UpdateDesignerPreviewFrame() end
+    previewFrame.profileGeneration = ZF.profileGeneration
     previewFrame:Show()
     ZF:UpdateDesignerPreviewFrame()
     previewFrame:ClearAllPoints()
