@@ -29,7 +29,8 @@ function ZF:CreateUnitThreatIndicator(unitFrame, unit)
     local ThreatDB = ZF:GetUnitDB(unitFrame, unit).Indicators.Threat
     if not ThreatDB then return end
 
-    local overlay = ZF:CreateThreatIndicatorOverlay(unitFrame, unit)
+    unitFrame.ThreatOverlay = unitFrame.ThreatOverlay or ZF:CreateThreatIndicatorOverlay(unitFrame, unit)
+    local overlay = unitFrame.ThreatOverlay
     if ThreatDB.Enabled then
         unitFrame.ThreatIndicator = overlay
     else
