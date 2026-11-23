@@ -5,6 +5,7 @@
     <Script file="Defaults/GroupUnit.lua"/>
     <Script file="Defaults/Defaults.lua"/>
     <Script file="Globals.lua"/>
+    <Script file="VersionCheck.lua"/>
     <Script file="GameMenu.lua"/>
     <Script file="UnitFrame.lua"/>
 
