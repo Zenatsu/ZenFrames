@@ -5,11 +5,9 @@ local GLOW_INSET = 3
 function ZF:CreateThreatIndicatorOverlay(unitFrame, unit)
     local overlay = CreateFrame("Frame", ZF:FetchFrameName(unit) .. "_ThreatIndicator", unitFrame.Container, "BackdropTemplate")
     overlay:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 4)
-    overlay:SetBackdrop({ edgeFile = ZF.Media.Solid, edgeSize = GLOW_INSET, insets = {left = -GLOW_INSET, right = -GLOW_INSET, top = -GLOW_INSET, bottom = -GLOW_INSET} })
+    ZF:ApplyOutsetBorder(overlay, unitFrame.Container, GLOW_INSET, ZF.Media.Solid)
     overlay:SetBackdropColor(0, 0, 0, 0)
     overlay:SetBackdropBorderColor(1, 1, 1, 1)
-    overlay:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -GLOW_INSET, GLOW_INSET)
-    overlay:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", GLOW_INSET, -GLOW_INSET)
     overlay:SetAlpha(0)
     overlay:Hide()
 

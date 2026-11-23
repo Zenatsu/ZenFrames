@@ -91,7 +91,7 @@ local function ApplyPowerBarSettings(powerBar, PowerBarDB)
     end
 
     if powerBar.PowerBarBorder then
-        powerBar.PowerBarBorder:SetVertexColor(PowerBarDB.BorderColor[1], PowerBarDB.BorderColor[2], PowerBarDB.BorderColor[3], PowerBarDB.BorderThickness > 0 and PowerBarDB.BorderOpacity or 0)
+        powerBar.PowerBarBorder:SetVertexColor(ZF:GetBorderColor(PowerBarDB))
     end
 end
 
@@ -343,7 +343,7 @@ function ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
 
     secondaryPower.PowerBarBorder:ClearAllPoints()
     secondaryPower.PowerBarBorder:SetHeight(math.min(math.max(secondaryPowerDB.BorderThickness, 0), secondaryPowerDB.Height))
-    secondaryPower.PowerBarBorder:SetVertexColor(secondaryPowerDB.BorderColor[1], secondaryPowerDB.BorderColor[2], secondaryPowerDB.BorderColor[3], secondaryPowerDB.BorderThickness > 0 and secondaryPowerDB.BorderOpacity or 0)
+    secondaryPower.PowerBarBorder:SetVertexColor(ZF:GetBorderColor(secondaryPowerDB))
     if isTopAnchored then
         secondaryPower.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, anchorY - secondaryPowerDB.Height)
         secondaryPower.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, anchorY - secondaryPowerDB.Height)
@@ -369,7 +369,7 @@ function ZF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         tick:ClearAllPoints()
         tick:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + (index * segmentWidth) - 0.5, anchorY)
         tick:SetSize(math.min(math.max(secondaryPowerDB.BorderThickness, 0), segmentWidth), secondaryPowerDB.Height)
-        tick:SetVertexColor(secondaryPowerDB.BorderColor[1], secondaryPowerDB.BorderColor[2], secondaryPowerDB.BorderColor[3], secondaryPowerDB.BorderThickness > 0 and secondaryPowerDB.BorderOpacity or 0)
+        tick:SetVertexColor(ZF:GetBorderColor(secondaryPowerDB))
         tick:Show()
     end
 

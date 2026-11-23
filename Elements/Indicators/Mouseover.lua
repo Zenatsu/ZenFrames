@@ -4,10 +4,7 @@ local function ApplyMouseoverStyle(highlight, healthBar, MouseoverDB)
     highlight:ClearAllPoints()
 
     if MouseoverDB.Style == "BORDER" then
-        local t = MouseoverDB.BorderThickness
-        highlight:SetPoint("TOPLEFT", healthBar, "TOPLEFT", -t, t)
-        highlight:SetPoint("BOTTOMRIGHT", healthBar, "BOTTOMRIGHT", t, -t)
-        highlight:SetBackdrop({ bgFile = ZF.BACKDROP.bgFile, edgeFile = ZF.BACKDROP.edgeFile, edgeSize = t, insets = {left = -t, right = -t, top = -t, bottom = -t} })
+        ZF:ApplyOutsetBorder(highlight, healthBar, MouseoverDB.BorderThickness, ZF.BACKDROP.edgeFile, ZF.BACKDROP.bgFile)
         highlight:SetBackdropColor(0, 0, 0, 0)
         highlight:SetBackdropBorderColor(MouseoverDB.Color[1], MouseoverDB.Color[2], MouseoverDB.Color[3], MouseoverDB.HighlightOpacity)
     elseif MouseoverDB.Style == "GRADIENT" then
