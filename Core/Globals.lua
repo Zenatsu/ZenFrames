@@ -714,15 +714,31 @@ function ZF:RestoreDefaultAuraBlacklist()
     ZF.auraBlacklistGeneration = (ZF.auraBlacklistGeneration or 0) + 1
 end
 
-local RefreshProfilesRetryFrame = CreateFrame("Frame")
-RefreshProfilesRetryFrame:SetScript("OnEvent", function(self)
+local afterCombatOrder, afterCombatJobs = {}, {}
+local AfterCombatFrame = CreateFrame("Frame")
+AfterCombatFrame:SetScript("OnEvent", function(self)
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	ZF:RefreshProfiles()
+	local order, jobs = afterCombatOrder, afterCombatJobs
+	afterCombatOrder, afterCombatJobs = {}, {}
+	local handler = geterrorhandler()
+	for _, key in ipairs(order) do
+		xpcall(jobs[key], handler)
+	end
 end)
+
+function ZF:RunAfterCombat(key, fn)
+	if not afterCombatJobs[key] then afterCombatOrder[#afterCombatOrder + 1] = key end
+	afterCombatJobs[key] = fn
+	AfterCombatFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
+local function RefreshProfilesAfterCombat()
+	ZF:RefreshProfiles()
+end
 
 function ZF:RefreshProfiles()
 	if InCombatLockdown() then
-		RefreshProfilesRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		ZF:RunAfterCombat("RefreshProfiles", RefreshProfilesAfterCombat)
 		return
 	end
 	ZF:ResolveLSM()

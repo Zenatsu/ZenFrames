@@ -12,31 +12,19 @@ function ZF:EnsureRaidStyleRegistered()
 	raidStyleRegistered = true
 end
 
-local pendingSpawnUnits = {}
-local SpawnUnitFrameRetryFrame = CreateFrame("Frame")
-SpawnUnitFrameRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    for unit in pairs(pendingSpawnUnits) do
-        pendingSpawnUnits[unit] = nil
-        if unit == "boss" then
-            for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
-            ZF:LayoutBossFrames()
-        elseif ZF[unit:upper()] then
-            ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
-        end
-    end
-end)
-
-local pendingBossReset = false
-local BossResetRetryFrame = CreateFrame("Frame")
-BossResetRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    if pendingBossReset then
-        pendingBossReset = false
+local function RetrySpawnUnitFrame(unit)
+    if unit == "boss" then
+        for i, bossFrame in ipairs(ZF.BOSS_FRAMES) do ZF:UpdateUnitFrame(bossFrame, "boss" .. i) end
         ZF:LayoutBossFrames()
-        ZF:ResetBossFrames()
+    elseif ZF[unit:upper()] then
+        ZF:UpdateUnitFrame(ZF[unit:upper()], unit)
     end
-end)
+end
+
+local function RetryBossReset()
+    ZF:LayoutBossFrames()
+    ZF:ResetBossFrames()
+end
 
 local function IsMouseOverAuraContainer(frame)
     return (frame.BuffContainer and frame.BuffContainer:IsMouseOver())
@@ -164,8 +152,7 @@ end
 
 function ZF:LayoutBossFrames()
     if InCombatLockdown() then -- AnchorUtil.VerticalLayout calls SetPoint on the secure-templated boss frames
-        pendingBossReset = true
-        BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("BossReset", RetryBossReset)
         return
     end
     local Frame = ZF.db.profile.Units.boss.Frame
@@ -244,8 +231,7 @@ function ZF:SpawnUnitFrame(unit)
         end
     end
     if InCombatLockdown() then -- reload/login mid-combat: PlaceUnitFrame/LayoutBossFrames above no-op'd, retry once combat ends
-        pendingSpawnUnits[unit] = true
-        SpawnUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("Spawn:" .. unit, function() RetrySpawnUnitFrame(unit) end)
     end
     if unit ~= "player" and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then ZF:RegisterRangeFrame(ZF:FetchFrameName(unit), unit) end
 	ZF:CreateMover(unit)
@@ -289,20 +275,13 @@ function ZF:PlaceUnitFrame(unitFrame, unit)
     end
 end
 
-local pendingUpdateUnits = {}
-local UpdateUnitFrameRetryFrame = CreateFrame("Frame")
-UpdateUnitFrameRetryFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    for unit in pairs(pendingUpdateUnits) do
-        pendingUpdateUnits[unit] = nil
-        if ZF[unit:upper()] then ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end
-    end
-end)
+local function RetryUpdateUnitFrame(unit)
+    if ZF[unit:upper()] then ZF:UpdateUnitFrame(ZF[unit:upper()], unit) end
+end
 
 function ZF:UpdateUnitFrame(unitFrame, unit)
     if InCombatLockdown() then
-        pendingUpdateUnits[unit] = true
-        UpdateUnitFrameRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        ZF:RunAfterCombat("Update:" .. unit, function() RetryUpdateUnitFrame(unit) end)
         return
     end
     local UnitDB = ZF:GetUnitDB(unitFrame, unit)
@@ -357,8 +336,7 @@ end
 
 function ZF:ResetBossFrames()
 	if InCombatLockdown() then
-		pendingBossReset = true
-		BossResetRetryFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		ZF:RunAfterCombat("BossReset", RetryBossReset)
 		return
 	end
 	local BossDB = ZF.db.profile.Units.boss
