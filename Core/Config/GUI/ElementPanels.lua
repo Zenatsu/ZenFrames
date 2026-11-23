@@ -199,27 +199,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     ColorRowBreak:SetFullWidth(true)
     ColorContainer:AddChild(ColorRowBreak)
 
-    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", CastBarDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
-    panelsToDisable[#panelsToDisable + 1] = BorderColorPicker
-
-    local BorderThicknessSlider = AG:Create("Slider")
-    BorderThicknessSlider:SetLabel("Border Thickness")
-    BorderThicknessSlider:SetValue(CastBarDB.BorderThickness)
-    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
-    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderThicknessSlider:SetCallback("OnValueChanged", function(_,_, value) CastBarDB.BorderThickness = value updateCallback() RefreshCastBarBarSettings() end)
-    ColorContainer:AddChild(BorderThicknessSlider)
-    panelsToDisable[#panelsToDisable + 1] = BorderThicknessSlider
-
-    local BorderOpacitySlider = AG:Create("Slider")
-    BorderOpacitySlider:SetLabel("Border Opacity")
-    BorderOpacitySlider:SetValue(CastBarDB.BorderOpacity)
-    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderOpacitySlider:SetCallback("OnValueChanged", function(_,_, value) CastBarDB.BorderOpacity = value updateCallback() end)
-    BorderOpacitySlider:SetIsPercent(true)
-    ColorContainer:AddChild(BorderOpacitySlider)
-    panelsToDisable[#panelsToDisable + 1] = BorderOpacitySlider
+    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(ColorContainer, CastBarDB, updateCallback, function() RefreshCastBarBarSettings() end, panelsToDisable)
 
     RefreshCastBarBarSettings = function()
         BuilderRefresh()
@@ -389,27 +369,7 @@ local function CreateXPBarSettings(containerParent, unit)
     local BackgroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Background", XPBarDB, "Background", UpdateXPBar, {hasAlpha = true, width = STYLE.Widths.Pct50})
     panelsToDisable[#panelsToDisable + 1] = BackgroundColorPicker
 
-    local BorderColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", XPBarDB, "BorderColor", UpdateXPBar, {width = STYLE.Widths.Pct25})
-    panelsToDisable[#panelsToDisable + 1] = BorderColorPicker
-
-    local BorderThicknessSlider = AG:Create("Slider")
-    BorderThicknessSlider:SetLabel("Border Thickness")
-    BorderThicknessSlider:SetValue(XPBarDB.BorderThickness)
-    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
-    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.BorderThickness = value UpdateXPBar() RefreshXPBarSettings() end)
-    ColorContainer:AddChild(BorderThicknessSlider)
-    panelsToDisable[#panelsToDisable + 1] = BorderThicknessSlider
-
-    local BorderOpacitySlider = AG:Create("Slider")
-    BorderOpacitySlider:SetLabel("Border Opacity")
-    BorderOpacitySlider:SetValue(XPBarDB.BorderOpacity)
-    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) XPBarDB.BorderOpacity = value UpdateXPBar() end)
-    BorderOpacitySlider:SetIsPercent(true)
-    ColorContainer:AddChild(BorderOpacitySlider)
-    panelsToDisable[#panelsToDisable + 1] = BorderOpacitySlider
+    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(ColorContainer, XPBarDB, UpdateXPBar, function() RefreshXPBarSettings() end, panelsToDisable)
 
     RefreshXPBarSettings = function()
         BuilderRefresh()
@@ -686,24 +646,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     local ForegroundColorPicker = GUIBuilders.CreateColorBlock(ColorContainer, "Foreground Color", AlternativePowerBarDB, "Foreground", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct33})
     GUIBuilders.CreateColorBlock(ColorContainer, "Background Color", AlternativePowerBarDB, "Background", updateCallback, {hasAlpha = true, width = STYLE.Widths.Pct33})
 
-    GUIBuilders.CreateColorBlock(ColorContainer, "Border Color", AlternativePowerBarDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
-
-    local BorderThicknessSlider = AG:Create("Slider")
-    BorderThicknessSlider:SetLabel("Border Thickness")
-    BorderThicknessSlider:SetValue(AlternativePowerBarDB.BorderThickness)
-    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
-    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.BorderThickness = value updateCallback() RefreshAlternativePowerBarGUI() end)
-    ColorContainer:AddChild(BorderThicknessSlider)
-
-    local BorderOpacitySlider = AG:Create("Slider")
-    BorderOpacitySlider:SetLabel("Border Opacity")
-    BorderOpacitySlider:SetValue(AlternativePowerBarDB.BorderOpacity)
-    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.BorderOpacity = value updateCallback() end)
-    BorderOpacitySlider:SetIsPercent(true)
-    ColorContainer:AddChild(BorderOpacitySlider)
+    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(ColorContainer, AlternativePowerBarDB, updateCallback, function() RefreshAlternativePowerBarGUI() end)
 
     RefreshAlternativePowerBarGUI = function()
         BuilderRefresh()
@@ -775,24 +718,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local BorderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Border")
     panelsToDisable[3] = BorderContainer
 
-    GUIBuilders.CreateColorBlock(BorderContainer, "Border Color", PortraitDB, "BorderColor", updateCallback, {width = STYLE.Widths.Pct25})
-
-    local BorderThicknessSlider = AG:Create("Slider")
-    BorderThicknessSlider:SetLabel("Border Thickness")
-    BorderThicknessSlider:SetValue(PortraitDB.BorderThickness)
-    BorderThicknessSlider:SetSliderValues(unpack(STYLE.Sliders.FrameBorderThickness))
-    BorderThicknessSlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderThicknessSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.BorderThickness = value updateCallback() RefreshPortraitGUI() end)
-    BorderContainer:AddChild(BorderThicknessSlider)
-
-    local BorderOpacitySlider = AG:Create("Slider")
-    BorderOpacitySlider:SetLabel("Border Opacity")
-    BorderOpacitySlider:SetValue(PortraitDB.BorderOpacity)
-    BorderOpacitySlider:SetSliderValues(unpack(STYLE.Sliders.Opacity))
-    BorderOpacitySlider:SetRelativeWidth(STYLE.Widths.Pct25)
-    BorderOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.BorderOpacity = value updateCallback() end)
-    BorderOpacitySlider:SetIsPercent(true)
-    BorderContainer:AddChild(BorderOpacitySlider)
+    local _, _, BorderOpacitySlider = GUIBuilders.CreateBorderBlock(BorderContainer, PortraitDB, updateCallback, function() RefreshPortraitGUI() end)
 
     RefreshPortraitGUI = function()
         BuilderRefresh()
