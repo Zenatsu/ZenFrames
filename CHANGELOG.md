@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.1.1hf1
+
+- Fixed a full-screen texture when a non-interruptable cast goes off.
+
 ## v1.1.1
 
 - Fixed error when opening the Designer after switching profiles
@@ -9,7 +13,7 @@
 - Dispel highlighting no longer rescans every aura on every aura change.
 - Added a Frame Strata option to each tag
 
-===FOREVER===
+\===FOREVER\===
 
 - Added new pet specific tags
 - HUNTER: Added pet happiness tracking, both tags and indicator
