@@ -275,7 +275,7 @@ function ZF:UpdateUnitAuras(unitFrame, unit)
 		unitFrame:DisableElement("Auras")
 	end
 
-	if (unitFrame.isDesignerPreview and ZF.DESIGNER_PREVIEW_TOGGLES.Auras) or unitFrame.isUnitPreview then ZF:CreateTestAuras(unitFrame, unit) end
+	if unitFrame.isDesignerPreview or unitFrame.isUnitPreview then ZF:CreateTestAuras(unitFrame, unit) end
 end
 
 function ZF:CreateUnitAuras(unitFrame, unit)
