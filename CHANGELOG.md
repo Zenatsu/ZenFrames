@@ -4,7 +4,6 @@
 
 - Added new "Modern" UI style that uses in-game blizzard art and Atlas'. You will be asked to pick a style the first time you open the addon, you can also swap between the styles using a toggle button or the chat command "/zf modern" or "/zf classic".
 - Modern & Classic: The Mover UI has new panel art.
-- Modern: The "Unit Designer" button is now a collasbale button rather than just a small '+/-' button.
 
 ## v1.1.1hf1
 
