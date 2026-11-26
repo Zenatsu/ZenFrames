@@ -44,6 +44,28 @@ local function CreateGlobalToggleSettings(containerParent)
     end)
     ShowGameMenuButtonToggle:SetRelativeWidth(STYLE.Widths.Pct33)
     ToggleContainer:AddChild(ShowGameMenuButtonToggle)
+
+    local NativeGUIToggle = AG:Create("CheckBox")
+    NativeGUIToggle:SetLabel("Modern Window Style")
+    NativeGUIToggle:SetValue(ZF:IsNativeGUIEnabled())
+    NativeGUIToggle:SetCallback("OnValueChanged", function(_, _, value) C_Timer.After(0, function() ZF:SetNativeGUIEnabled(value) end) end)
+    NativeGUIToggle:SetRelativeWidth(STYLE.Widths.Pct33)
+    ToggleContainer:AddChild(NativeGUIToggle)
+
+    if ZF.showWindowStyleTip then
+        ZF.showWindowStyleTip = nil
+        C_Timer.After(0, function()
+            local tipText = "Switch between the Modern and Classic window here at any time, or type /zf modern or /zf classic."
+            local shown = NativeGUIToggle.frame:IsShown() and HelpTip:Show(NativeGUIToggle.frame, {
+                text = tipText,
+                buttonStyle = HelpTip.ButtonStyle.GotIt,
+                targetPoint = HelpTip.Point.RightEdgeCenter,
+                useParentStrata = true,
+                autoHideWhenTargetHides = true,
+            })
+            if not shown then ZF:StylizedPrint(tipText) end
+        end)
+    end
 end
 
 local function CreateGlobalTagSettings(containerParent)

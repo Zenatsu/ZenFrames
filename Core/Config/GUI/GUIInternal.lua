@@ -194,10 +194,7 @@ local function DisableAllTestModes()
 end
 
 local function GenerateSupportText(parentFrame)
-    local SupportOptions = {
-        "This is just a stand-in until I decide to do something with it."
-    }
-    parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
+    parentFrame.statustext:SetText("version: " .. ZF.ADDON_VERSION)
 end
 
 local DesignerUnitTabs = {

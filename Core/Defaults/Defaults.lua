@@ -7,6 +7,7 @@ local Defaults = {
         DisplayLoginMessage = true,
         VersionCheck = true,
         ShowGameMenuButton = true,
+        NativeGUI = true,
         AuraBlacklist = {},
         AuraBlacklistSeeded = false,
     },

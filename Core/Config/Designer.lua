@@ -489,8 +489,31 @@ function ZF:RefreshDesignerWidget(entry)
     ZF:LiftDesignerPreviewStrata()
 end
 
+local function ApplyOverlayLevel(overlay)
+    local base = overlay:GetParent():GetFrameLevel() + 10
+    if overlay.entry == selectedEntry then
+        overlay:SetFrameLevel(base + #ZF.DESIGNER_WIDGETS + 1)
+    else
+        overlay:SetFrameLevel(base + overlay.index)
+    end
+end
+
+local function GetNextOverlayUnderCursor(clicked)
+    local stack = {}
+    for _, overlay in pairs(overlays) do
+        if overlay:IsVisible() and overlay:IsMouseOver() then stack[#stack + 1] = overlay end
+    end
+    if #stack < 2 then return clicked end
+    table.sort(stack, function(a, b) return a.index > b.index end)
+    for i, overlay in ipairs(stack) do
+        if overlay.entry == selectedEntry then return stack[i % #stack + 1] end
+    end
+    return clicked
+end
+
 -- Overlay region with overlay visuals
 local function UpdateOverlayVisual(overlay)
+    ApplyOverlayLevel(overlay)
     if overlay.entry == selectedEntry then
         overlay:SetBackdropBorderColor(unpack(STYLE.Palette.Idle))
         ZF.LG.PixelGlow_Start(overlay, STYLE.Palette.Selected, nil, nil, nil, 2, nil, nil, false) -- Gold: Selected
@@ -554,7 +577,7 @@ local function CreateOverlay(entry, index)
     local layer = GetOverLayer()
     local overlay = CreateFrame("Button", "ZF_DesignerOverlay_" .. entry.key, layer, "BackdropTemplate")
     overlay.entry = entry
-    overlay:SetFrameLevel(layer:GetFrameLevel() +10+ index) -- Always sit above the parent frame level
+    overlay.index = index
     overlay:SetBackdrop(STYLE.Overlays.Backdrop)
      overlay:SetBackdropColor(unpack(STYLE.Overlays.Fill))
     overlay:SetMovable(true)
@@ -570,7 +593,13 @@ local function CreateOverlay(entry, index)
         UpdateOverlayVisual(self)
         if not showingDropMessage then ZF:UpdateDesignerStatusText() end
     end)
-    overlay:SetScript("OnClick", function(self) ZF:SetDesignerSelection(self.entry) end)
+    overlay:SetScript("OnClick", function(self)
+        if self.entry == selectedEntry then
+            ZF:SetDesignerSelection(GetNextOverlayUnderCursor(self).entry)
+        else
+            ZF:SetDesignerSelection(self.entry)
+        end
+    end)
     UpdateOverlayVisual(overlay)
     overlays[entry.key] = overlay
     overlay:SetScript("OnDragStart", function(self)
@@ -610,6 +639,25 @@ local function ApplyDecorStyle(key, decor)
     decor:SetBackdropBorderColor(unpack(group.Border))
 end
 
+local function ApplyCanvasBorder(decor)
+    local native = STYLE.Native
+    local useAtlas = ZF:IsNativeGUIEnabled() and native.CanvasBorderAtlas and C_Texture.GetAtlasExists(native.CanvasBorderAtlas)
+    if not decor.AtlasBorder then
+        decor.AtlasBorder = decor:CreateTexture(nil, "OVERLAY")
+    end
+    local border = decor.AtlasBorder
+    border:SetShown(useAtlas)
+    if not useAtlas then return end
+    decor:SetBackdropBorderColor(0, 0, 0, 0)
+    border:SetAtlas(native.CanvasBorderAtlas, false)
+    local slice = native.CanvasBorderSlice
+    border:SetTextureSliceMargins(slice, slice, slice, slice)
+    local outset = native.CanvasBorderOutset
+    border:ClearAllPoints()
+    border:SetPoint("TOPLEFT", decor, "TOPLEFT", -outset, outset)
+    border:SetPoint("BOTTOMRIGHT", decor, "BOTTOMRIGHT", outset, -outset)
+end
+
 local function GetDecorFrame(key, parent)
     local decor = decorFrames[key]
     if not decor then
@@ -617,6 +665,7 @@ local function GetDecorFrame(key, parent)
         decorFrames[key] = decor
     end
     ApplyDecorStyle(key, decor)
+    if key == "Canvas" then ApplyCanvasBorder(decor) end
     decor:SetParent(parent)
     decor:SetFrameLevel(parent:GetFrameLevel())
     decor:ClearAllPoints()
@@ -653,7 +702,8 @@ function ZF:AnchorDesignerOverlays()
         local overlay = overlays[entry.key]
         if isActive then
             overlay = overlay or CreateOverlay(entry, index)
-            overlay:SetFrameLevel(overLayer:GetFrameLevel() + 10 + index)
+            overlay.index = index
+            ApplyOverlayLevel(overlay)
             local w, h = region:GetWidth(), region:GetHeight()
             if ZF:IsSecretValue(w) or ZF:IsSecretValue(h) then
                 local fontSize = (entry.kind == "tag" and db.FontSize) or STYLE.Preview.FallbackFontSize

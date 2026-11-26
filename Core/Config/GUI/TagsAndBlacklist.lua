@@ -268,13 +268,15 @@ function ZF:ShowAuraBlacklistWindow()
         AuraBlacklistWindow:EnableResize(false)
         AuraBlacklistWindow:SetCallback("OnClose", function(widget) widget:Hide() end)
 
-        AuraBlacklistWindow.frame:SetBackdrop({
-            bgFile = "Interface\\FrameGeneral\\UI-Background-Marble",
-            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-            tile = false, tileSize = 32, edgeSize = 32,
-            insets = { left = 8, right = 8, top = 8, bottom = 8 }
-        })
-        AuraBlacklistWindow.frame:SetBackdropColor(1,1,1,1)
+        if not ZF:IsNativeGUIEnabled() then
+            AuraBlacklistWindow.frame:SetBackdrop({
+                bgFile = "Interface\\FrameGeneral\\UI-Background-Marble",
+                edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                tile = false, tileSize = 32, edgeSize = 32,
+                insets = { left = 8, right = 8, top = 8, bottom = 8 }
+            })
+            AuraBlacklistWindow.frame:SetBackdropColor(1,1,1,1)
+        end
         AuraBlacklistWindow.statustext:GetParent():Hide()
 
         local AddRow = AG:Create("SimpleGroup")
@@ -349,6 +351,12 @@ function ZF:ShowAuraBlacklistWindow()
     CreateAuraBlacklistWindow(AuraBlacklistWindow.RowScroll)
     AuraBlacklistWindow:Show()
     AuraBlacklistWindow.frame:Raise()
+end
+
+function ZF:ReleaseAuraBlacklistWindow()
+    if not AuraBlacklistWindow then return end
+    AG:Release(AuraBlacklistWindow)
+    AuraBlacklistWindow = nil
 end
 
 function ZF:RefreshAuraBlacklistWindow()

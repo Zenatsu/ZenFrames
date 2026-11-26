@@ -46,9 +46,48 @@ function ZF:CloseMainGUI()
     if onClose then onClose(Container) end
 end
 
+function ZF:SetNativeGUIEnabled(enabled)
+    if InCombatLockdown() then return end
+    ZF.db.global.NativeGUI = enabled and true or false
+    local reopen = ZF:IsMainGUIShown()
+    ZF:CloseMainGUI()
+    ZF:ReleaseAuraBlacklistWindow()
+    if reopen then ZF:CreateGUI() end
+end
+
+local function ChooseWindowStyle(modern)
+    if InCombatLockdown() then return end
+    ZF.db.global.WindowStyleChosen = true
+    ZF.db.global.NativeGUI = modern
+    ZF.showWindowStyleTip = true
+    generalLastTab = "GlobalToggles"
+    ZFGUI.MainNavigationStatus = ZFGUI.MainNavigationStatus or {}
+    ZFGUI.MainNavigationStatus.selected = "General"
+    ZF:CreateGUI()
+end
+
+local function ShowWindowStylePrompt()
+    StaticPopupDialogs["ZF_WINDOW_STYLE"] = {
+        text = "ZenFrames has a new settings window.\nWould you like the Modern style or the Classic style?",
+        button1 = "Modern",
+        button2 = "Classic",
+        OnAccept = function() ChooseWindowStyle(true) end,
+        OnCancel = function(_, _, reason) if reason == "clicked" then ChooseWindowStyle(false) end end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = false,
+        preferredIndex = 3,
+    }
+    StaticPopup_Show("ZF_WINDOW_STYLE")
+end
+
 function ZF:CreateGUI()
     if isGUIOpen then return end
     if InCombatLockdown() then return end
+    if not ZF.db.global.WindowStyleChosen then
+        ShowWindowStylePrompt()
+        return
+    end
 
     isGUIOpen = true
 
@@ -219,7 +258,7 @@ function ZF:CreateGUI()
                 ZF:BuildDesignerSectionOptions(ZF.DESIGNER_OPTIONS_CONTAINER, unit, DesignerTab) end)
 
             DesignerTabContentScroll = GUIWidgets.CreateScrollFrame(DesignerTabGroup)
-            DesignerTabContentScroll:SetHeight(STYLE.Layout.OptionsHeight - tabStripHeight)
+            DesignerTabContentScroll:SetHeight((ZF:IsNativeGUIEnabled() and STYLE.Native.OptionsHeight or STYLE.Layout.OptionsHeight) - tabStripHeight)
             ZF.DESIGNER_OPTIONS_CONTAINER = DesignerTabContentScroll
             ZF.DESIGNER_TAB_GROUP = DesignerTabGroup
             DesignerSettingsContainer:AddChild(DesignerTabGroup)
@@ -291,5 +330,6 @@ function ZF:OpenGUIToUnit(unit)
 	if unit == "maintank" or unit == "mainassist" then unit = "raid" end
 	if unit == "augmentation" and not ZF:IsAugmentationEvoker() then return end
     ZF:CreateGUI()
+	if not isGUIOpen then return end
 	if ZFGUI.MainNavigation then ZFGUI.MainNavigation:SelectByValue("Designer\001Designer" .. (unit == "augmentation" and "Aug" or unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper))) end
 end

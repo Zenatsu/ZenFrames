@@ -34,12 +34,12 @@ local DurationTextFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 ZF.LSM = LibStub("LibSharedMedia-3.0")
 ZF.LDS = LibStub("LibDualSpec-1.0")
-ZF.AG = LibStub("AceGUI-3.0")
 ZF.LD = LibStub("LibDispel-1.0")
 ZF.LG = LibStub("LibCustomGlow-1.0")
 ZF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = addonPath .. "Media\\Textures\\Gradient.png" }
 ZF.INFOBUTTON = "|T" .. addonPath .. "Media\\Textures\\InfoButton.png:16:16|t "
+ZF.Media = { Solid = "Interface\\Buttons\\WHITE8X8", Gradient = addonPath .. "Media\\Textures\\Gradient.png", Logo = addonPath .. "Media\\Textures\\ZFLogo.tga" }
 ZF.ADDON_NAME = C_AddOns.GetAddOnMetadata(addonName, "Title")
 ZF.ADDON_VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version")
 ZF.ADDON_LOGO = "|T" .. addonPath .. "Media\\Textures\\ZFLogo:11:12|t"
@@ -306,7 +306,19 @@ end
 local function SetupSlashCommands()
     SLASH_ZF1 = "/zf"
     SLASH_ZF2 = "/ZenFrames"
-    SlashCmdList["ZF"] = function() ZF:CreateGUI() end
+    SlashCmdList["ZF"] = function(message)
+        local command = strtrim(message or ""):lower()
+        if command == "modern" or command == "classic" then ZF:SetNativeGUIEnabled(command == "modern") end
+        if command == "?" or command == "help" then 
+            ZF:StylizedPrint("Commands:")
+            print(" |cFF990007/zf|r - Open Addon")
+            print(" |cFF990007/zf|r modern - Open the modern GUI")
+            print(" |cFF990007/zf|r classic - Open the classic GUI")
+            print(" |cFF990007/rl|r - Reload UI")
+            return
+        end
+        ZF:CreateGUI()
+    end
     if ZF.db.global.DisplayLoginMessage then ZF:StylizedPrint("'|cFF990007/zf|r' for in-game configuration.") end
 
     SLASH_ZFRELOAD1 = "/rl"
