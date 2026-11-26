@@ -309,7 +309,7 @@ local function SetupSlashCommands()
     SlashCmdList["ZF"] = function(message)
         local command = strtrim(message or ""):lower()
         if command == "modern" or command == "classic" then ZF:SetNativeGUIEnabled(command == "modern") end
-        if command == "?" or command == "help" then 
+        if command == "?" or command == "help" then
             ZF:StylizedPrint("Commands:")
             print(" |cFF990007/zf|r - Open Addon")
             print(" |cFF990007/zf|r modern - Open the modern GUI")
