@@ -10,6 +10,18 @@
     <Script file="UnitFrame.lua"/>
 
     <Script file="Config/DesignerStyle.lua"/>
+    <Script file="Config/Widgets/WidgetRouter.lua"/>
+    <Script file="Config/Widgets/NativeKit.lua"/>
+    <Script file="Config/Widgets/Window.lua"/>
+    <Script file="Config/Widgets/TreeGroup.lua"/>
+    <Script file="Config/Widgets/ScrollFrame.lua"/>
+    <Script file="Config/Widgets/Sections.lua"/>
+    <Script file="Config/Widgets/TabGroup.lua"/>
+    <Script file="Config/Widgets/CheckBox.lua"/>
+    <Script file="Config/Widgets/Slider.lua"/>
+    <Script file="Config/Widgets/Dropdown.lua"/>
+    <Script file="Config/Widgets/ColorPicker.lua"/>
+    <Script file="Config/Widgets/EditBox.lua"/>
     <Script file="Config/GUIWidgets.lua"/>
     <Script file="Config/GUIBuilders.lua"/>
     <Script file="Config/GUI/GUIInternal.lua"/>

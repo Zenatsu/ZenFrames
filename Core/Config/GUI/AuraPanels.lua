@@ -20,6 +20,10 @@ local SORTING_DESCRIPTIONS = {
 }
 
 local function AttachDropdownItemTooltips(dropdown, descLookup)
+	if dropdown.SetItemTooltips then
+		dropdown:SetItemTooltips(descLookup)
+		return
+	end
 	for _, dropdownItem in dropdown.pullout:IterateItems() do
 		local value = dropdownItem.userdata and dropdownItem.userdata.value
 		local desc = descLookup[value]

@@ -39,7 +39,7 @@ end
 
 function Widgets.CreateInlineGroup(parent, title)
     local group = AG:Create("InlineGroup")
-    group:SetTitle("|cFFFFFFFF" .. title .. "|r")
+    group:SetTitle(ZF:IsNativeGUIEnabled() and title or "|cFFFFFFFF" .. title .. "|r")
     group:SetLayout("Flow")
     return Finalize(parent, group)
 end

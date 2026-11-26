@@ -324,7 +324,8 @@ local function RefreshControlPanelTabs(unit)
 	for _, tabDef in ipairs(CONTROL_PANEL_TABS) do
 		local tab = panel.tabs[tabDef.key]
 		if tabDef.key == panel.activeTab then
-			local yOffset = 0
+			local padding = ZF.DesignerStyle.Movers.TabPagePadding
+			local yOffset = padding
 			for _, row in ipairs(tab.rows) do
 				local visible = not row.mcpIsVisible or row.mcpIsVisible(unit)
 				if visible then
@@ -338,14 +339,15 @@ local function RefreshControlPanelTabs(unit)
 					row:Hide()
 				end
 			end
-			local pageHeight = yOffset > 0 and (yOffset - ROW_SPACING) or 0
+			local pageHeight = yOffset > padding and (yOffset - ROW_SPACING + padding) or 0
 			tab.page:SetHeight(math.max(pageHeight, 0.01))
 			tab.page:Show()
-			tab.button:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+			tab.button:SetChecked(true)
 		else
 			tab.page:Hide()
-			tab.button:SetBackdropBorderColor(0, 0, 0, 1)
+			tab.button:SetChecked(false)
 		end
+		tab.button.Label:SetFontObject(tabDef.key == panel.activeTab and "GameFontHighlightSmall" or "GameFontNormalSmall")
 	end
 end
 
@@ -721,13 +723,11 @@ local function GetMoverControlPanel()
     local tabStripWidth = ZF.DesignerStyle.Movers.TabStripWidth
     local tabButtonHeight = ZF.DesignerStyle.Movers.TabButtonHeight
     local tabPageWidth = ZF.DesignerStyle.Movers.TabPageWidth
-    ControlPanel = CreateFrame("Frame", "ZF_MoverControlPanel", UIParent, "BackdropTemplate")
+    ControlPanel = CreateFrame("Frame", "ZF_MoverControlPanel", UIParent)
     ControlPanel:SetSize(coreWidth, coreHeight)
     ControlPanel:SetFrameStrata("TOOLTIP")
     ControlPanel:SetClampedToScreen(true)
-    ControlPanel:SetBackdrop(ZF.BACKDROP)
-    ControlPanel:SetBackdropColor(0, 0, 0, .9)
-    ControlPanel:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+    NineSliceUtil.ApplyLayoutByName(ControlPanel, ZF.DesignerStyle.Movers.PanelLayout)
 	ControlPanel:EnableMouse(true)
 	ControlPanel:SetMovable(true)
 	ControlPanel:RegisterForDrag("LeftButton")
@@ -743,31 +743,31 @@ local function GetMoverControlPanel()
 	ControlPanel.tabs = {}
 
 	local TabStrip = CreateFrame("Frame", nil, ControlPanel)
-	TabStrip:SetPoint("TOPLEFT", ControlPanel, "TOPRIGHT", 2, 0)
+	TabStrip:SetPoint("TOPLEFT", ControlPanel, "TOPRIGHT", 0, 0)
 	TabStrip:SetSize(tabStripWidth, #CONTROL_PANEL_TABS * (tabButtonHeight + 2))
 	ControlPanel.TabStrip = TabStrip
 
 	for index, tabDef in ipairs(CONTROL_PANEL_TABS) do
-		local page = CreateFrame("Frame", nil, ControlPanel, "BackdropTemplate")
+		local page = CreateFrame("Frame", nil, ControlPanel)
 		page:SetPoint("TOPLEFT", TabStrip, "TOPRIGHT", 2, 0)
 		page:SetWidth(tabPageWidth)
 		page:SetHeight(0.01)
-		page:SetBackdrop(ZF.BACKDROP)
-		page:SetBackdropColor(0, 0, 0, .9)
-		page:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+		NineSliceUtil.ApplyLayoutByName(page, ZF.DesignerStyle.Movers.PanelLayout)
 		page:Hide()
 
-		local button = CreateFrame("Button", nil, TabStrip, "BackdropTemplate")
+		local button = CreateFrame("Frame", nil, TabStrip, "LargeSideTabButtonTemplate")
 		button:SetSize(tabStripWidth, tabButtonHeight)
-		button:SetPoint("TOP", TabStrip, "TOP", 0, -((index - 1) * (tabButtonHeight + 2)))
-		button:SetBackdrop(ZF.BACKDROP)
-		button:SetBackdropColor(0, 0, 0, .9)
-		button:SetBackdropBorderColor(0, 0, 0, 1)
-		local text = button:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		text:SetPoint("CENTER")
-		text:SetText(tabDef.label)
-		button:SetScript("OnClick", function()
-			if InCombatLockdown() then return end
+		for _, art in ipairs({ button.Background, button.SelectedTexture, button.TabGlow, button.HighlightTexture }) do
+			art:ClearAllPoints()
+			art:SetAllPoints(button)
+		end
+		button.Icon:Hide()
+		button.Label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		button.Label:SetPoint("CENTER", -2, 0)
+		button.Label:SetText(tabDef.label)
+		button:SetPoint("TOPLEFT", TabStrip, "TOPLEFT", 0, -((index - 1) * (button:GetHeight() + ZF.DesignerStyle.Movers.TabGap)))
+		button:SetCustomOnMouseUpHandler(function(_, mouseButton, upInside)
+			if mouseButton ~= "LeftButton" or not upInside or InCombatLockdown() then return end
 			if ControlPanel.activeTab == tabDef.key then
 				ControlPanel.activeTab = nil
 			else
@@ -775,6 +775,7 @@ local function GetMoverControlPanel()
 			end
 			MoverControlPanel()
 		end)
+		if index == 1 then TabStrip:SetSize(button:GetWidth(), #CONTROL_PANEL_TABS * (button:GetHeight() + ZF.DesignerStyle.Movers.TabGap)) end
 
 		ControlPanel.tabs[tabDef.key] = { page = page, button = button, rows = {} }
 	end
@@ -957,13 +958,11 @@ local ModeWindow
 
 function GetMoverModeWindow()
     if ModeWindow then return ModeWindow end
-    ModeWindow = CreateFrame("Frame", "ZF_MoverModeWindow", UIParent, "BackdropTemplate")
+    ModeWindow = CreateFrame("Frame", "ZF_MoverModeWindow", UIParent)
     ModeWindow:SetSize(260, 185)
     ModeWindow:SetPoint("TOP", UIParent, "TOP", 0, -100)
     ModeWindow:SetFrameStrata("TOOLTIP")
-    ModeWindow:SetBackdrop(ZF.BACKDROP)
-    ModeWindow:SetBackdropColor(0, 0, 0, 0.9)
-    ModeWindow:SetBackdropBorderColor(unpack(ZF.DesignerStyle.Palette.MoverBorder))
+    NineSliceUtil.ApplyLayoutByName(ModeWindow, ZF.DesignerStyle.Movers.PanelLayout)
     ModeWindow:EnableMouse(true)
 
     local Instructions = ModeWindow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
